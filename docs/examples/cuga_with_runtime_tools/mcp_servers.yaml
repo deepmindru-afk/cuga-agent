@@ -1,0 +1,11 @@
+# OpenAPI direct integration
+services:
+  - digital_sales:
+      url: https://digitalsales.19pc1vtv090u.us-east.codeengine.appdomain.cloud/openapi.json
+      description: This Digital Sales Skills API provides sales professionals with a unified interface to access territory accounts, retrieve client information from TPP, manage job roles, and synchronize contacts between Zoominfo and Salesloft—streamlining the process of managing customer relationships and sales data across multiple platforms.
+
+mcpServers:
+    filesystem:
+        command: "npx"
+        args: ["-y", "@modelcontextprotocol/server-filesystem", "./cuga_workspace"]
+        description: "Standard file system operations for workspace management"

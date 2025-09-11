@@ -1,0 +1,15 @@
+[project]
+name = "test-cuga-package"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = [
+    "cuga",
+    "fastmcp",
+    "httpx",
+]
+
+[tool.uv.sources]
+cuga = { path = "../../../", editable = true }
