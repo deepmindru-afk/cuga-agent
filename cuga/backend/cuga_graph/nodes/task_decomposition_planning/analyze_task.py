@@ -124,7 +124,8 @@ class TaskAnalyzer(BaseNode):
             logger.debug(f"all apps are: {state.api_intent_relevant_apps}")
             data_representation = json.dumps([p.model_dump() for p in state.api_intent_relevant_apps])
             try:
-                await TaskAnalyzer.call_authenticate_apps(app_matches.relevant_apps)
+                if settings.advanced_features.benchmark == "appworld":
+                    await TaskAnalyzer.call_authenticate_apps(app_matches.relevant_apps)
             except Exception as e:
                 logger.warning("Failed to authenticate upfront all apps")
                 logger.warning(e)
