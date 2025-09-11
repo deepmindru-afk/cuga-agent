@@ -1,0 +1,24 @@
+{
+  "name": "nocodeui-workspaces",
+  "version": "1.0.1",
+  "description": "This is a monorepo project to hold nocodeui packages with npm workspaces feature",
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "private": true,
+  "workspaces": [
+    "extension",
+    "runtime",
+    "shared",
+    "agentic_chat",
+    "frontend"
+  ],
+  "devDependencies": {
+    "@types/jest-image-snapshot": "^6.4.0",
+    "jest-image-snapshot": "^6.4.0",
+    "puppeteer": "^24.6.0"
+  },
+  "dependencies": {
+    "lodash.debounce": "^4.0.8"
+  }
+}

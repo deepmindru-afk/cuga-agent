@@ -1,0 +1,21 @@
+import{Q as u,R as f,S as m}from"./AppContainer-DlJO1h2A.js";import"./sidepanel-CYx2dhah.js";/**
+* @license
+* 
+* (C) Copyright IBM Corp. 2017, 2025. All Rights Reserved.
+* 
+* Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+* in compliance with the License. You may obtain a copy of the License at
+* 
+* http://www.apache.org/licenses/LICENSE-2.0
+* 
+* Unless required by applicable law or agreed to in writing, software distributed under the License
+* is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+* or implied. See the License for the specific language governing permissions and limitations under
+* the License.
+* 
+* @carbon/ai-chat 0.3.3
+* 
+* Built: Jul 11 2025 1:09 pm -04:00
+* 
+* 
+*/function l(_,n){return n.forEach(function(t){t&&typeof t!="string"&&!Array.isArray(t)&&Object.keys(t).forEach(function(r){if(r!=="default"&&!(r in _)){var o=Object.getOwnPropertyDescriptor(t,r);Object.defineProperty(_,r,o.get?o:{enumerable:!0,get:function(){return t[r]}})}})}),Object.freeze(_)}var s={exports:{}};(function(_,n){(function(t,r){_.exports=r(u)})(f,(function(t){function r(e){return e&&typeof e=="object"&&"default"in e?e:{default:e}}var o=r(t),a={name:"ar-ly",weekdays:"الأحد_الإثنين_الثلاثاء_الأربعاء_الخميس_الجمعة_السبت".split("_"),months:"يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر".split("_"),weekStart:6,weekdaysShort:"أحد_إثنين_ثلاثاء_أربعاء_خميس_جمعة_سبت".split("_"),monthsShort:"يناير_فبراير_مارس_أبريل_مايو_يونيو_يوليو_أغسطس_سبتمبر_أكتوبر_نوفمبر_ديسمبر".split("_"),weekdaysMin:"ح_ن_ث_ر_خ_ج_س".split("_"),ordinal:function(e){return e},meridiem:function(e){return e>12?"م":"ص"},formats:{LT:"HH:mm",LTS:"HH:mm:ss",L:"D/‏M/‏YYYY",LL:"D MMMM YYYY",LLL:"D MMMM YYYY HH:mm",LLLL:"dddd D MMMM YYYY HH:mm"}};return o.default.locale(a,null,!0),a}))})(s);var i=s.exports,p=m(i),L=l({__proto__:null,default:p},[i]);export{L as a};

@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["chunks/index-CN_u1GJh.js","chunks/sidepanel-CYx2dhah.js","assets/sidepanel-DzK75Nfj.css","chunks/AppContainer-DlJO1h2A.js"])))=>i.map(i=>d[i]);
+import{r,_ as o,R as f}from"./sidepanel-CYx2dhah.js";function _(l){const[t,n]=r.useState(null);return r.useEffect(()=>{o(()=>import("./index-CN_u1GJh.js").then(e=>e.i),__vite__mapDeps([0,1,2,3])).then(e=>{var a;const u=((a=e.default)==null?void 0:a.default)||e.default;n(()=>u)})},[]),t?f.createElement(t,{...l}):null}export{_ as default};
