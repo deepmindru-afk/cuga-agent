@@ -1,0 +1,11 @@
+frontend/build/** -diff
+frontend/build/* linguist-vendored
+# Ignore all JSON/YAML/TXT files
+*.json
+*.yaml
+*.yml
+*.txt
+
+# (Optional) keep important ones
+\!package.json
+\!.github/workflows/*.yml
