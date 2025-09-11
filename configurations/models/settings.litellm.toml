@@ -1,0 +1,77 @@
+[agent.task_decomposition.model]
+platform = "openai"
+model_name = "Azure/gpt-4o"
+url="https://ete-litellm.bx.cloud9.ibm.com"
+temperature = 0.1
+max_tokens = 1000
+
+[agent.planner.model]
+platform = "openai"
+model_name = "Azure/gpt-4.1"
+url="https://ete-litellm.bx.cloud9.ibm.com"
+temperature = 0.1
+max_tokens = 7000
+
+
+[agent.shortlister.model]
+platform = "openai"
+model_name = "Azure/gpt-4o"
+url="https://ete-litellm.bx.cloud9.ibm.com"
+temperature = 0.1
+max_tokens = 7000
+
+
+[agent.chat.model]
+platform = "openai"
+model_name = "Azure/gpt-4o"
+url="https://ete-litellm.bx.cloud9.ibm.com"
+temperature = 0.1
+max_tokens = 5000
+
+[agent.plan_controller.model]
+platform = "openai"
+model_name = "Azure/gpt-4o"
+url="https://ete-litellm.bx.cloud9.ibm.com"
+temperature = 0.1
+max_tokens = 5000
+
+
+[agent.final_answer.model]
+platform = "openai"
+model_name = "Azure/gpt-4o"
+url="https://ete-litellm.bx.cloud9.ibm.com"
+temperature = 0.1
+max_tokens = 15000
+
+
+[agent.code.model]
+platform = "openai"
+model_name = "Azure/gpt-4o"
+url="https://ete-litellm.bx.cloud9.ibm.com"
+temperature = 0.1
+max_tokens = 3000
+
+[agent.code_planner.model]
+platform = "openai"
+model_name = "Azure/gpt-4o"
+url="https://ete-litellm.bx.cloud9.ibm.com"
+temperature = 0.1
+max_tokens = 3000
+
+[agent.qa.model]
+platform = "openai"
+model_name = "Azure/gpt-4o"
+url="https://ete-litellm.bx.cloud9.ibm.com"
+temperature = 0.1
+max_tokens = 4000
+system_prompt = "./agent/controller/qa_agent/prompts/system.jinja2"
+user_prompt = "./agent/controller/qa_agent/prompts/user_msg.jinja2"
+
+[agent.action.model]
+platform = "openai"
+model_name = "Azure/gpt-4o"
+url="https://ete-litellm.bx.cloud9.ibm.com"
+temperature = 0.1
+max_tokens = 400
+system_prompt = "./agent/controller/action_agent/prompts/system.jinja2"
+user_prompt = "./agent/controller/action_agent/prompts/user_msg.jinja2"
