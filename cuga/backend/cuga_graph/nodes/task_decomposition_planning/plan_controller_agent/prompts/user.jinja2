@@ -1,0 +1,27 @@
+**Previous Subtasks**:
+{% for item in stm_all_history %}
+{{ loop.index }}. {{ item['sub_task'] }}
+{% for step in item['steps'] %}
+    {{ loop.index }}. {{ step }}
+{% endfor %}
+{% endfor %}
+
+**Variables History**:
+{{variables_history}}
+---
+
+**Current URL**: {{url}}.
+
+**Intent**:
+"""
+{{input}}
+"""
+
+**Subtasks**:
+{%- for item in task_decomposition %}
+{{ loop.index }}. {{ item }}
+{%- endfor %}
+
+Current datetime: {{current_datetime}}
+
+Let's think step by step.
