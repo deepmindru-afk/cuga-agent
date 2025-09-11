@@ -1,0 +1,68 @@
+{
+  "apps": [
+    {
+      "name": "environment-server",
+      "script": "appworld",
+      "args": "serve environment --port 8005",
+      "cwd": "./",
+      "instances": 1,
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "out_file": "logs/environment-server-out.log",
+      "error_file": "logs/environment-server-error.log"
+    },
+    {
+      "name": "api-server",
+      "script": "appworld",
+      "args": "serve api --port 9000",
+      "cwd": "./",
+      "instances": 1,
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "out_file": "logs/api-server-out.log",
+      "error_file": "logs/api-server-error.log"
+    },
+    {
+      "name": "cuga-agent",
+      "script": "uv",
+      "args": "run eval_api",
+      "cwd": "./",
+      "instances": 1,
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "out_file": "logs/cuga-agent-out.log",
+      "error_file": "logs/cuga-agent-error.log"
+    },
+    {
+      "name": "mcp-registry",
+      "script": "uv",
+      "args": "run registry",
+      "cwd": "./",
+      "instances": 1,
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "log_date_format": "YYYY-MM-DD HH:mm:ss",
+      "out_file": "logs/mcp-registry-out.log",
+      "error_file": "logs/mcp-registry-error.log"
+    }
+  ]
+}
