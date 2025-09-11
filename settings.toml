@@ -1,0 +1,31 @@
+[page_understanding]
+transformer_path = "cuga.backend.browser_env.page_understanding.pu_transform.PageUnderstandingV1"
+demo_nocodeui_pu = false
+
+[evaluation]
+max_steps = 55
+
+[demo_mode]
+start_url = "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login"
+
+[features]
+cuga_mode = "accurate"
+
+[advanced_features]
+web_arena_eval = false
+use_vision = true
+use_paraphrase = false
+use_location_resolver = false
+langfuse_tracing = false
+wxo_integration = false
+benchmark = "default"
+mode = 'api'
+use_extension = false
+
+
+[server_ports]
+registry = 8001
+demo = 8005
+apis_url = 9000
+saved_flows = 8003
+environment_url = 8000

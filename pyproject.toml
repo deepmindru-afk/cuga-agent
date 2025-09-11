@@ -1,0 +1,88 @@
+[project]
+name = "cuga"
+version = "0.0.1"
+description = "Add your description here"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain==0.3.26",
+    "langchain-ibm==0.3.13",
+    "langchain-openai>=0.3.27",
+    "langchain-core==0.3.66",
+    "llama-index-tools-mcp",
+    "aiohttp",
+    "llm-sandbox==0.3.12",
+    "docker",
+    "langgraph==0.5.3",
+    "html2text",
+    "uvicorn",
+    "fastapi[standard]",
+    "langfuse",
+    "dynaconf",
+    "playwright==1.49.0",
+    "browsergym-core==0.13.0",
+    "python-dotenv",
+    "loguru",
+    "mcp[cli]>=1.2.1",
+    "psutil>=7.0.0",
+    "typer>=0.15.3",
+    "fastmcp",
+    "langchain-mcp-adapters>=0.1.9",
+]
+
+
+[tool.uv]
+package = true
+
+[tool.setuptools]
+package-dir = { "" = "." }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cuga*", "scripts*"]
+exclude = ["docs*"]
+
+[tool.setuptools.package-data]
+"backend" = [
+  "**/*.jinja2",
+  "**/*.jinja",
+  "**/*.json",
+  "**/*.md",
+  "**/*.toml",
+  "**/*.yaml",
+  "**/*.yml",
+  "**/*.txt",
+]
+
+[project.scripts]
+load_specs = "scripts.api_utils.load_openapi_specs:main"
+test_sandbox = "scripts.commands:test_sandbox"
+petstore = "scripts.commands:run_petstore"
+demo = "scripts.commands:run_demo"
+registry = "scripts.commands:run_api_registry"
+registry_appworld = "scripts.commands:run_api_registry_appworld"
+
+graph = "scripts.draw_graph:main"
+eval_api = "scripts.commands:run_eval_api"
+appworld_eval = "evaluation.appworld_eval:run_main"
+appworld_setup = "scripts.commands:setup_appworld_environment"
+appworld_setup_docker = "scripts.commands:setup_appworld_environment_docker"
+cuga = "cuga.cli:app"
+code = "evaluation.code_generator:main"
+exp = "scripts.eval_gui:main"
+digital_sales_mcp = "scripts.commands:run_digital_sales_mcp"
+digital_sales_openapi = "scripts.commands:run_digital_sales_openapi"
+
+[dependency-groups]
+dev = [
+    "pytz>=2025.1",
+    "ruff>=0.9.4",
+    "tabulate",
+    "beartype",
+    "nltk",
+    "termcolor",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=1.1.0",
+]
