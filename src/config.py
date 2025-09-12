@@ -13,15 +13,13 @@ from pathlib import Path
 # Get the package root from path_store
 PACKAGE_ROOT = Path(__file__).parent.resolve()
 
-
-# Use the project's path_store instead of pathlib
-
-# ---------------------------------------------------------------------------
-# Package root & path helper (must be defined BEFORE first use)
-# ---------------------------------------------------------------------------
-
-# Get the package root from path_store
-PACKAGE_ROOT = Path(__file__).parent.resolve()
+# Define all path variables at the top (with environment variable overrides)
+ENV_FILE_PATH = os.getenv("ENV_FILE_PATH") or os.path.join(PACKAGE_ROOT,"..", ".env")
+SETTINGS_TOML_PATH = os.getenv("SETTINGS_TOML_PATH") or os.path.join(PACKAGE_ROOT,"configurations", "settings.toml")
+EVAL_CONFIG_TOML_PATH = os.getenv("EVAL_CONFIG_TOML_PATH") or os.path.join(PACKAGE_ROOT, "configurations", "eval_config.toml")
+CONFIGURATIONS_DIR = os.path.join(PACKAGE_ROOT, "configurations")
+MODELS_DIR = os.path.join(CONFIGURATIONS_DIR, "models")
+MODES_DIR = os.path.join(CONFIGURATIONS_DIR, "modes")
 
 
 import dynaconf
@@ -36,7 +34,7 @@ env_path = os.getenv("ENV_FILE")
 
 if not env_path:
     # Fallback when running from an installed wheel or from source
-    env_path = os.path.join(PACKAGE_ROOT, ".env")
+    env_path = ENV_FILE_PATH
 
 load_dotenv(dotenv_path=env_path, override=True)
 
@@ -97,9 +95,9 @@ validators = [
 base_settings = Dynaconf(
     root_path=PACKAGE_ROOT,
     settings_files=[
-        os.path.join(PACKAGE_ROOT, "settings.toml"),
-        os.path.join(PACKAGE_ROOT, ".env"),
-        os.path.join(PACKAGE_ROOT, "eval_config.toml"),
+        SETTINGS_TOML_PATH,
+        ENV_FILE_PATH,
+        EVAL_CONFIG_TOML_PATH,
     ],
     validators=validators,
 )
@@ -111,9 +109,9 @@ default_llm = default_llm.strip().strip('"').strip("'")
 logger.info("loaded llm settings *{}*".format(default_llm))
 
 # Resolve absolute config file paths
-models_file_path = os.path.join(PACKAGE_ROOT, "configurations", "models", default_llm)
+models_file_path = os.path.join(MODELS_DIR, default_llm)
 modes_file_path = os.path.join(
-    PACKAGE_ROOT, "configurations", "modes", f"{base_settings.features.cuga_mode}.toml"
+    MODES_DIR, f"{base_settings.features.cuga_mode}.toml"
 )
 
 logger.info(f"Models config path: {models_file_path}")
@@ -133,9 +131,9 @@ if os.getenv("CUGA_STRICT_CONFIG", "1") == "1":
 settings = Dynaconf(
     root_path=PACKAGE_ROOT,
     settings_files=[
-        os.path.join(PACKAGE_ROOT, "settings.toml"),
-        os.path.join(PACKAGE_ROOT, ".env"),
-        os.path.join(PACKAGE_ROOT, "eval_config.toml"),
+        SETTINGS_TOML_PATH,
+        ENV_FILE_PATH,
+        EVAL_CONFIG_TOML_PATH,
         models_file_path,
         modes_file_path,
     ],

@@ -36,25 +36,16 @@ dependencies = [
 package = true
 
 [tool.setuptools]
-package-dir = { "" = "." }
-include-package-data = true
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["cuga*", "scripts*"]
-exclude = ["docs*"]
+package-dir = {"" = "src"}
 
 [tool.setuptools.package-data]
-"backend" = [
-  "**/*.jinja2",
-  "**/*.jinja",
-  "**/*.json",
-  "**/*.md",
-  "**/*.toml",
-  "**/*.yaml",
-  "**/*.yml",
-  "**/*.txt",
-]
+"configurations" = ["**"]
+"cuga" = ["**"]
+"frontend_workspaces" = ["**"]
+"scripts" = ["**"]
+"system_tests" = ["**"]
+
+
 
 [project.scripts]
 load_specs = "scripts.api_utils.load_openapi_specs:main"

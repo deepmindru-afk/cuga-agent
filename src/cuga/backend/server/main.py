@@ -42,7 +42,6 @@ import json
 
 # Import embedded assets with feature flag
 USE_EMBEDDED_ASSETS = os.getenv("USE_EMBEDDED_ASSETS", "false").lower() in ("true", "1", "yes", "on")
-os.makedirs(os.path.join(PACKAGE_ROOT, "./logging"), exist_ok=True)
 
 if USE_EMBEDDED_ASSETS:
     try:
@@ -65,6 +64,18 @@ except ImportError as e:
 
 import os
 from cuga.cli import start_extension_browser_if_configured
+
+# Path constants
+LOGGING_DIR = os.path.join(PACKAGE_ROOT, "logging")
+LOGGING_TRACES_DIR = os.path.join(PACKAGE_ROOT, "logging", "traces")
+TRACE_LOG_PATH = os.path.join(PACKAGE_ROOT, "logging", "traces", "trace.log")
+FRONTEND_DIST_DIR = os.path.join(PACKAGE_ROOT, "frontend_workspaces", "frontend", "dist")
+EXTENSION_DIR = os.path.join(PACKAGE_ROOT, "frontend_workspaces", "extension", "releases", "chrome-mv3")
+STATIC_DIR_FLOWS_PATH = os.path.join(PACKAGE_ROOT,"cuga","backend", "server", "flows")
+SAVE_REUSE_PY_PATH = os.path.join(PACKAGE_ROOT, "cuga", "backend", "tools_env", "registry", "mcp_servers", "saved_flows.py")
+
+# Create logging directory
+os.makedirs(LOGGING_DIR, exist_ok=True)
 
 
 class AppState:
@@ -98,31 +109,27 @@ class AppState:
             except Exception as e:
                 print(f"❌ Failed to extract embedded assets: {e}")
                 self.static_dirs: List[str] = [
-                    os.path.join(self.package_dir, "frontend-workspaces/frontend/dist")
+                    FRONTEND_DIST_DIR
                 ]
                 self.STATIC_DIR_HTML: Optional[str] = next(
                     (d for d in self.static_dirs if os.path.exists(d)), None
                 )
-                self.EXTENSION_PATH: Optional[str] = os.path.join(
-                    self.package_dir, "frontend-workspaces/extension/releases/chrome-mv3"
-                )
+                self.EXTENSION_PATH: Optional[str] = EXTENSION_DIR
         else:
             self.static_dirs: List[str] = [
-                os.path.join(self.package_dir, "frontend-workspaces/frontend/dist")
+                FRONTEND_DIST_DIR
             ]
             self.STATIC_DIR_HTML: Optional[str] = next(
                 (d for d in self.static_dirs if os.path.exists(d)), None
             )
-            self.EXTENSION_PATH: Optional[str] = os.path.join(
-                self.package_dir, "frontend-workspaces/extension/releases/chrome-mv3"
-            )
-        self.STATIC_DIR_FLOWS: str = os.path.join(self.package_dir, "server", "flows")
+            self.EXTENSION_PATH: Optional[str] = EXTENSION_DIR
+        self.STATIC_DIR_FLOWS: str = STATIC_DIR_FLOWS_PATH
         self.save_reuse_process: Optional[asyncio.subprocess.Process] = None
         self.initialize_sdk()
 
     def initialize_sdk(self):
         """Initializes the analytics SDK and logging."""
-        logs_dir_path = os.path.join(PACKAGE_ROOT, "./logging/traces")
+        logs_dir_path = LOGGING_TRACES_DIR
 
         if agent_analytics_sdk is not None and OTLPCollectorConfig is not None:
             os.makedirs(logs_dir_path, exist_ok=True)
@@ -158,9 +165,7 @@ async def manage_save_reuse_server():
         return
 
     # Define the path to the save_reuse.py file
-    save_reuse_py_path = os.path.join(
-        app_state.package_dir, "cuga", "backend", "tools_env", "registry", "mcp_servers", "saved_flows.py"
-    )
+    save_reuse_py_path = SAVE_REUSE_PY_PATH
 
     if not os.path.exists(save_reuse_py_path):
         logger.warning(f"save_reuse.py not found at {save_reuse_py_path}. Server will not be started.")
@@ -179,7 +184,7 @@ async def manage_save_reuse_server():
         app_state.save_reuse_process = await asyncio.create_subprocess_exec(
             "uv",
             "run",
-            os.path.join(PACKAGE_ROOT, "./cuga/backend/tools_env/registry/mcp_servers/saved_flows.py"),
+            SAVE_REUSE_PY_PATH,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -386,13 +391,13 @@ async def event_stream(query: str, api_mode=False, resume=None):
                         )
                         try:
                             await copy_file_async(
-                                os.path.join(PACKAGE_ROOT, "./logging/traces/trace.log"),
+                                TRACE_LOG_PATH,
                                 f"trace_{mask_with_timestamp(full_date=True, id='')}.log",
                             )
                             await copy_file_async(
-                                os.path.join(PACKAGE_ROOT, "./logging/traces/trace.log"), "trace_backup.log"
+                                TRACE_LOG_PATH, "trace_backup.log"
                             )
-                            os.remove(os.path.join(PACKAGE_ROOT, "./logging/traces/trace.log"))
+                            os.remove(TRACE_LOG_PATH)
                         except Exception as e:
                             logger.warning(e)
                         return

@@ -36,7 +36,7 @@ class FunctionCallOnboardRequest(BaseModel):
 
 # Default configuration file
 DEFAULT_MCP_SERVERS_FILE = os.path.join(
-    PACKAGE_ROOT, "./cuga/backend/tools_env/registry/config/mcp_servers.yaml"
+    PACKAGE_ROOT, "cuga", "backend", "tools_env", "registry", "config", "mcp_servers.yaml"
 )
 
 

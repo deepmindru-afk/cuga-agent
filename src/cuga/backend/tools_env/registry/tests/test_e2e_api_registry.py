@@ -16,6 +16,7 @@ import subprocess
 import time
 import psutil
 from contextlib import asynccontextmanager
+from config import PACKAGE_ROOT
 
 
 def kill_process_on_port(port):
@@ -80,7 +81,7 @@ class TestAPIRegistryE2E:
 
             # Start server in background
             server_process = subprocess.Popen(
-                ['uv', 'run', 'python', './cuga/backend/tools_env/registry/registry/api_registry_server.py'],
+                ['uv', 'run', 'python', os.path.join(PACKAGE_ROOT, 'cuga', 'backend', 'tools_env', 'registry', 'registry', 'api_registry_server.py')],
                 cwd=None,
             )
 
@@ -311,7 +312,7 @@ async def run_e2e_tests():
                 'uv',
                 'run',
                 'python',
-                './cuga/backend/tools_env/registry/registry/api_registry_server.py',
+                os.path.join(PACKAGE_ROOT, 'cuga', 'backend', 'tools_env', 'registry', 'registry', 'api_registry_server.py'),
             ],
             cwd=None,
         )
