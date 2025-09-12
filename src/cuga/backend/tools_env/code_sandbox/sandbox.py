@@ -13,7 +13,7 @@ import importlib
 
 from datetime import datetime
 from loguru import logger
-from config import settings, PACKAGE_ROOT
+from cuga.config import settings, PACKAGE_ROOT
 import docker
 
 

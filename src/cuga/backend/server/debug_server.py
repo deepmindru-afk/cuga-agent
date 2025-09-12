@@ -1,4 +1,4 @@
-from config import settings
+from cuga.config import settings
 from main import app
 
 
@@ -6,7 +6,7 @@ def main():
     """Main entry point for the server"""
     import uvicorn
 
-    from config import settings
+    from cuga.config import settings
 
     # Get the port from settings, default to 8005 if not available
     port = getattr(settings, 'server_ports', None)

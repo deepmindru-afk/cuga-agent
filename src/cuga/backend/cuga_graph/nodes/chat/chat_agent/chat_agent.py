@@ -16,7 +16,7 @@ from cuga.backend.cuga_graph.nodes.shared.base_agent import BaseAgent
 
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_chat
-from config import settings
+from cuga.config import settings
 
 from langchain_core.tools import tool, BaseTool
 from loguru import logger

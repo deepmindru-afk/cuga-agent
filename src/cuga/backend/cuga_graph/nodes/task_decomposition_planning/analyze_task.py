@@ -15,7 +15,7 @@ from cuga.backend.cuga_graph.nodes.task_decomposition_planning.task_analyzer_age
 from cuga.backend.cuga_graph.nodes.task_decomposition_planning.task_analyzer_agent.tasks.app_matcher import (
     AppMatch,
 )
-from config import settings
+from cuga.config import settings
 from langgraph.types import Command
 from loguru import logger
 from cuga.backend.tools_env.registry.utils.api_utils import get_apps

@@ -10,7 +10,7 @@ import platform
 import psutil
 from typing import List, Optional
 from loguru import logger
-from config import settings, PACKAGE_ROOT, get_user_data_path
+from cuga.config import settings, PACKAGE_ROOT, get_user_data_path
 
 app = typer.Typer(
     help="Cuga CLI for managing services with direct execution",

@@ -11,7 +11,7 @@ from cuga.backend.cuga_graph.state.agent_state import AgentState
 from cuga.backend.cuga_graph.nodes.browser.qa_agent.prompts.load_prompt import QaAgentOutput, parser
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_simple
-from config import settings
+from cuga.config import settings
 
 llm_manager = LLMManager()
 

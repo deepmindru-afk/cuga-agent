@@ -55,7 +55,7 @@ def process_python_file(file_path, task_id):
     # Create the new file content with the template
     file_content = f'''from appworld import AppWorld, load_task_ids
 from loguru import logger
-from config import settings
+from cuga.config import settings
 
 
 def main(task_id):

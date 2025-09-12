@@ -18,7 +18,7 @@ from cuga.backend.cuga_graph.state.agent_state import AgentState
 from cuga.backend.cuga_graph.utils.nodes_names import NodeNames, ActionIds
 
 from langgraph.types import Command
-from config import settings
+from cuga.config import settings
 
 
 tracker = ActivityTracker()

@@ -12,7 +12,7 @@ from cuga.backend.cuga_graph.nodes.api.api_planner_agent.prompts.load_prompt imp
 )
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_simple
-from config import settings
+from cuga.config import settings
 from cuga.configurations.instructions_manager import InstructionsManager
 
 instructions_manager = InstructionsManager()

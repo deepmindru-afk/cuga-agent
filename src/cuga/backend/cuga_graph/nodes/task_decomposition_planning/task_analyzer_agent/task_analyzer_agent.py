@@ -19,7 +19,7 @@ from cuga.backend.cuga_graph.nodes.task_decomposition_planning.task_analyzer_age
     paraphrase_task,
 )
 from cuga.backend.llm.models import LLMManager
-from config import settings
+from cuga.config import settings
 from loguru import logger
 from cuga.backend.activity_tracker.tracker import ActivityTracker
 

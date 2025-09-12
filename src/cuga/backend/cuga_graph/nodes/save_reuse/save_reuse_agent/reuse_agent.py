@@ -15,7 +15,7 @@ from cuga.backend.cuga_graph.nodes.save_reuse.save_reuse_agent.utils.export_mcp 
 from cuga.backend.cuga_graph.nodes.save_reuse.save_reuse_agent.utils.save_reuse import consolidate_flow
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_simple
-from config import settings, PACKAGE_ROOT
+from cuga.config import settings, PACKAGE_ROOT
 import re
 
 tracker = ActivityTracker()

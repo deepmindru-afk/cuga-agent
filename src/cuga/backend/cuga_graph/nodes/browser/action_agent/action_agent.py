@@ -10,7 +10,7 @@ from cuga.backend.cuga_graph.nodes.shared.base_agent import BaseAgent
 from cuga.backend.cuga_graph.state.agent_state import AgentState
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_simple
-from config import settings
+from cuga.config import settings
 
 llm_manager = LLMManager()
 var_manager = VariablesManager()

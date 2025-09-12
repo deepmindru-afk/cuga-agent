@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from playwright.async_api import BrowserContext, Page
 
-from config import settings
+from cuga.config import settings
 from cuga.backend.browser_env.page_understanding.pu_extractor import PUExtracted
 from cuga.backend.browser_env.page_understanding.pu_transform import PuAnswer
 

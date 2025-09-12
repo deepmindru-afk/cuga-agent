@@ -13,7 +13,7 @@ from cuga.backend.cuga_graph.nodes.task_decomposition_planning.task_decompositio
 from cuga.backend.cuga_graph.nodes.task_decomposition_planning.task_decomposition_agent.task_decomposition_agent import (
     TaskDecompositionAgent,
 )
-from config import settings
+from cuga.config import settings
 
 tracker = ActivityTracker()
 

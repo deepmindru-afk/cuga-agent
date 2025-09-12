@@ -16,7 +16,7 @@ import subprocess
 import time
 import psutil
 from contextlib import asynccontextmanager
-from config import PACKAGE_ROOT
+from cuga.config import PACKAGE_ROOT
 
 
 def kill_process_on_port(port):

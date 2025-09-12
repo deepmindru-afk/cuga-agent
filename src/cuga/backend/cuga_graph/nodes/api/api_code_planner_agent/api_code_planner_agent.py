@@ -10,7 +10,7 @@ from cuga.backend.cuga_graph.nodes.api.api_code_planner_agent.prompts.load_promp
 from cuga.backend.cuga_graph.nodes.api.variables_manager.manager import VariablesManager
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_simple
-from config import settings
+from cuga.config import settings
 from langchain_core.tools import tool
 from cuga.configurations.instructions_manager import InstructionsManager
 

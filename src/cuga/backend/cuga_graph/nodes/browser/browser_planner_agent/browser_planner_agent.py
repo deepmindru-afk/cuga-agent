@@ -15,7 +15,7 @@ from cuga.backend.cuga_graph.nodes.browser.browser_planner_agent.prompts.load_pr
 )
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_with_image
-from config import settings
+from cuga.config import settings
 
 llm_manager = LLMManager()
 tracker = ActivityTracker()

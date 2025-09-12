@@ -11,7 +11,7 @@ from mcp.types import CallToolResult, TextContent
 from pydantic import BaseModel, Field
 from loguru import logger
 
-from config import PACKAGE_ROOT
+from cuga.config import PACKAGE_ROOT
 from cuga.backend.tools_env.registry.utils.types import AppDefinition
 
 AGENT_ANALYTICS = True

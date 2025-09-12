@@ -4,7 +4,7 @@ from langchain_core.runnables import Runnable
 from langchain_core.output_parsers import PydanticOutputParser
 
 from cuga.backend.llm.utils.helpers import load_prompt_simple
-from config import settings
+from cuga.config import settings
 from cuga.backend.cuga_graph.nodes.shared.base_agent import BaseAgent
 from cuga.backend.llm.models import LLMManager
 

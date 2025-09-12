@@ -4,7 +4,7 @@ from typing import List
 import aiohttp
 
 from cuga.backend.tools_env.registry.utils.types import AppDefinition
-from config import settings
+from cuga.config import settings
 from loguru import logger
 from cuga.backend.activity_tracker.tracker import ActivityTracker
 

@@ -10,7 +10,7 @@ from cuga.backend.cuga_graph.nodes.api.tasks.summarize_code import summarize_ste
 from cuga.backend.cuga_graph.state.agent_state import AgentState
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_one_prompt
-from config import settings
+from cuga.config import settings
 from cuga.backend.cuga_graph.nodes.api.code_agent.code_act_agent import create_codeact
 from cuga.backend.tools_env.code_sandbox.sandbox import run_code
 from langgraph.checkpoint.memory import MemorySaver

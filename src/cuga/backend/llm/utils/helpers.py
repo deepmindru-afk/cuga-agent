@@ -11,7 +11,7 @@ from langchain_core.prompts import (
 )
 from langchain_core.prompts.image import ImagePromptTemplate
 
-from config import settings
+from cuga.config import settings
 
 import inspect
 

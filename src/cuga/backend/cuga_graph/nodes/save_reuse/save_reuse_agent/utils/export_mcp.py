@@ -11,7 +11,7 @@ from typing import List, Dict, Tuple, Optional
 
 # Assuming these are in your project structure
 from cuga.backend.tools_env.code_sandbox.sandbox import get_premable
-from config import settings
+from cuga.config import settings
 
 
 def extract_python_code_blocks(text_content: str) -> List[str]:

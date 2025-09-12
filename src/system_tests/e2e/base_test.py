@@ -11,7 +11,7 @@ from typing import List, Dict, Any, Optional, Tuple
 import psutil
 
 from cuga.backend.cuga_graph.nodes.human_in_the_loop.followup_model import ActionResponse
-from config import settings
+from cuga.config import settings
 
 # Define server and registry commands
 DEMO_COMMAND = ["uv", "run", "demo"]  # Assuming demo runs on port 8005 as per main.py

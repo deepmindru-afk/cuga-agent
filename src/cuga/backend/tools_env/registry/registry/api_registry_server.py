@@ -8,7 +8,7 @@ from mcp.types import TextContent
 from pydantic import BaseModel  # Import BaseModel for request body
 from typing import Dict, Any, List, Optional  # Add Any for flexible args/return
 from fastapi.responses import JSONResponse
-from config import PACKAGE_ROOT
+from cuga.config import PACKAGE_ROOT
 from cuga.backend.activity_tracker.tracker import ActivityTracker, Step
 from cuga.backend.tools_env.registry.config.config_loader import load_service_configs
 from cuga.backend.tools_env.registry.mcp_manager.mcp_manager import MCPManager

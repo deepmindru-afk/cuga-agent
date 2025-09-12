@@ -11,7 +11,7 @@ import json
 import pytest
 import pytest_asyncio
 
-from config import PACKAGE_ROOT
+from cuga.config import PACKAGE_ROOT
 from cuga.backend.tools_env.registry.config.config_loader import load_service_configs
 from cuga.backend.tools_env.registry.mcp_manager.mcp_manager import MCPManager
 

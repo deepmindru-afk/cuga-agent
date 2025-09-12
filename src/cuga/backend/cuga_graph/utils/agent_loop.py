@@ -18,7 +18,7 @@ from cuga.backend.cuga_graph.nodes.task_decomposition_planning.task_decompositio
     TaskDecompositionMultiOutput,
 )
 from cuga.backend.browser_env.browser.gym_env_async import BrowserEnvGymAsync
-from config import settings
+from cuga.config import settings
 from pydantic import TypeAdapter
 import logging
 from typing import Generator, List, Optional, Union, Any

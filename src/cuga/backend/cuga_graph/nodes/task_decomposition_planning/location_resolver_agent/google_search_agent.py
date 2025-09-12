@@ -11,7 +11,7 @@ from cuga.backend.cuga_graph.nodes.answer.final_answer_agent.prompts.load_prompt
 )
 
 from cuga.backend.llm.models import LLMManager
-from config import settings
+from cuga.config import settings
 
 llm_manager = LLMManager()
 

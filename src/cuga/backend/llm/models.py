@@ -8,7 +8,7 @@ from langchain_openai import ChatOpenAI, AzureChatOpenAI
 from langchain_ibm import ChatWatsonx
 from langchain_core.runnables import ConfigurableField
 from ibm_watsonx_ai.metanames import GenTextParamsMetaNames
-from config import settings
+from cuga.config import settings
 from loguru import logger
 
 

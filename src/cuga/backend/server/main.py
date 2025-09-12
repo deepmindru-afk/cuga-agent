@@ -34,7 +34,7 @@ from cuga.backend.cuga_graph.state.agent_state import AgentState, default_state
 from cuga.backend.browser_env.browser.gym_env_async import BrowserEnvGymAsync
 from cuga.backend.browser_env.browser.open_ended_async import OpenEndedTaskAsync
 from cuga.backend.cuga_graph.utils.agent_loop import AgentLoop, AgentLoopAnswer, StreamEvent, OutputFormat
-from config import get_app_name_from_url, get_user_data_path, settings, PACKAGE_ROOT
+from cuga.config import get_app_name_from_url, get_user_data_path, settings, PACKAGE_ROOT
 from langfuse.langchain import CallbackHandler
 from fastapi import Request
 from fastapi.responses import StreamingResponse, JSONResponse

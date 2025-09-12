@@ -16,7 +16,7 @@ from cuga.backend.cuga_graph.nodes.answer.final_answer_agent.prompts.load_prompt
 from cuga.backend.cuga_graph.state.agent_state import AgentState
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_simple
-from config import settings
+from cuga.config import settings
 from cuga.backend.activity_tracker.tracker import ActivityTracker
 from cuga.configurations.instructions_manager import InstructionsManager
 

@@ -18,7 +18,7 @@ from cuga.backend.cuga_graph.nodes.task_decomposition_planning.location_resolver
     GoogleSearchAgent,
 )
 from cuga.backend.llm.models import LLMManager
-from config import settings
+from cuga.config import settings
 from langgraph.prebuilt import create_react_agent
 from langchain_core.runnables import RunnableConfig
 from loguru import logger

@@ -16,7 +16,7 @@ from cuga.backend.cuga_graph.nodes.task_decomposition_planning.plan_controller_a
 )
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_simple
-from config import settings
+from cuga.config import settings
 from cuga.configurations.instructions_manager import InstructionsManager
 
 instructions_manager = InstructionsManager()

@@ -2,7 +2,7 @@ import os
 import subprocess
 
 from cuga.backend.tools_env.code_sandbox.sandbox import run_code
-from config import settings, PACKAGE_ROOT
+from cuga.config import settings, PACKAGE_ROOT
 from cuga.backend.activity_tracker.tracker import ActivityTracker
 
 tracker = ActivityTracker()

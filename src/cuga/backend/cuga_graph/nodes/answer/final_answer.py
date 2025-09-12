@@ -14,7 +14,7 @@ from cuga.backend.cuga_graph.nodes.human_in_the_loop.followup_model import (
     create_get_more_utterances,
 )
 from cuga.backend.cuga_graph.state.agent_state import AgentState
-from config import settings
+from cuga.config import settings
 from cuga.backend.cuga_graph.utils.nodes_names import NodeNames, ActionIds, MessagePrefixes
 
 var_manager = VariablesManager()
