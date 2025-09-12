@@ -34,8 +34,8 @@ importers:
         specifier: ^8.0.7
         version: 8.0.17(encoding@0.1.13)
       axios:
-        specifier: ^1.8.2
-        version: 1.11.0
+        specifier: ^1.12.0
+        version: 1.12.1
       cockatiel:
         specifier: ^3.2.1
         version: 3.2.1
@@ -194,8 +194,8 @@ importers:
         specifier: workspace:*
         version: link:../agentic_chat
       axios:
-        specifier: ^1.8.2
-        version: 1.11.0
+        specifier: ^1.12.0
+        version: 1.12.1
       cockatiel:
         specifier: ^3.2.1
         version: 3.2.1
@@ -2543,8 +2543,8 @@ packages:
   atomically@2.0.3:
     resolution: {integrity: sha512-kU6FmrwZ3Lx7/7y3hPS5QnbJfaohcIul5fGqf7ok+4KklIEk9tJ0C2IQPdacSbVUWv6zVHXEBWoWd6NrVMT7Cw==}
 
-  axios@1.11.0:
-    resolution: {integrity: sha512-1Lx3WLFQWm3ooKDYZD1eXmoGO9fxYQjrycfHFC8P0sCfQVXyROp0p9PFWBehewBOdCwHc+f/b8I0fMto5eSfwA==}
+  axios@1.12.1:
+    resolution: {integrity: sha512-Kn4kbSXpkFHCGE6rBFNwIv0GQs4AvDT80jlveJDKFxjbTYMUeB4QtsdPCv6H8Cm19Je7IU6VFtRl2zWZI0rudQ==}
 
   b4a@1.6.7:
     resolution: {integrity: sha512-OnAYlL5b7LEkALw87fUVafQw5rVR9RjwGd4KUwNQ6DrrNmaVaUCgLipfVlzrPQ4tWOR9P0IXGNOx50jYCCdSJg==}
@@ -9551,7 +9551,7 @@ snapshots:
       stubborn-fs: 1.2.5
       when-exit: 2.1.4
 
-  axios@1.11.0:
+  axios@1.12.1:
     dependencies:
       follow-redirects: 1.15.11
       form-data: 4.0.4
