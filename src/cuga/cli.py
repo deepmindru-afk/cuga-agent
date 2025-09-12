@@ -102,7 +102,7 @@ def start_extension_browser_if_configured():
     """Start a Chromium instance with the MV3 extension if config enables it.
 
     Uses Playwright persistent context to load the extension from
-    `frontend-workspaces/extension/releases/chrome-mv3`.
+    `frontend_workspaces/extension/releases/chrome-mv3`.
     Runs in a daemon thread and stops when the CLI receives a shutdown signal.
     """
     global _playwright_thread, _playwright_started
@@ -115,7 +115,7 @@ def start_extension_browser_if_configured():
         logger.info("Extension browser already running.")
         return
 
-    extension_dir = os.path.join(PACKAGE_ROOT, "frontend-workspaces", "extension", "releases", "chrome-mv3")
+    extension_dir = os.path.join(PACKAGE_ROOT,"..", "frontend_workspaces", "extension", "releases", "chrome-mv3")
     if not os.path.isdir(extension_dir):
         logger.error(
             f"Chrome MV3 extension directory not found: {extension_dir}. "

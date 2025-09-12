@@ -20,14 +20,14 @@ def build_and_embed():
     print("📦 Building frontend...")
     subprocess.run(
         ["pnpm", "--filter", "@carbon/ai-chat-examples-web-components-basic", "run", "build"],
-        cwd=base_dir / "frontend-workspaces",
+        cwd=base_dir / "frontend_workspaces",
         check=True,
     )
 
     # Step 2: Build extension
     print("🔧 Building extension...")
     subprocess.run(
-        ["pnpm", "--filter", "extension", "run", "release"], cwd=base_dir / "frontend-workspaces", check=True
+        ["pnpm", "--filter", "extension", "run", "release"], cwd=base_dir / "frontend_workspaces", check=True
     )
 
     # Step 3: Embed assets
@@ -38,7 +38,7 @@ def build_and_embed():
     print("")
     print("🎉 Your CUGA server now has embedded assets!")
     print("📁 Assets embedded in: cuga/backend/server/embedded_assets.py")
-    print("💡 You can now run the server without the frontend-workspaces folder")
+    print("💡 You can now run the server without the frontend_workspaces folder")
     print("🚀 Start server: uv run cuga/backend/server/main.py")
 
 

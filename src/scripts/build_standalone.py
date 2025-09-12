@@ -16,12 +16,12 @@ def build_assets():
     # Build frontend
     subprocess.run(
         ["pnpm", "--filter", "@carbon/ai-chat-examples-web-components-basic", "run", "build"],
-        cwd="frontend-workspaces",
+        cwd="frontend_workspaces",
         check=True,
     )
 
     # Build extension
-    subprocess.run(["pnpm", "--filter", "extension", "run", "release"], cwd="frontend-workspaces", check=True)
+    subprocess.run(["pnpm", "--filter", "extension", "run", "release"], cwd="frontend_workspaces", check=True)
 
     print("✅ Assets built successfully")
 
