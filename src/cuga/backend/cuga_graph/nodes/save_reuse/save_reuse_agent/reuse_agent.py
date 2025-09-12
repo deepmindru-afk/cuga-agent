@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Any
+import os
 
 from langchain_core.messages import AIMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -79,8 +80,8 @@ class ReuseAgent(BaseAgent):
         res_html = await self.vischain.ainvoke(input={"code": matches[0]})
         pattern = r'```html\s*\n(.*?)\n```'
         matches = re.findall(pattern, res_html.content, re.DOTALL)
-        self.save_html_to_file(matches[0], "./cuga/backend/server/flows/flow.html")
-        output_path = Path(PACKAGE_ROOT) / "cuga/backend/tools_env/registry/mcp_servers/saved_flows.py"
+        self.save_html_to_file(matches[0], os.path.join(PACKAGE_ROOT, "cuga", "backend", "server", "flows", "flow.html"))
+        output_path = Path(os.path.join(PACKAGE_ROOT, "cuga", "backend", "tools_env", "registry", "mcp_servers", "saved_flows.py"))
         ensure_file_exists(output_path)
         success = process_text_file(input_text=res.content, output_file=output_path)
         return AIMessage(

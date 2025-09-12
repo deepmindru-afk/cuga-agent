@@ -49,7 +49,7 @@ End-to-end tests against the actual API registry server:
 
 ### Run All Tests
 ```bash
-cd ./cuga/backend/tools_env/registry/tests
+cd ./src/cuga/backend/tools_env/registry/tests
 uv run python run_all_tests.py
 ```
 
@@ -90,7 +90,7 @@ pytest -v cuga/backend/tools_env/registry/tests/
 - FastMCP example server running on `http://127.0.0.1:8000/sse`
 - Start the server:
   ```bash
-  cd ./cuga/docs/examples/client_package_usage
+  cd ./docs/examples/cuga_with_runtime_tools
   uv run python fast_mcp_example.py &
   ```
 

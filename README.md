@@ -60,7 +60,7 @@ See the [Roadmap](#roadmap) for where we’re headed, or the [Call for the Commu
 # Start the Digital Sales API locally on port 8000
 uv run digital_sales_openapi
 
-# Then update ./cuga/backend/tools_env/registry/config/mcp_servers.yaml to use localhost:
+# Then update ./src/cuga/backend/tools_env/registry/config/mcp_servers.yaml to use localhost:
 # Change the digital_sales URL from the remote endpoint to:
 # http://localhost:8000
 ```
