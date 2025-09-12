@@ -66,13 +66,13 @@ import os
 from cuga.cli import start_extension_browser_if_configured
 
 # Path constants
-LOGGING_DIR = os.path.join(PACKAGE_ROOT, "logging")
-LOGGING_TRACES_DIR = os.path.join(PACKAGE_ROOT, "logging", "traces")
-TRACE_LOG_PATH = os.path.join(PACKAGE_ROOT, "logging", "traces", "trace.log")
-FRONTEND_DIST_DIR = os.path.join(PACKAGE_ROOT, "frontend_workspaces", "frontend", "dist")
-EXTENSION_DIR = os.path.join(PACKAGE_ROOT, "frontend_workspaces", "extension", "releases", "chrome-mv3")
-STATIC_DIR_FLOWS_PATH = os.path.join(PACKAGE_ROOT,"cuga","backend", "server", "flows")
-SAVE_REUSE_PY_PATH = os.path.join(PACKAGE_ROOT, "cuga", "backend", "tools_env", "registry", "mcp_servers", "saved_flows.py")
+LOGGING_DIR = os.path.join(PACKAGE_ROOT,"..", "logging")
+LOGGING_TRACES_DIR = os.path.join(PACKAGE_ROOT,"..", "logging", "traces")
+TRACE_LOG_PATH = os.path.join(PACKAGE_ROOT,"..", "logging", "traces", "trace.log")
+FRONTEND_DIST_DIR = os.path.join(PACKAGE_ROOT,"..", "frontend_workspaces", "frontend", "dist")
+EXTENSION_DIR = os.path.join(PACKAGE_ROOT,"..", "frontend_workspaces", "extension", "releases", "chrome-mv3")
+STATIC_DIR_FLOWS_PATH = os.path.join(PACKAGE_ROOT,"backend", "server", "flows")
+SAVE_REUSE_PY_PATH = os.path.join(PACKAGE_ROOT, "backend", "tools_env", "registry", "mcp_servers", "saved_flows.py")
 
 # Create logging directory
 os.makedirs(LOGGING_DIR, exist_ok=True)

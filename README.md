@@ -119,7 +119,7 @@ Experience CUGA's hybrid capabilities by combining API calls with web interactio
 
 1. **Switch to hybrid mode:**
    ```bash
-   # Edit settings.toml and change:
+   # Edit ./src/cuga/settings.toml and change:
    mode = 'hybrid'  # under [advanced_features] section
    ```
 
@@ -205,13 +205,13 @@ Experience CUGA's hybrid capabilities by combining API calls with web interactio
 
 1. Download and install [Rancher Desktop](https://rancherdesktop.io/).
 
-2. If your `settings.toml` is configured for `accurate` mode (see `configurations/modes/accurate.toml`), set:
+2. If your `./src/cuga/settings.toml` is configured for `accurate` mode (see `./src/cuga/configurations/modes/accurate.toml`), set:
    ```toml
    local_sandbox = false
    ```
    in the `accurate.toml` file.
 
-   If your `settings.toml` points to a different mode (e.g., `fast` or `custom`), make the same change in the corresponding `<name>.toml` file under `configurations/modes/`.
+   If your `./src/cuga/settings.toml` points to a different mode (e.g., `fast` or `custom`), make the same change in the corresponding `<name>.toml` file under `./src/cuga/configurations/modes/`.
 
 3. Test your sandbox setup:
    ```bash
@@ -224,7 +224,7 @@ Experience CUGA's hybrid capabilities by combining API calls with web interactio
 <details>
 <summary>⚙️ Reasoning modes - Switch between Fast/Accurate modes</summary>
 
-## Available Modes
+## Available Modes under `./src/cuga`
 
 | Mode       | File                                   | Description                         |
 | ---------- | -------------------------------------- | ----------------------------------- |
@@ -283,7 +283,7 @@ cuga_mode = "fast"  # or "accurate" or "custom"
 
 ## Configuration
 
-Edit `settings.toml`:
+Edit `./src/cuga/settings.toml`:
 
 ```toml
 [demo_mode]
@@ -339,7 +339,7 @@ instruction_set = "default"  # or any instruction set above
 
 ## Setup
 
-• Change `settings.toml`: `cuga_mode = "save_reuse_fast"`
+• Change `./src/cuga/settings.toml`: `cuga_mode = "save_reuse_fast"`
 • Run: `cuga start demo`
 
 ## Demo Steps

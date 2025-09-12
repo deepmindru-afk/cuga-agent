@@ -14,9 +14,9 @@ from pathlib import Path
 PACKAGE_ROOT = Path(__file__).parent.resolve()
 
 # Define all path variables at the top (with environment variable overrides)
-ENV_FILE_PATH = os.getenv("ENV_FILE_PATH") or os.path.join(PACKAGE_ROOT,"..", ".env")
-SETTINGS_TOML_PATH = os.getenv("SETTINGS_TOML_PATH") or os.path.join(PACKAGE_ROOT,"configurations", "settings.toml")
-EVAL_CONFIG_TOML_PATH = os.getenv("EVAL_CONFIG_TOML_PATH") or os.path.join(PACKAGE_ROOT, "configurations", "eval_config.toml")
+ENV_FILE_PATH = os.getenv("ENV_FILE_PATH") or os.path.join(PACKAGE_ROOT,"..","..", ".env")
+SETTINGS_TOML_PATH = os.getenv("SETTINGS_TOML_PATH") or os.path.join(PACKAGE_ROOT, "settings.toml")
+EVAL_CONFIG_TOML_PATH = os.getenv("EVAL_CONFIG_TOML_PATH") or os.path.join(PACKAGE_ROOT, "eval_config.toml")
 CONFIGURATIONS_DIR = os.path.join(PACKAGE_ROOT, "configurations")
 MODELS_DIR = os.path.join(CONFIGURATIONS_DIR, "models")
 MODES_DIR = os.path.join(CONFIGURATIONS_DIR, "modes")

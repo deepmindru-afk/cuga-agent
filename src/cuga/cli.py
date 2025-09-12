@@ -371,7 +371,7 @@ def start(
                 [
                     "fastapi",
                     "dev",
-                    os.path.join(PACKAGE_ROOT,"cuga","backend","server","main.py"),
+                    os.path.join(PACKAGE_ROOT,"backend","server","main.py"),
                     "--host",
                     host,
                     "--no-reload",

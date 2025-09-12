@@ -22,7 +22,7 @@ class TestLegacyOpenAPI:
     @pytest_asyncio.fixture
     async def manager(self):
         """Setup MCPManager with legacy OpenAPI configuration"""
-        config_path = os.path.join(PACKAGE_ROOT, "./cuga/backend/tools_env/registry/config/mcp_servers.yaml")
+        config_path = os.path.join(PACKAGE_ROOT, "./backend/tools_env/registry/config/mcp_servers.yaml")
         configs = load_service_configs(config_path)
         manager = MCPManager(configs)
         await manager.load_tools()
@@ -87,7 +87,7 @@ async def run_legacy_tests():
     print("=" * 60)
 
     # Load configuration with only legacy services
-    config_path = "./cuga/backend/tools_env/registry/config/mcp_servers.yaml"
+    config_path = "./backend/tools_env/registry/config/mcp_servers.yaml"
     configs = load_service_configs(config_path)
     print(f"✅ Loaded {len(configs)} service configurations")
 
