@@ -415,7 +415,7 @@ The test suite includes:
 Focused suites:
 
 ```bash
-uv run pytest cuga/backend/tools_env/registry/tests/ system_tests/e2e/ -v
+uv run pytest ./src/cuga/backend/tools_env/registry/tests/ ./src/system_tests/e2e/ -v
 ```
 
 

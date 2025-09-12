@@ -86,7 +86,7 @@ def get_premable(is_local=False, current_date=None):
     )
 
     # Check if structured tools should be enabled
-    if not settings.features.local_sandbox:
+    if not settings.features.local_sandbox and tracker.tools is not None and len(tracker.tools) > 0:
         logger.warning("Structured tools not enabled - local sandbox mode is active")
         tool_import_code = ""
         tool_init_code = ""

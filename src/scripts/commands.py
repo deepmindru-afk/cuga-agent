@@ -17,11 +17,11 @@ def run_api_registry_base(mode):
     """Run the FastAPI server."""
     if mode == "appworld":
         os.environ["MCP_SERVERS_FILE"] = os.path.join(
-            PACKAGE_ROOT, "cuga/backend/tools_env/registry/config/mcp_servers_appworld.yaml"
+            PACKAGE_ROOT, "backend/tools_env/registry/config/mcp_servers_appworld.yaml"
         )
     host = os.environ.get("CUGA_HOST", "127.0.0.1")
     server_module = os.path.join(
-        PACKAGE_ROOT, "cuga/backend/tools_env/registry/registry/api_registry_server.py"
+        PACKAGE_ROOT, "backend/tools_env/registry/registry/api_registry_server.py"
     )
     subprocess.run(
         [
@@ -48,14 +48,14 @@ def run_api_registry_appworld():
 def run_demo():
     """Run the FastAPI server."""
     host = os.environ.get("CUGA_HOST", "127.0.0.1")
-    server_module = "cuga/backend/server/main.py"
+    server_module = "backend/server/main.py"
     subprocess.run(
         [
             "uv",
             "run",
             "fastapi",
             "dev",
-            server_module,
+            os.path.join(PACKAGE_ROOT, server_module),
             f"--host={host}",
             "--no-reload",
             f"--port={settings.server_ports.demo}",

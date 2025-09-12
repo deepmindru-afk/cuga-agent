@@ -72,7 +72,3 @@ async def consolidate_flow(chain, user_intent, file_pattern="f*.py", dynamic=Tru
     except Exception as e:
         print(f"Error generating response: {e}")
         return None
-
-
-if __name__ == '__main__':
-    asyncio.run(main())
