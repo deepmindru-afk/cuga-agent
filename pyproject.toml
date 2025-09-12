@@ -1,7 +1,7 @@
 [project]
 name = "cuga"
 version = "0.0.1"
-description = "Add your description here"
+description = "CUGA is an open-source generalist agent for the enterprise, supporting complex task execution on web and APIs, OpenAPI/MCP integrations, composable architecture, reasoning modes, and policy-aware features."
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.12"
