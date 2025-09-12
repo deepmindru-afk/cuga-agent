@@ -16,7 +16,7 @@ from cuga.backend.tools_env.code_sandbox.sandbox import run_code
 from langgraph.checkpoint.memory import MemorySaver
 from loguru import logger
 from cuga.backend.cuga_graph.nodes.api.variables_manager.manager import VariablesManager
-from configurations.instructions_manager import InstructionsManager
+from cuga.configurations.instructions_manager import InstructionsManager
 
 instructions_manager = InstructionsManager()
 var_manager = VariablesManager()

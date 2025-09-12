@@ -25,7 +25,7 @@ from langchain_core.tools import tool
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_one_prompt
 from config import settings
-from configurations.instructions_manager import InstructionsManager
+from cuga.configurations.instructions_manager import InstructionsManager
 
 instructions_manager = InstructionsManager()
 var_manager = VariablesManager()
