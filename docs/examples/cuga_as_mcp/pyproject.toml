@@ -12,4 +12,4 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-cuga = { path = "../../../", editable = true }
+cuga = { path = "../../../" }

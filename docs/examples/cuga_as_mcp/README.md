@@ -36,6 +36,7 @@ This example creates an MCP server that exposes CUGA's task execution capabiliti
 
 2. **Start the API Registry (in a separate terminal):**
    ```bash
+   export MCP_SERVERS_FILE=./mcp_servers.yaml
    uv run registry
    ```
 3. **Start the MCP Server:**

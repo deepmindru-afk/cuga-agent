@@ -372,7 +372,7 @@ wheels = [
 [[package]]
 name = "cuga"
 version = "0.0.1"
-source = { editable = "../../../" }
+source = { directory = "../../../" }
 dependencies = [
     { name = "aiohttp" },
     { name = "browsergym-core" },
@@ -2867,7 +2867,7 @@ wheels = [
 ]
 
 [[package]]
-name = "test-cuga-package"
+name = "test-cuga-package-2"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
@@ -2878,7 +2878,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "cuga", editable = "../../../" },
+    { name = "cuga", directory = "../../../" },
     { name = "fastmcp" },
     { name = "httpx" },
 ]
