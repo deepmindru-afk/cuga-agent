@@ -10,7 +10,7 @@ import platform
 import psutil
 from typing import List, Optional
 from loguru import logger
-from cuga.config import settings, PACKAGE_ROOT, get_user_data_path
+from cuga.config import settings, PACKAGE_ROOT, get_user_data_path, TRAJECTORY_DATA_DIR
 
 app = typer.Typer(
     help="Cuga CLI for managing services with direct execution",
@@ -537,7 +537,7 @@ def exp():
       cuga exp         # Start the experiment dashboard
     """
     try:
-        trajectory_data_path = os.path.join(PACKAGE_ROOT, "logging", "trajectory_data")
+        trajectory_data_path = TRAJECTORY_DATA_DIR
         subprocess.run(["dashboard", "run", trajectory_data_path], capture_output=False, text=False)
     except subprocess.CalledProcessError as e:
         logger.error(f"Error starting dashboard: {e}")

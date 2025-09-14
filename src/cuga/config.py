@@ -18,7 +18,9 @@ from loguru import logger
 
 # Get the package root from path_store
 PACKAGE_ROOT = Path(__file__).parent.resolve()
-
+LOGGING_DIR = os.environ.get("CUGA_LOGGING_DIR", os.path.join(PACKAGE_ROOT, "./logging"))
+TRAJECTORY_DATA_DIR = os.path.join(LOGGING_DIR, "trajectory_data")
+TRACES_DIR = os.path.join(LOGGING_DIR, "traces")
 # Define all path variables at the top (with environment variable overrides)
 ENV_FILE_PATH = os.getenv("ENV_FILE_PATH") or os.path.join(PACKAGE_ROOT, "..", "..", ".env")
 SETTINGS_TOML_PATH = os.getenv("SETTINGS_TOML_PATH") or os.path.join(PACKAGE_ROOT, "settings.toml")

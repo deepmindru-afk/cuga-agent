@@ -11,7 +11,7 @@ from mcp.types import CallToolResult, TextContent
 from pydantic import BaseModel, Field
 from loguru import logger
 
-from cuga.config import PACKAGE_ROOT
+from cuga.config import TRAJECTORY_DATA_DIR
 from cuga.backend.tools_env.registry.utils.types import AppDefinition
 from cuga.backend.utils.id_utils import random_id_with_timestamp, mask_with_timestamp
 from cuga.backend.cuga_graph.nodes.api.code_agent.model import CodeAgentOutput
@@ -81,7 +81,7 @@ class ActivityTracker(object):
     tasks_metadata: Optional[TasksMetadata] = None
 
     # Base directory configuration
-    _base_dir: str = os.path.join(PACKAGE_ROOT, "./logging/trajectory_data")
+    _base_dir: str = TRAJECTORY_DATA_DIR
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:

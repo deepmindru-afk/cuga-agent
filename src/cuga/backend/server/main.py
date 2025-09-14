@@ -35,7 +35,14 @@ from cuga.backend.cuga_graph.state.agent_state import AgentState, default_state
 from cuga.backend.browser_env.browser.gym_env_async import BrowserEnvGymAsync
 from cuga.backend.browser_env.browser.open_ended_async import OpenEndedTaskAsync
 from cuga.backend.cuga_graph.utils.agent_loop import AgentLoop, AgentLoopAnswer, StreamEvent, OutputFormat
-from cuga.config import get_app_name_from_url, get_user_data_path, settings, PACKAGE_ROOT
+from cuga.config import (
+    get_app_name_from_url,
+    get_user_data_path,
+    settings,
+    PACKAGE_ROOT,
+    LOGGING_DIR,
+    TRACES_DIR,
+)
 from langfuse.langchain import CallbackHandler
 from fastapi.responses import StreamingResponse, JSONResponse
 import json
@@ -65,9 +72,8 @@ except ImportError as e:
 # Moved to top of file
 
 # Path constants
-LOGGING_DIR = os.path.join(PACKAGE_ROOT, "..", "logging")
-LOGGING_TRACES_DIR = os.path.join(PACKAGE_ROOT, "..", "logging", "traces")
-TRACE_LOG_PATH = os.path.join(PACKAGE_ROOT, "..", "logging", "traces", "trace.log")
+
+TRACE_LOG_PATH = os.path.join(TRACES_DIR, "trace.log")
 FRONTEND_DIST_DIR = os.path.join(PACKAGE_ROOT, "..", "frontend_workspaces", "frontend", "dist")
 EXTENSION_DIR = os.path.join(PACKAGE_ROOT, "..", "frontend_workspaces", "extension", "releases", "chrome-mv3")
 STATIC_DIR_FLOWS_PATH = os.path.join(PACKAGE_ROOT, "backend", "server", "flows")
@@ -126,7 +132,7 @@ class AppState:
 
     def initialize_sdk(self):
         """Initializes the analytics SDK and logging."""
-        logs_dir_path = LOGGING_TRACES_DIR
+        logs_dir_path = TRACES_DIR
 
         if agent_analytics_sdk is not None and OTLPCollectorConfig is not None:
             os.makedirs(logs_dir_path, exist_ok=True)
