@@ -2,7 +2,7 @@
 
 ## How to Contribute
 
-1. Fork the repository to your own GitHub account.
+1. Fork the repository to your own GitHub account. (not needed if you are CUGA team)
 2. Create a feature branch from `main` in your fork: `git checkout -b feature/<short-topic>` (see Branch Naming Convention below).
 3. Keep PRs small and focused (prefer < ~300 changed lines and limited file count).
 4. Follow Conventional Commits for all commits and PR titles.
@@ -141,10 +141,17 @@ uv sync --dev
 
 ### Run tests
 
-Focused suites:
+Focused unit tests for registry:
 
 ```bash
-uv run pytest cuga/backend/tools_env/registry/tests/ system_tests/e2e/ -v
+chmod +x ./src/scripts/run_tests.sh
+./src/scripts/run_tests.sh
+```
+
+e2e tests with llm and server:
+
+```bash
+./src/scripts/run_tests.sh e2e_tests
 ```
 
 ## IDE Setup Quick Links
