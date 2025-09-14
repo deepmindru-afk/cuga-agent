@@ -4,6 +4,7 @@ Main application for running tasks with CugaAgent and MCP integration.
 This example demonstrates how to use the CugaAgent with MCP (Model Context Protocol)
 to perform tasks on web applications.
 """
+
 import os
 
 os.environ["ENV_FILE"] = os.path.join(os.path.dirname(__file__), ".env")
@@ -14,9 +15,11 @@ from cuga.backend.activity_tracker.tracker import ActivityTracker
 from cuga.backend.cuga_graph.utils.controller import AgentRunner as CugaAgent, ExperimentResult as AgentResult
 from loguru import logger
 from langchain_example_tool import tools as gmail_dummy_tools
+
 # Initialize components
 tracker = ActivityTracker()
 cuga_agent = None
+
 
 async def run_task(task: str) -> AgentResult:
     global cuga_agent

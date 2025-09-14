@@ -20,9 +20,7 @@ def run_api_registry_base(mode):
             PACKAGE_ROOT, "backend/tools_env/registry/config/mcp_servers_appworld.yaml"
         )
     host = os.environ.get("CUGA_HOST", "127.0.0.1")
-    server_module = os.path.join(
-        PACKAGE_ROOT, "backend/tools_env/registry/registry/api_registry_server.py"
-    )
+    server_module = os.path.join(PACKAGE_ROOT, "backend/tools_env/registry/registry/api_registry_server.py")
     subprocess.run(
         [
             "uv",

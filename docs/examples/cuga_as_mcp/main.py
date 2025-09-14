@@ -13,6 +13,7 @@ mcp = FastMCP("CUGA Running as MCP 🚀")
 os.environ["ENV_FILE"] = os.path.join(os.path.dirname(__file__), ".env")
 os.environ["MCP_SERVERS_FILE"] = os.path.join(os.path.dirname(__file__), "mcp_servers.yaml")
 
+
 @mcp.tool
 async def run_api_task(task: str) -> str:
     """

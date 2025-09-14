@@ -14,7 +14,7 @@ from pathlib import Path
 PACKAGE_ROOT = Path(__file__).parent.resolve()
 
 # Define all path variables at the top (with environment variable overrides)
-ENV_FILE_PATH = os.getenv("ENV_FILE_PATH") or os.path.join(PACKAGE_ROOT,"..","..", ".env")
+ENV_FILE_PATH = os.getenv("ENV_FILE_PATH") or os.path.join(PACKAGE_ROOT, "..", "..", ".env")
 SETTINGS_TOML_PATH = os.getenv("SETTINGS_TOML_PATH") or os.path.join(PACKAGE_ROOT, "settings.toml")
 EVAL_CONFIG_TOML_PATH = os.getenv("EVAL_CONFIG_TOML_PATH") or os.path.join(PACKAGE_ROOT, "eval_config.toml")
 CONFIGURATIONS_DIR = os.path.join(PACKAGE_ROOT, "configurations")
@@ -110,9 +110,7 @@ logger.info("loaded llm settings *{}*".format(default_llm))
 
 # Resolve absolute config file paths
 models_file_path = os.path.join(MODELS_DIR, default_llm)
-modes_file_path = os.path.join(
-    MODES_DIR, f"{base_settings.features.cuga_mode}.toml"
-)
+modes_file_path = os.path.join(MODES_DIR, f"{base_settings.features.cuga_mode}.toml")
 
 logger.info(f"Models config path: {models_file_path}")
 logger.info(f"Mode config path:   {modes_file_path}")

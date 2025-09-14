@@ -115,7 +115,9 @@ def start_extension_browser_if_configured():
         logger.info("Extension browser already running.")
         return
 
-    extension_dir = os.path.join(PACKAGE_ROOT,"..", "frontend_workspaces", "extension", "releases", "chrome-mv3")
+    extension_dir = os.path.join(
+        PACKAGE_ROOT, "..", "frontend_workspaces", "extension", "releases", "chrome-mv3"
+    )
     if not os.path.isdir(extension_dir):
         logger.error(
             f"Chrome MV3 extension directory not found: {extension_dir}. "
@@ -371,7 +373,7 @@ def start(
                 [
                     "fastapi",
                     "dev",
-                    os.path.join(PACKAGE_ROOT,"backend","server","main.py"),
+                    os.path.join(PACKAGE_ROOT, "backend", "server", "main.py"),
                     "--host",
                     host,
                     "--no-reload",

@@ -66,13 +66,15 @@ import os
 from cuga.cli import start_extension_browser_if_configured
 
 # Path constants
-LOGGING_DIR = os.path.join(PACKAGE_ROOT,"..", "logging")
-LOGGING_TRACES_DIR = os.path.join(PACKAGE_ROOT,"..", "logging", "traces")
-TRACE_LOG_PATH = os.path.join(PACKAGE_ROOT,"..", "logging", "traces", "trace.log")
-FRONTEND_DIST_DIR = os.path.join(PACKAGE_ROOT,"..", "frontend_workspaces", "frontend", "dist")
-EXTENSION_DIR = os.path.join(PACKAGE_ROOT,"..", "frontend_workspaces", "extension", "releases", "chrome-mv3")
-STATIC_DIR_FLOWS_PATH = os.path.join(PACKAGE_ROOT,"backend", "server", "flows")
-SAVE_REUSE_PY_PATH = os.path.join(PACKAGE_ROOT, "backend", "tools_env", "registry", "mcp_servers", "saved_flows.py")
+LOGGING_DIR = os.path.join(PACKAGE_ROOT, "..", "logging")
+LOGGING_TRACES_DIR = os.path.join(PACKAGE_ROOT, "..", "logging", "traces")
+TRACE_LOG_PATH = os.path.join(PACKAGE_ROOT, "..", "logging", "traces", "trace.log")
+FRONTEND_DIST_DIR = os.path.join(PACKAGE_ROOT, "..", "frontend_workspaces", "frontend", "dist")
+EXTENSION_DIR = os.path.join(PACKAGE_ROOT, "..", "frontend_workspaces", "extension", "releases", "chrome-mv3")
+STATIC_DIR_FLOWS_PATH = os.path.join(PACKAGE_ROOT, "backend", "server", "flows")
+SAVE_REUSE_PY_PATH = os.path.join(
+    PACKAGE_ROOT, "backend", "tools_env", "registry", "mcp_servers", "saved_flows.py"
+)
 
 # Create logging directory
 os.makedirs(LOGGING_DIR, exist_ok=True)
@@ -108,17 +110,13 @@ class AppState:
                 print(f"✅ Using embedded extension: {self.EXTENSION_PATH}")
             except Exception as e:
                 print(f"❌ Failed to extract embedded assets: {e}")
-                self.static_dirs: List[str] = [
-                    FRONTEND_DIST_DIR
-                ]
+                self.static_dirs: List[str] = [FRONTEND_DIST_DIR]
                 self.STATIC_DIR_HTML: Optional[str] = next(
                     (d for d in self.static_dirs if os.path.exists(d)), None
                 )
                 self.EXTENSION_PATH: Optional[str] = EXTENSION_DIR
         else:
-            self.static_dirs: List[str] = [
-                FRONTEND_DIST_DIR
-            ]
+            self.static_dirs: List[str] = [FRONTEND_DIST_DIR]
             self.STATIC_DIR_HTML: Optional[str] = next(
                 (d for d in self.static_dirs if os.path.exists(d)), None
             )
@@ -394,9 +392,7 @@ async def event_stream(query: str, api_mode=False, resume=None):
                                 TRACE_LOG_PATH,
                                 f"trace_{mask_with_timestamp(full_date=True, id='')}.log",
                             )
-                            await copy_file_async(
-                                TRACE_LOG_PATH, "trace_backup.log"
-                            )
+                            await copy_file_async(TRACE_LOG_PATH, "trace_backup.log")
                             os.remove(TRACE_LOG_PATH)
                         except Exception as e:
                             logger.warning(e)
