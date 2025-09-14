@@ -374,7 +374,7 @@ class BaseTestServerStream(unittest.IsolatedAsyncioTestCase):
             traceback.print_exc()
             print("--- End HTTP Request Error ---\n")
         except Exception as e:
-            print(f"\n--- Unexpected Error Occurred ---")
+            print("\n--- Unexpected Error Occurred ---")
             print(f"Exception Type: {type(e).__name__}")
             print(f"Exception Message: {e}")
             print("Full Traceback:")

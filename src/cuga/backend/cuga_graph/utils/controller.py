@@ -19,7 +19,6 @@ from cuga.backend.cuga_graph.utils.event_porcessors.action_agent_event_processor
 from cuga.backend.cuga_graph.state.agent_state import AgentState, default_state
 from cuga.backend.browser_env.browser.gym_env_async import BrowserEnvGymAsync
 from cuga.backend.browser_env.browser.open_ended_async import OpenEndedTaskAsync
-from cuga.backend.utils.file_utils import get_path_relative_to_dir
 from cuga.backend.cuga_graph.utils.agent_loop import AgentLoop, AgentLoopAnswer, StreamEvent
 from cuga.config import get_app_name_from_url, settings, PACKAGE_ROOT
 from loguru import logger

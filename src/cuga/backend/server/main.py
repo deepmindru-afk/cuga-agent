@@ -18,6 +18,7 @@ from langchain_core.messages import AIMessage
 from loguru import logger
 
 from cuga.backend.activity_tracker.tracker import ActivityTracker
+from cuga.cli import start_extension_browser_if_configured
 from cuga.backend.browser_env.browser.extension_env_async import ExtensionEnv
 from cuga.backend.browser_env.browser.gym_obs.http_stream_comm import (
     ChromeExtensionCommunicatorHTTP,
@@ -36,7 +37,6 @@ from cuga.backend.browser_env.browser.open_ended_async import OpenEndedTaskAsync
 from cuga.backend.cuga_graph.utils.agent_loop import AgentLoop, AgentLoopAnswer, StreamEvent, OutputFormat
 from cuga.config import get_app_name_from_url, get_user_data_path, settings, PACKAGE_ROOT
 from langfuse.langchain import CallbackHandler
-from fastapi import Request
 from fastapi.responses import StreamingResponse, JSONResponse
 import json
 
@@ -45,7 +45,7 @@ USE_EMBEDDED_ASSETS = os.getenv("USE_EMBEDDED_ASSETS", "false").lower() in ("tru
 
 if USE_EMBEDDED_ASSETS:
     try:
-        from .embedded_assets import get_frontend_path, get_extension_path, embedded_assets
+        from .embedded_assets import embedded_assets
 
         print("✅ Using embedded assets (enabled via USE_EMBEDDED_ASSETS)")
     except ImportError:
@@ -62,8 +62,7 @@ except ImportError as e:
     OTLPCollectorConfig = None
     agent_analytics_sdk = None
 
-import os
-from cuga.cli import start_extension_browser_if_configured
+# Moved to top of file
 
 # Path constants
 LOGGING_DIR = os.path.join(PACKAGE_ROOT, "..", "logging")

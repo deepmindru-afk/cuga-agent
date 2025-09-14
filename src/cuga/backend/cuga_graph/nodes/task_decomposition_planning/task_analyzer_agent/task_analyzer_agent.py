@@ -32,7 +32,7 @@ class TaskAnalyzerAgent(BaseAgent):
     def __init__(self):
         super().__init__()
         self.name = "TaskAnalyzerAgent"
-        enable_format = settings.agent.task_decomposition.model.enable_format
+        # enable_format = settings.agent.task_decomposition.model.enable_format
         self.classify_task = classify_task(settings.agent.task_decomposition.model)
         self.navigation_paths_task = navigation_paths_task(settings.agent.task_decomposition.model)
         self.match_apps_task = match_apps_for_intent(settings.agent.task_decomposition.model)

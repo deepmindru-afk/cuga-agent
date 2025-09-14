@@ -5,17 +5,13 @@ Tests the full API Registry server including HTTP endpoints
 """
 
 import asyncio
-import sys
 import os
-import json
 import pytest
 import pytest_asyncio
 import httpx
 import tempfile
 import subprocess
-import time
 import psutil
-from contextlib import asynccontextmanager
 from cuga.config import PACKAGE_ROOT
 
 
@@ -102,7 +98,7 @@ class TestAPIRegistryE2E:
                         response = await client.get(f"http://127.0.0.1:{server_port}/")
                         if response.status_code == 200:
                             break
-                    except:
+                    except Exception:
                         pass
                     await asyncio.sleep(1)
                 else:
@@ -313,7 +309,7 @@ async def run_e2e_tests():
         print(f"✅ Created temporary config: {config_path}")
 
         # Start server
-        print(f"\n🚀 Starting API Registry Server...")
+        print("\n🚀 Starting API Registry Server...")
         server_process = subprocess.Popen(
             [
                 'uv',
@@ -339,14 +335,14 @@ async def run_e2e_tests():
                     if response.status_code == 200:
                         print("✅ Server is running!")
                         break
-                except:
+                except Exception:
                     pass
                 await asyncio.sleep(1)
             else:
                 raise Exception("❌ Server failed to start")
 
         # Test 1: Root endpoint
-        print(f"\n📡 Test 1: Root Endpoint")
+        print("\n📡 Test 1: Root Endpoint")
         async with httpx.AsyncClient() as client:
             response = await client.get(f"{base_url}/")
             assert response.status_code == 200
@@ -354,7 +350,7 @@ async def run_e2e_tests():
             print(f"✅ Root response: {data['message']}")
 
         # Test 2: List applications
-        print(f"\n📱 Test 2: List Applications")
+        print("\n📱 Test 2: List Applications")
         async with httpx.AsyncClient() as client:
             response = await client.get(f"{base_url}/applications")
             assert response.status_code == 200
@@ -368,7 +364,7 @@ async def run_e2e_tests():
                 print(f"✅ Found applications: {list(data.keys())}")
 
         # Test 3: List APIs
-        print(f"\n🔍 Test 3: List APIs for digital_sales")
+        print("\n🔍 Test 3: List APIs for digital_sales")
         async with httpx.AsyncClient() as client:
             response = await client.get(f"{base_url}/applications/digital_sales/apis")
             assert response.status_code == 200
@@ -390,7 +386,7 @@ async def run_e2e_tests():
                     print(f"   {i}. {api}")
 
         # Test 4: Call function
-        print(f"\n📞 Test 4: Call Function")
+        print("\n📞 Test 4: Call Function")
         async with httpx.AsyncClient(timeout=30.0) as client:
             payload = {
                 "app_name": "digital_sales",
@@ -407,14 +403,14 @@ async def run_e2e_tests():
             if 'accounts' in data:
                 print(f"   Found {len(data['accounts'])} accounts")
 
-        print(f"\n🎉 E2E tests completed successfully!")
+        print("\n🎉 E2E tests completed successfully!")
 
     except Exception as e:
         print(f"❌ E2E test failed: {e}")
         raise
     finally:
         # Cleanup - try multiple methods to ensure server is stopped
-        print(f"\n🧹 Cleaning up...")
+        print("\n🧹 Cleaning up...")
 
         # Method 1: Terminate the subprocess if it exists
         if server_process:

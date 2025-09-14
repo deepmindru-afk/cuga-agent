@@ -1,7 +1,5 @@
 from cuga.backend.activity_tracker.tracker import ActivityTracker
 from cuga.backend.cuga_graph.utils.controller import AgentRunner as CugaAgent, ExperimentResult as AgentResult
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from loguru import logger
 from fastmcp import FastMCP
 import os
 
@@ -46,7 +44,7 @@ async def run_web_task(task: str, start_url: str) -> str:
     try:
         await cuga_agent.initialize_freemode_env(start_url=start_url, browser_mode="browser_only")
         task_result: AgentResult = await cuga_agent.run_task_generic(eval_mode=False, goal=task)
-    except Exception as e:
+    except Exception:
         if hasattr(cuga_agent, "env") and cuga_agent.env:
             cuga_agent.env.close()
         raise
@@ -71,7 +69,7 @@ async def run_hybrid_task(task: str, start_url: str) -> str:
     try:
         await cuga_agent.initialize_freemode_env(start_url=start_url, browser_mode="browser_only")
         task_result: AgentResult = await cuga_agent.run_task_generic(eval_mode=False, goal=task)
-    except Exception as e:
+    except Exception:
         if hasattr(cuga_agent, "env") and cuga_agent.env:
             cuga_agent.env.close()
         raise

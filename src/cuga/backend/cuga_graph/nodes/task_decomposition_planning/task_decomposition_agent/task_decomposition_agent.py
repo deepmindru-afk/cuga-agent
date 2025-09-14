@@ -5,7 +5,6 @@ from langchain_core.messages import AIMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
 from langchain_openai import ChatOpenAI
-from langchain_core.output_parsers import PydanticOutputParser
 from cuga.backend.cuga_graph.nodes.shared.base_agent import BaseAgent
 from cuga.backend.cuga_graph.state.agent_state import AgentState
 from cuga.backend.cuga_graph.nodes.task_decomposition_planning.task_decomposition_agent.prompts.load_prompt import (
@@ -26,11 +25,11 @@ class TaskDecompositionAgent(BaseAgent):
     def __init__(self, prompt_template: ChatPromptTemplate, llm: ChatOpenAI, tools: Any = None):
         super().__init__()
         self.name = "TaskDecompositionAgent"
-        enable_format = settings.agent.task_decomposition.model.enable_format
+        # enable_format = settings.agent.task_decomposition.model.enable_format
         parser = RunnableLambda(TaskDecompositionAgent.output_parser)
         dyna_model = settings.agent.task_decomposition.model
 
-        multi_parser = PydanticOutputParser(pydantic_object=TaskDecompositionMultiOutput)
+        # multi_parser = PydanticOutputParser(pydantic_object=TaskDecompositionMultiOutput)
         self.chain_multi = BaseAgent.get_chain(
             prompt_template=load_prompt_simple(
                 system_path="prompts/system_multi.jinja2",

@@ -2,6 +2,11 @@
 
 echo "Starting unit tests with uv..."
 
+echo "Running ruff check..."
+uv run ruff check
+echo "Running ruff format..."
+uv run ruff format --check
+
 # Check for all_test flag
 if [ "$1" = "e2e_tests" ]; then
     rm ./src/cuga/backend/tools_env/registry/mcp_servers/saved_flows.py

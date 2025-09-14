@@ -137,7 +137,7 @@ class ChatNode(BaseNode):
             state.sender == NodeNames.WAIT_FOR_RESPONSE
             and state.hitl_response.action_id == ActionIds.NEW_FLOW_APPROVE
         ):
-            logger.debug(f"tool call in chat node")
+            logger.debug("tool call in chat node")
             tool = ToolCall(**state.hitl_response.additional_data.tool)
             state.input = tool.get("args").get("user_task")
             state.sender = "ChatAgent"

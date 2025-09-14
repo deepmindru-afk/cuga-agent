@@ -4,7 +4,6 @@ Build script to create CUGA with embedded assets (no external files needed).
 This creates a version that doesn't require the frontend-workspaces folder.
 """
 
-import os
 import subprocess
 import sys
 from pathlib import Path

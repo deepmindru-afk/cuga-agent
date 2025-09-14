@@ -1,15 +1,13 @@
 import requests
 from typing import Dict, Any, List
-import asyncio
 import aiohttp
 
-from mcp.types import TextContent, Tool
+from mcp.types import TextContent
 
 try:
     from fastmcp import Client as FastMCPClient
 except ImportError:
     FastMCPClient = None
-from loguru import logger
 
 from cuga.backend.tools_env.registry.config.config_loader import Auth
 from cuga.backend.tools_env.registry.config.config_loader import ServiceConfig, Service

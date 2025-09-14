@@ -194,12 +194,14 @@ def _find_browsergym_id_in_children(
 
     return search_recursive(element, 0)
 
+
+def get_element_name_by_bid(bid: str, page_data: dict) -> str | None:
     """Get element name/description by BID from accessibility tree.
-    
+
     Args:
         bid: The browsergym ID of the element
         page_data: Page data containing accessibility_tree
-        
+
     Returns:
         Element name/description or None if not found
     """

@@ -6,6 +6,12 @@ from sys import platform
 from urllib.parse import urlparse
 from pathlib import Path
 
+# third-party imports
+import dynaconf
+from dotenv import load_dotenv
+from dynaconf import Dynaconf, Validator
+from loguru import logger
+
 # ---------------------------------------------------------------------------
 # Package root & path helper (must be defined BEFORE first use)
 # ---------------------------------------------------------------------------
@@ -22,12 +28,7 @@ MODELS_DIR = os.path.join(CONFIGURATIONS_DIR, "models")
 MODES_DIR = os.path.join(CONFIGURATIONS_DIR, "modes")
 
 
-import dynaconf
-
 # from feature_flags import FeatureFlags as flags
-from dotenv import load_dotenv
-from dynaconf import Dynaconf, Validator
-from loguru import logger
 
 # Try CI/CD environment variable first
 env_path = os.getenv("ENV_FILE")

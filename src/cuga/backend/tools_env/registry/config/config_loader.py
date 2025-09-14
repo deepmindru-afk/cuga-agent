@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Any, Union
+from typing import Dict, Optional, List, Any
 from pydantic import BaseModel
 from cuga.backend.utils.consts import ServiceType
 from cuga.backend.utils.file_utils import read_yaml_file

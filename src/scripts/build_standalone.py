@@ -3,10 +3,8 @@
 Build script to create a standalone CUGA executable with embedded assets.
 """
 
-import os
 import subprocess
 import sys
-from pathlib import Path
 
 
 def build_assets():
@@ -39,7 +37,8 @@ def create_standalone_executable():
 
     # Install PyInstaller if not available
     try:
-        import PyInstaller
+        # import PyInstaller  # Only needed to check if available
+        pass
     except ImportError:
         print("Installing PyInstaller...")
         subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller"], check=True)

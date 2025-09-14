@@ -233,7 +233,7 @@ async def click_impl(
 ) -> Optional[Alert]:
     modifiers = modifiers or []
     page: Page = config.get("configurable", {}).get("page")  # type: ignore[arg-type]
-    demo_mode: str = config.get("configurable", {}).get("demo_mode", "off")
+    # demo_mode: str = config.get("configurable", {}).get("demo_mode", "off")
 
     elem = await get_elem_by_bid_async(page, bid, True)
     await add_animation(page, elem, "loading", "CUGA is clicking...")

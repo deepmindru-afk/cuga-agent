@@ -1,6 +1,5 @@
 from datetime import datetime
 import os.path
-import pathlib
 
 from langchain_core.prompts import (
     PromptTemplate,
@@ -84,8 +83,8 @@ def load_prompt_with_image(
         user_path = os.path.join(parent_dir, user_path)
         system_path = os.path.join(parent_dir, system_path)
 
-    here = pathlib.Path(__file__).parent.parent.parent
-    sitemap_path = here / "knowledge" / "shopping_admin" / "sitemap.txt"
+    # here = pathlib.Path(__file__).parent.parent.parent
+    # sitemap_path = here / "knowledge" / "shopping_admin" / "sitemap.txt"
 
     pmt_system = PromptTemplate.from_file(
         system_path,

@@ -13,18 +13,16 @@ from loguru import logger
 
 from cuga.config import PACKAGE_ROOT
 from cuga.backend.tools_env.registry.utils.types import AppDefinition
+from cuga.backend.utils.id_utils import random_id_with_timestamp, mask_with_timestamp
+from cuga.backend.cuga_graph.nodes.api.code_agent.model import CodeAgentOutput
 
 AGENT_ANALYTICS = True
 try:
     from agent_analytics.instrumentation.utils import AIEventRecorder
     from agent_analytics_core.interfaces.annotations import DataAnnotation
-except Exception as e:
+except Exception:
     AGENT_ANALYTICS = False
     logger.warning("Ignoring agent analytics")
-
-from cuga.backend.utils.id_utils import random_id_with_timestamp, mask_with_timestamp
-
-from cuga.backend.cuga_graph.nodes.api.code_agent.model import CodeAgentOutput
 
 
 class MergeResult(BaseModel):

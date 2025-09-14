@@ -5,7 +5,6 @@ Tests listing applications, APIs, and calling functions via FastMCP
 """
 
 import asyncio
-import sys
 import os
 import json
 import pytest
@@ -158,12 +157,12 @@ async def run_mcp_tests():
         manager = MCPManager(configs)
 
         # Load tools
-        print(f"\n🔧 Loading MCP tools...")
+        print("\n🔧 Loading MCP tools...")
         await manager.load_tools()
         print("✅ MCP tools loaded successfully")
 
         # Test 1: List Applications
-        print(f"\n📱 Test 1: List MCP Applications")
+        print("\n📱 Test 1: List MCP Applications")
         applications = manager.get_server_names()
         print(f"✅ Found {len(applications)} applications: {applications}")
 
@@ -206,10 +205,10 @@ async def run_mcp_tests():
                             if desc:
                                 print(f"          {desc[:60]}{'...' if len(desc) > 60 else ''}")
                     else:
-                        print(f"      Parameters: None")
+                        print("      Parameters: None")
 
             # Test 3: Call a function via MCP
-            print(f"\n📞 Test 3: Call MCP Function")
+            print("\n📞 Test 3: Call MCP Function")
 
             # Find a simple function to call (preferably one without required params)
             simple_function = None
@@ -242,7 +241,7 @@ async def run_mcp_tests():
                                 response_data = json.loads(response_text)
                                 if isinstance(response_data, dict):
                                     print(f"   Response keys: {list(response_data.keys())}")
-                            except:
+                            except Exception:
                                 pass  # Not JSON, that's fine
                         else:
                             print(f"   Raw result: {content}")
@@ -260,7 +259,7 @@ async def run_mcp_tests():
         else:
             print("❌ No MCP server application found")
 
-        print(f"\n🎉 MCP Server test completed!")
+        print("\n🎉 MCP Server test completed!")
 
     finally:
         # Clean up temporary config file

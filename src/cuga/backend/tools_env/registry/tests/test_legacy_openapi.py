@@ -5,7 +5,6 @@ Tests listing applications, APIs, and calling functions
 """
 
 import asyncio
-import sys
 import os
 import json
 import pytest
@@ -99,18 +98,18 @@ async def run_legacy_tests():
     manager = MCPManager(configs)
 
     # Load tools
-    print(f"\n🔧 Loading tools...")
+    print("\n🔧 Loading tools...")
     await manager.load_tools()
     print("✅ Tools loaded successfully")
 
     # Test 1: List Applications
-    print(f"\n📱 Test 1: List Applications")
+    print("\n📱 Test 1: List Applications")
     applications = manager.get_server_names()
     print(f"✅ Found {len(applications)} applications: {applications}")
 
     # Test 2: List APIs for digital_sales
     if 'digital_sales' in applications:
-        print(f"\n🔍 Test 2: List APIs for digital_sales")
+        print("\n🔍 Test 2: List APIs for digital_sales")
         apis = manager.get_apis_for_application('digital_sales')
         print(f"✅ Found {len(apis)} APIs")
 
@@ -137,7 +136,7 @@ async def run_legacy_tests():
                         )
 
         # Test 3: Call a function
-        print(f"\n📞 Test 3: Call Function - get_my_accounts")
+        print("\n📞 Test 3: Call Function - get_my_accounts")
         try:
             # Call the simplest function (no parameters required)
             result = await manager.call_tool('digital_sales_get_my_accounts', {})
@@ -162,7 +161,7 @@ async def run_legacy_tests():
                                 print(
                                     f"   Found {len(accounts) if isinstance(accounts, list) else 'unknown'} accounts"
                                 )
-                    except:
+                    except Exception:
                         pass  # Not JSON, that's fine
                 else:
                     print(f"   Raw result: {content}")
@@ -178,7 +177,7 @@ async def run_legacy_tests():
     else:
         print("❌ digital_sales application not found")
 
-    print(f"\n🎉 Legacy OpenAPI test completed!")
+    print("\n🎉 Legacy OpenAPI test completed!")
 
 
 if __name__ == "__main__":

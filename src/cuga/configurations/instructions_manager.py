@@ -2,11 +2,11 @@ from dynaconf import Dynaconf
 from pathlib import Path
 import threading
 from loguru import logger
+from cuga.backend.activity_tracker.tracker import ActivityTracker
 from cuga.backend.cuga_graph.utils.nodes_names import NodeNames
 from cuga.configurations.set_from_one_file import parse_markdown_sections
 
 root_dir = Path(__file__).parent.parent.absolute()
-from cuga.backend.activity_tracker.tracker import ActivityTracker
 
 tracker = ActivityTracker()
 

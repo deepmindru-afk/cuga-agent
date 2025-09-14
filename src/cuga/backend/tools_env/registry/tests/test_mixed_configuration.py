@@ -5,7 +5,6 @@ Tests both legacy OpenAPI and MCP servers in the same configuration
 """
 
 import asyncio
-import sys
 import os
 import json
 import pytest
@@ -187,18 +186,18 @@ async def run_mixed_tests():
         manager = MCPManager(configs)
 
         # Load tools
-        print(f"\n🔧 Loading tools from mixed configuration...")
+        print("\n🔧 Loading tools from mixed configuration...")
         await manager.load_tools()
         print("✅ Tools loaded successfully")
 
         # Test 1: List Applications
-        print(f"\n📱 Test 1: List Applications")
+        print("\n📱 Test 1: List Applications")
         applications = manager.get_server_names()
         print(f"✅ Found {len(applications)} applications: {applications}")
 
         # Test 2: Check Legacy Service
         if 'digital_sales_legacy' in applications:
-            print(f"\n🔍 Test 2: Legacy Service APIs")
+            print("\n🔍 Test 2: Legacy Service APIs")
             apis = manager.get_apis_for_application('digital_sales_legacy')
             print(f"✅ Legacy service has {len(apis)} APIs")
 
@@ -217,7 +216,7 @@ async def run_mixed_tests():
                 break
 
         if mcp_app:
-            print(f"\n🔍 Test 3: MCP Service APIs")
+            print("\n🔍 Test 3: MCP Service APIs")
             apis = manager.get_apis_for_application(mcp_app)
             print(f"✅ MCP service has {len(apis)} APIs")
 
@@ -227,7 +226,7 @@ async def run_mixed_tests():
                 print(f"   Sample: {sample_api.get('name', 'unknown')}")
 
         # Test 4: Call functions from both services
-        print(f"\n📞 Test 4: Call Functions from Both Services")
+        print("\n📞 Test 4: Call Functions from Both Services")
 
         # Call legacy function
         try:
@@ -264,7 +263,7 @@ async def run_mixed_tests():
             except Exception as e:
                 print(f"⚠️  MCP function call failed: {e}")
 
-        print(f"\n🎉 Mixed configuration test completed!")
+        print("\n🎉 Mixed configuration test completed!")
 
     finally:
         # Clean up

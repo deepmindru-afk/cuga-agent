@@ -11,30 +11,30 @@ def validate_field_mappings():
     print("=" * 50)
 
     # Expected JavaScript structure from the Chrome extension
-    expected_js_structure = {
-        "rootId": "string",  # Maps to root_id
-        "map": {
-            "node_id": {
-                # NodeData structure
-                "tagName": "string",  # Maps to tag_name
-                "attributes": "object",
-                "xpath": "string",
-                "children": "array",
-                "isVisible": "boolean",  # Maps to is_visible
-                "isTopElement": "boolean",  # Maps to is_top_element
-                "isInteractive": "boolean",  # Maps to is_interactive
-                "isInViewport": "boolean",  # Maps to is_in_viewport
-                "highlightIndex": "number",  # Maps to highlight_index
-                "shadowRoot": "boolean",  # Maps to shadow_root
-            },
-            "text_node_id": {
-                # TextNodeData structure
-                "type": "TEXT_NODE",
-                "text": "string",
-                "isVisible": "boolean",  # Maps to is_visible
-            },
-        },
-    }
+    # expected_js_structure = {
+    #     "rootId": "string",  # Maps to root_id
+    #     "map": {
+    #         "node_id": {
+    #             # NodeData structure
+    #             "tagName": "string",  # Maps to tag_name
+    #             "attributes": "object",
+    #             "xpath": "string",
+    #             "children": "array",
+    #             "isVisible": "boolean",  # Maps to is_visible
+    #             "isTopElement": "boolean",  # Maps to is_top_element
+    #             "isInteractive": "boolean",  # Maps to is_interactive
+    #             "isInViewport": "boolean",  # Maps to is_in_viewport
+    #             "highlightIndex": "number",  # Maps to highlight_index
+    #             "shadowRoot": "boolean",  # Maps to shadow_root
+    #         },
+    #         "text_node_id": {
+    #             # TextNodeData structure
+    #             "type": "TEXT_NODE",
+    #             "text": "string",
+    #             "isVisible": "boolean",  # Maps to is_visible
+    #         },
+    #     },
+    # }
 
     # Our Python field mappings
     python_mappings = {

@@ -126,13 +126,13 @@ datetime.datetime = MyDateTime
             if current_date
             else ""
         )
-        + f"""
+        + """
 def call_api(app_name, api_name, args=None):
     if args is None:
-        args = {{}}
+        args = {}
 """
         + tool_invocation_code
-        + f"""
+        + """
 
     url = \""""
         + registry_host

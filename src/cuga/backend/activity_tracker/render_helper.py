@@ -5,6 +5,10 @@ import re
 from json import JSONDecodeError
 from pathlib import Path
 
+from cuga.backend.cuga_graph.nodes.browser.browser_planner_agent.browser_planner_agent import (
+    BrowserPlannerAgent,
+)
+
 
 HTML_TEMPLATE = """
 <!DOCTYPE html>

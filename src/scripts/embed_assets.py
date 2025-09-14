@@ -47,7 +47,6 @@ def embed_assets():
     print(f"Embedding extension from: {extension_dir}")
 
     # Create zip archives
-    import io
 
     frontend_zip = create_zip_from_directory(frontend_dist)
     extension_zip = create_zip_from_directory(extension_dir)

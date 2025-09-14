@@ -6,7 +6,6 @@ Runs all test suites in sequence with proper reporting
 
 import asyncio
 import sys
-import os
 import time
 from typing import List, Tuple
 
@@ -53,7 +52,7 @@ class TestRunner:
     def print_summary(self):
         """Print test summary"""
         print(f"\n{'=' * 80}")
-        print(f"📊 TEST SUMMARY")
+        print("📊 TEST SUMMARY")
         print(f"{'=' * 80}")
 
         total_tests = len(self.results)
@@ -67,7 +66,7 @@ class TestRunner:
         print(f"Total Time: {total_time:.2f}s")
         print(f"Success Rate: {(passed_tests / total_tests * 100):.1f}%")
 
-        print(f"\n📋 DETAILED RESULTS:")
+        print("\n📋 DETAILED RESULTS:")
         for name, success, duration, error_msg in self.results:
             status = "✅ PASS" if success else "❌ FAIL"
             print(f"  {status} {name:<30} ({duration:.2f}s)")
@@ -75,7 +74,7 @@ class TestRunner:
                 print(f"    Error: {error_msg}")
 
         if failed_tests == 0:
-            print(f"\n🎉 ALL TESTS PASSED!")
+            print("\n🎉 ALL TESTS PASSED!")
         else:
             print(f"\n⚠️  {failed_tests} TEST(S) FAILED")
 
@@ -98,11 +97,12 @@ async def main():
     ]
 
     # Run all tests
-    all_passed = True
+    # all_passed = True
     for test_name, test_func in test_suite:
         success = await runner.run_test(test_name, test_func)
         if not success:
-            all_passed = False
+            # all_passed = False
+            pass
 
     # Print final summary
     final_success = runner.print_summary()
