@@ -2,9 +2,10 @@ import re
 from pydantic import BaseModel
 import requests
 from mcp.server.fastmcp import FastMCP
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypeAlias, Literal
 from loguru import logger
 import json
+from urllib.parse import urlencode
 
 from cuga.backend.tools_env.registry.config.config_loader import ServiceConfig
 from cuga.backend.tools_env.registry.mcp_manager.openapi_parser import SimpleOpenAPIParser
@@ -27,58 +28,309 @@ def sanitize_tool_name(name: str) -> str:
     return s.strip('_') or "unnamed_tool"
 
 
-def build_model(model_name: str, field_defs: dict[str, tuple[type, Any]]) -> type:
-    annotations = {}
-    attrs = {}
+# A field spec is either a (type, default) tuple, or another nested dict of field specs
+FieldSpec: TypeAlias = "tuple[type, Any] | dict[str, 'FieldSpec']"
 
-    for field_name, (field_type, default) in field_defs.items():
-        annotations[field_name] = field_type
-        attrs[field_name] = default
+
+def _titleize(s: str) -> str:
+    # simple name helper: "countyCode" -> "CountyCode"
+    parts, buf = [], []
+    for ch in s:
+        if ch.isupper() and buf:
+            parts.append(''.join(buf))
+            buf = [ch]
+        else:
+            buf.append(ch)
+    if buf:
+        parts.append(''.join(buf))
+    return ''.join(p.capitalize() for p in parts)
+
+
+def build_model(model_name: str, field_defs: dict[str, FieldSpec]) -> type:
+    annotations: dict[str, Any] = {}
+    attrs: dict[str, Any] = {}
+
+    for field_name, spec in field_defs.items():
+        # Nested model case
+        if isinstance(spec, dict):
+            sub_name = f"{model_name}{_titleize(field_name)}"
+            sub_model = build_model(sub_name, spec)
+            annotations[field_name] = sub_model
+            # default for nested: None (you can change to sub_model() if you want an instance by default)
+            attrs[field_name] = None
+        # Leaf (type, default) case
+        elif isinstance(spec, tuple) and len(spec) == 2 and isinstance(spec[0], type):
+            field_type, default = spec
+            annotations[field_name] = field_type
+            attrs[field_name] = default
+        else:
+            raise TypeError(
+                f"Invalid spec for field '{field_name}': expected (type, default) or nested dict got type {spec}"
+            )
 
     attrs["__annotations__"] = annotations
-
     return type(model_name, (BaseModel,), attrs)
+
+
+TYPE_MAP: Dict[str, Any] = {
+    "string": str,
+    "integer": int,
+    "number": float,
+    "boolean": bool,
+    "object": dict,
+    "array": list,
+    "null": type(None),
+    "": Any,
+}
+
+
+def _resolve_ref(schema, resolve):
+    # resolve is parser._resolve_ref
+    if not schema:
+        return None
+    if "$ref" in schema:
+        return _resolve_ref(resolve(schema["$ref"]), resolve)
+    return schema
+
+
+def _normalize_union(schema, resolve):
+    """Handle anyOf/oneOf with optional null; return (core_schema, nullable)."""
+    schema = _resolve_ref(schema, resolve)
+    if not schema:
+        return None, False
+
+    nullable = bool(schema.get("nullable", False))
+
+    # OpenAPI 3.1: type: ["string","null"]
+    t = schema.get("type")
+    if isinstance(t, list):
+        if "null" in t:
+            nullable = True
+            t = next((x for x in t if x != "null"), "")
+        schema = {**schema, "type": t}
+
+    for key in ("anyOf", "oneOf"):
+        if key in schema:
+            variants = [v for v in schema[key] if not (isinstance(v, dict) and v.get("type") == "null")]
+            nullable = nullable or any(isinstance(v, dict) and v.get("type") == "null" for v in schema[key])
+            if len(variants) == 1:
+                return _normalize_union(variants[0], resolve)  # recurse down to core
+            # Multiple real variants -> leave as-is but mark nullable
+            core = {k: v for k, v in schema.items() if k not in ("anyOf", "oneOf")}
+            core["anyOf"] = variants
+            return core, nullable
+
+    if "allOf" in schema:
+        merged: Dict[str, Any] = {"type": "", "properties": {}, "required": []}
+        for part in schema["allOf"]:
+            p, p_null = _normalize_union(part, resolve)
+            nullable = nullable or p_null
+            if not p:
+                continue
+            if p.get("type") and not merged["type"]:
+                merged["type"] = p["type"]
+            # merge props
+            for k, v in (p.get("properties") or {}).items():
+                merged["properties"][k] = v
+            for r in p.get("required", []):
+                if r not in merged["required"]:
+                    merged["required"].append(r)
+            # carry items/enum if first time
+            if "items" in p and "items" not in merged:
+                merged["items"] = p["items"]
+            if "enum" in p and "enum" not in merged:
+                merged["enum"] = p["enum"]
+        if not merged["type"] and merged["properties"]:
+            merged["type"] = "object"
+        return merged, nullable
+
+    return schema, nullable
+
+
+def _python_type_for_schema(schema: Dict[str, Any]) -> Any:
+    t = schema.get("type", "")
+    if not t and "properties" in schema:
+        t = "object"
+    if not t and "items" in schema:
+        t = "array"
+    base = TYPE_MAP.get(t, Any)
+    if t == "array":
+        return list  # type: ignore[index]
+    if "enum" in schema and isinstance(schema["enum"], list) and schema["enum"]:
+        # Optional: turn enum into Literal
+        try:
+            return Literal[tuple(schema["enum"])]  # type: ignore[misc]
+        except Exception:
+            return base
+    return base
+
+
+def _walk_schema_fields(
+    schema: Dict[str, Any],
+    resolve_ref,
+    prefix: str,
+    required: List[str],
+    out: Dict[str, Any],  # NOTE: allow nested dicts in `out`
+    *,
+    flatten: bool = False,
+) -> None:
+    core, nullable = _normalize_union(schema, resolve_ref)
+    if not core:
+        return
+
+    def _is_required(name: str, req: List[str]) -> bool:
+        last = (name or "").split(".")[-1] if name else ""
+        return bool(last and last in (req or []))
+
+    t = core.get("type", "")
+
+    # If anyOf with multiple real variants remains, treat as broad 'Any'
+    if "anyOf" in core and len(core["anyOf"]) > 1:
+        py_t = Any
+        default = ... if _is_required(prefix, required) else None
+        if prefix:
+            out[prefix] = (py_t, default)
+        else:
+            # top-level
+            out.update({"body": (py_t, default)})
+        return
+
+    if t == "array":
+        # (Behavior unchanged; arrays remain a leaf with List[item_type].)
+        item_schema = core.get("items") or {}
+        item_core, item_nullable = _normalize_union(item_schema, resolve_ref)
+        list_py = list  # type: ignore[index]
+        py_t = list_py
+        default = ... if _is_required(prefix, required) else None
+
+        key = prefix or "body"
+        out[key] = (py_t, default)
+
+        # Only flatten array item properties if explicitly requested
+        if flatten and (item_core or {}).get("type") == "object" and (item_core or {}).get("properties"):
+            for k, v in (item_core or {}).get("properties", {}).items():
+                _walk_schema_fields(
+                    v,
+                    resolve_ref,
+                    f"{key}[].{k}",
+                    (item_core or {}).get("required", []) or [],
+                    out,
+                    flatten=flatten,
+                )
+        return
+
+    if t == "object" or core.get("properties") or "additionalProperties" in core:
+        props = core.get("properties") or {}
+        addl = core.get("additionalProperties", False)
+
+        if props:
+            # NEW: recurse into object and build a nested dict instead of flattening
+            child_req = core.get("required", []) or []
+            node: Dict[str, Any] = {}
+            for k, v in props.items():
+                _walk_schema_fields(v, resolve_ref, k, child_req, node, flatten=flatten)
+
+            if prefix:
+                out[prefix] = node
+            else:
+                # top-level object: merge its fields at the root
+                out.update(node)
+            return
+
+        elif addl:
+            # map-like object -> Dict[str, value_type]
+            value_schema = {} if addl is True else addl
+            value_py = _python_type_for_schema(_resolve_ref(value_schema, resolve_ref) or {})
+            dict_py = Dict[str, value_py]  # type: ignore[index]
+            py_t = dict_py
+            default = ... if _is_required(prefix, required) else None
+            (out if prefix else out.setdefault("body", {}))
+            out[prefix or "body"] = (py_t, default)
+            return
+
+        else:
+            # empty object -> dict leaf
+            py_t = dict
+            default = ... if _is_required(prefix, required) else None
+            out[prefix or "body"] = (py_t, default)
+            return
+
+    # primitive leaf
+    py_t = _python_type_for_schema(core)
+    default = ... if _is_required(prefix, required) else None
+    if prefix:
+        out[prefix] = (py_t, default)
+    else:
+        out["body"] = (py_t, default)
 
 
 def extract_field_definitions(api) -> Dict[str, tuple[type, Any]]:
     """
-    Collect field definitions from both parameters and request bodies,
-    mapping OpenAPI types to Python types.
+    Collect field definitions from parameters and request bodies.
+    Flattens nested objects (dot notation) and handles arrays / unions.
     """
     field_defs: Dict[str, tuple[type, Any]] = {}
 
-    # 1) Process query and path parameters (all strings)
+    # 1) Parameters
     if api.parameters:
         for param in api.parameters:
+            name = param.name or ""
+            if not name:
+                continue
+            sch = None
             if param.schema:
-                base_type = TYPE_MAP.get(param.schema.type, str)
-                py_type = Optional[base_type] if param.schema.nullable else base_type
-            else:
-                py_type = str
+                # param.schema here is a Schema model; convert to dict-ish view
+                sch = {
+                    "type": param.schema.type,
+                    "format": param.schema.format,
+                    "description": param.schema.description,
+                    "enum": param.schema.enum or None,
+                    "nullable": param.schema.nullable,
+                }
+            py_type = str
+            if sch and (param.schema.type and param.schema.type in TYPE_MAP):
+                py_type = TYPE_MAP[param.schema.type]
             default = ... if param.required else None
-            field_defs[param.name] = (py_type, default)
+            field_defs[name] = (py_type, default)
 
-    # 2) Process request body properties
+    # 2) Request body
     if api.request_body:
         for media in api.request_body.content.values():
             schema = media.schema
-            if not schema or not schema.properties:
+            if not schema:
                 continue
 
-            for prop_name, prop_schema in schema.properties.items():
-                base_type = TYPE_MAP.get(prop_schema.type, Any)
+            # Convert your Schema model -> raw dict so the helpers can process composition
+            def to_raw(s) -> Dict[str, Any]:
+                if s is None:
+                    return {}
+                raw: Dict[str, Any] = {}
+                if s.type:
+                    raw["type"] = s.type
+                if s.format:
+                    raw["format"] = s.format
+                if s.description:
+                    raw["description"] = s.description
+                if s.enum:
+                    raw["enum"] = list(s.enum)
+                if s.nullable:
+                    raw["nullable"] = True
+                if s.required:
+                    raw["required"] = list(s.required)
+                if s.items:
+                    raw["items"] = to_raw(s.items)
+                if s.properties:
+                    raw["properties"] = {k: to_raw(v) for k, v in s.properties.items()}
+                return raw
 
-                if prop_schema.type == "array" and prop_schema.items:
-                    item_type = TYPE_MAP.get(prop_schema.items.type, Any)
-                    py_type = List[item_type]
-                else:
-                    py_type = base_type
+            # We need parser._resolve_ref; store a closure that knows how to look up by ref
+            # If you call this outside the parser, pass a resolver in.
+            def _no_ref(_ref):  # you already resolved $ref inside your parser.Schema; keep as no-op
+                raise ValueError(f"Unexpected $ref {_ref}")
 
-                if prop_schema.nullable:
-                    py_type = Optional[py_type]
-
-                default = ... if prop_name in (schema.required or []) else None
-                field_defs[prop_name] = (py_type, default)
+            out: Dict[str, tuple[type, Any]] = {}
+            _walk_schema_fields(to_raw(schema), _no_ref, prefix="", required=schema.required or [], out=out)
+            field_defs.update(out)
 
     return field_defs
 
@@ -129,8 +381,6 @@ def construct_final_url(base_url: str, api, path_params: dict, query_params: dic
         final_path = final_path.replace(f"{{{k}}}", str(v))
     final_url = base_url + final_path
     if query_params:
-        from urllib.parse import urlencode
-
         final_url += "?" + urlencode(query_params)
     return final_url
 

@@ -21,7 +21,9 @@ class TestLegacyOpenAPI:
     @pytest_asyncio.fixture
     async def manager(self):
         """Setup MCPManager with legacy OpenAPI configuration"""
-        config_path = os.path.join(PACKAGE_ROOT, "./backend/tools_env/registry/config/mcp_servers.yaml")
+        config_path = os.path.join(
+            PACKAGE_ROOT, "./backend/tools_env/registry/tests/config/mcp_servers_test.yaml"
+        )
         configs = load_service_configs(config_path)
         manager = MCPManager(configs)
         await manager.load_tools()
@@ -78,6 +80,25 @@ class TestLegacyOpenAPI:
         assert 'name' in account
         assert 'state' in account
         assert 'revenue' in account
+
+    @pytest.mark.asyncio
+    async def test_load_openapi_spec_with_nested_body(self, manager):
+        """Test loading a schema with nested parameters in body"""
+        result = manager.get_apis_for_application("openapi_nested_body")
+
+        assert result is not None
+        assert 'openapi_nested_body_post_users' in result
+        endpoint = result['openapi_nested_body_post_users']
+        parameters = endpoint['parameters']
+        assert parameters[0]['type'] == 'string'
+        assert parameters[1]['type'] == 'string'
+        assert parameters[2]['type'] == 'object'
+        object_param = parameters[2]
+        assert 'schema' in object_param
+        schema = object_param['schema']
+        assert schema['firstName'] == 'string'
+        assert type(schema['address']) is dict
+        assert schema['address']['street'] == 'string'
 
 
 async def run_legacy_tests():

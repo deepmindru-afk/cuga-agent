@@ -1,6 +1,9 @@
 import requests
 from typing import Dict, Any, List
+import json
 import aiohttp
+from cuga.config import PACKAGE_ROOT
+import os
 
 from mcp.types import TextContent
 
@@ -89,18 +92,36 @@ class MCPManager:
         raise RuntimeError("No free port found in safe range.")
 
     @staticmethod
-    def _fetch_and_parse_schema(url):
-        r = requests.get(url.split('&')[0])
-        r.raise_for_status()
-        ct = r.headers.get("Content-Type", "").lower()
-        raw = r.text
+    def _fetch_and_parse_schema(url_or_path):
+        parsed = urlparse(url_or_path)
+        is_url = parsed.scheme in ('http', 'https')
+        if is_url:
+            # Handle HTTP/HTTPS URLs
+            r = requests.get(url_or_path.split('&')[0])
+            r.raise_for_status()
+            ct = r.headers.get("Content-Type", "").lower()
+            raw = r.text
+        else:
+            # Handle local file paths
+            if os.path.isabs(url_or_path):
+                file_path = url_or_path
+            else:
+                file_path = os.path.join(PACKAGE_ROOT, url_or_path)
+
+            with open(file_path, 'r', encoding='utf-8') as f:
+                raw = f.read()
+            # Determine content type from file extension
+            ct = 'json' if file_path.lower().endswith('.json') else 'yaml'
+
+        # Parse based on content type
         if 'json' in ct:
             parser = SimpleOpenAPIParser.from_json(raw)
-            schema_data = r.json()
+            schema_data = json.loads(raw)
         else:
             parser = SimpleOpenAPIParser.from_yaml(raw)
             schema_data = yaml.safe_load(raw)
-        return schema_data, parser
+
+        return schema_data, parser, is_url
 
     def _create_mcp_server(self, base_url, parser, name):
         return new_mcp_from_custom_parser(base_url, parser, name, self.schema_urls)
@@ -823,7 +844,10 @@ class MCPManager:
     async def initialize_servers(self, services: List[Service]):
         for name, config in services:
             try:
-                schema_data, parser = self._fetch_and_parse_schema(config.url)
+                schema_data, parser, is_url = self._fetch_and_parse_schema(config.url)
+                if not is_url:
+                    # this is a path
+                    config.url = schema_data['servers'][0]['url']
 
                 # Apply filtering and overrides
                 modified_schema = self._filter_and_override_schema(schema_data, config)
