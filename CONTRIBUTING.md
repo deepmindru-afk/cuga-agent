@@ -130,6 +130,18 @@ Must:
 - If your change touches the browser/env, verify relevant demos still run.
 - Update README.md or docs if only needed, discuss before
 
+## Security Scanning
+
+Before committing, run security scanning to detect potential secrets:
+
+```bash
+uv pip install --upgrade "git+https://github.com/ibm/detect-secrets.git@master#egg=detect-secrets"
+detect-secrets scan --update .secrets.baseline
+detect-secrets audit .secrets.baseline
+```
+
+If everything passes, no need to mark secrets or false positives. This ensures no sensitive information is accidentally committed to the repository.
+
 ## Running Tests
 
 ### 1) Install dev dependencies
