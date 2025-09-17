@@ -86,6 +86,17 @@ class APIPlannerOutput(BaseModel):
     action_input_conclude_task: Optional[ConcludeTaskInput] = None
 
 
+class APIPlannerOutputLite(BaseModel):
+    """
+    Defines the structure of the JSON output from the APIPlanner.
+    """
+
+    action: ActionName = Field(description="The chosen action to be executed next.")
+    action_input_shortlisting_agent: Optional[ApiShortlistingAgentInput] = None
+    action_input_coder_agent: Optional[CoderAgentInput] = None
+    action_input_conclude_task: Optional[ConcludeTaskInput] = None
+
+
 class APIPlannerOutputWX(BaseModel):
     """
     Defines the structure of the JSON output from the APIPlanner.

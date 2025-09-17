@@ -28,6 +28,9 @@ async def get_apis(app_name: str):
     try:
         logger.debug("calling get_apis")
         tools = tracker.get_tools_by_server(app_name)
+        if not settings.advanced_features.registry:
+            logger.debug("Registry is not enabled, using external tools")
+            return tools
         if tools:
             return tools
     except Exception as e:
@@ -51,11 +54,13 @@ async def get_apis(app_name: str):
                     all_tools.update(json_data)
                 return all_tools
 
-    except aiohttp.ClientError as e:
-        raise Exception(f"Request error: {str(e)}")
-
-    except json.JSONDecodeError as e:
-        raise Exception(f"Error parsing JSON response: {str(e)}")
+    except Exception as e:
+        if len(all_tools) > 0:
+            logger.warning("registry is not running, using external apps")
+            return all_tools
+        else:
+            logger.error("Error while calling registry to get apps")
+            raise e
 
 
 async def get_apps() -> List[AppDefinition]:
@@ -74,6 +79,9 @@ async def get_apps() -> List[AppDefinition]:
     url = f'http://127.0.0.1:{settings.server_ports.registry}/applications'
     headers = {'accept': 'application/json'}
     external_apps = tracker.apps
+    if not settings.advanced_features.registry:
+        logger.debug("Registry is not enabled, using external apps")
+        return external_apps
     logger.debug(f"External apps are {external_apps}")
     try:
         async with aiohttp.ClientSession() as session:
@@ -91,14 +99,13 @@ async def get_apps() -> List[AppDefinition]:
                     result.append(e)
 
                 return result
-
-    except aiohttp.ClientError as e:
-        raise Exception(f"Request error: {str(e)}")
-    except json.JSONDecodeError as e:
-        raise Exception(f"Error parsing JSON response: {str(e)}")
     except Exception as e:
-        logger.debug("Error while calling registry to get apps")
-        raise e
+        if len(external_apps) > 0:
+            logger.warning("registry is not running, using external apps")
+            return external_apps
+        else:
+            logger.error("Error while calling registry to get apps")
+            raise e
 
 
 def read_json_file(file_path):

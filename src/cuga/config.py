@@ -89,9 +89,11 @@ validators = [
     Validator("features.forced_apps", default=None),
     Validator("features.thoughts", default=True),
     Validator("features.code_generation", default="accurate"),
+    Validator("advanced_features.registry", default=True),
     Validator("features.task_decomposition", default=False),
     Validator("advanced_features.langfuse_tracing", default=False),
     Validator("advanced_features.benchmark", default="default"),
+    Validator("advanced_features.tracker_enabled", default=False),
     Validator("features.chat", default=True),
     Validator("playwright_args", default=[]),
 ]

@@ -54,3 +54,10 @@ After you have used the `think` tool for your internal deliberation, you must th
 3.  **Strategic Recommendation** for the next steps or confirmation of task completion for the **Current Task**.
 
 Your turn: Analyze the provided current task, history, and outputs, then use the `think` tool for your internal process, and finally, present your consolidated guidance and summary as the final output.
+
+{% if instructions -%}
+
+## Special Instructions
+{{ instructions }}
+
+{%- endif %}

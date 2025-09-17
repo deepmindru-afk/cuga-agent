@@ -9,6 +9,7 @@ from cuga.backend.cuga_graph.nodes.shared.base_agent import BaseAgent
 from cuga.backend.cuga_graph.state.agent_state import AgentState
 from cuga.backend.cuga_graph.nodes.api.api_planner_agent.prompts.load_prompt import (
     APIPlannerOutput,
+    APIPlannerOutputLite,
 )
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_simple
@@ -25,7 +26,8 @@ class APIPlannerAgent(BaseAgent):
     def __init__(self, prompt_template: ChatPromptTemplate, llm: BaseChatModel, tools: Any = None):
         super().__init__()
         self.name = "APIPlannerAgent"
-        self.chain = BaseAgent.get_chain(prompt_template=prompt_template, llm=llm, schema=APIPlannerOutput)
+        schema = APIPlannerOutputLite if not settings.features.thoughts else APIPlannerOutput
+        self.chain = BaseAgent.get_chain(prompt_template=prompt_template, llm=llm, schema=schema)
 
     def output_parser(result: AIMessage, name) -> Any:
         result = AIMessage(content=result.content, name=name)
@@ -36,7 +38,20 @@ class APIPlannerAgent(BaseAgent):
         data['variables_summary'] = var_manager.get_variables_summary()
         data["instructions"] = instructions_manager.get_instructions(self.name)
         res = await self.chain.ainvoke(data)
-        return AIMessage(content=res.model_dump_json())
+
+        if not settings.features.thoughts:
+            # Convert lite output to full output format for consistency
+            lite_res = res
+            full_res = APIPlannerOutput(
+                thoughts=[],
+                action=lite_res.action,
+                action_input_shortlisting_agent=lite_res.action_input_shortlisting_agent,
+                action_input_coder_agent=lite_res.action_input_coder_agent,
+                action_input_conclude_task=lite_res.action_input_conclude_task,
+            )
+            return AIMessage(content=full_res.model_dump_json())
+        else:
+            return AIMessage(content=res.model_dump_json())
 
     @staticmethod
     def create():

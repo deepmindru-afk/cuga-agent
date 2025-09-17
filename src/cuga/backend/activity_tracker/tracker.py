@@ -11,7 +11,7 @@ from mcp.types import CallToolResult, TextContent
 from pydantic import BaseModel, Field
 from loguru import logger
 
-from cuga.config import TRAJECTORY_DATA_DIR
+from cuga.config import TRAJECTORY_DATA_DIR, settings
 from cuga.backend.tools_env.registry.utils.types import AppDefinition
 from cuga.backend.utils.id_utils import random_id_with_timestamp, mask_with_timestamp
 from cuga.backend.cuga_graph.nodes.api.code_agent.model import CodeAgentOutput
@@ -161,6 +161,7 @@ class ActivityTracker(object):
         Returns:
             List[AppDefinition]: List of app definitions with tools description
         """
+        logger.debug(f"tools:  {tools}")
 
         # Common prefixes to exclude (HTTP methods, etc.)
         excluded_prefixes = {'get', 'post', 'put', 'delete', 'patch', 'head', 'options', 'trace'}
@@ -170,7 +171,6 @@ class ActivityTracker(object):
             tool for tool in tools if tool.metadata is None or tool.metadata.get("server_name", None) is None
         ]
         tool_names = [tool.name for tool in tools_to_process]
-
         # Step 2: Find potential prefixes and count occurrences
         prefix_candidates = {}
 
@@ -196,7 +196,7 @@ class ActivityTracker(object):
             # Only process tools with metadata=None OR server_name=None
             if tool.metadata is None or tool.metadata.get("server_name", None) is None:
                 tool_name = tool.name
-                server_name = 'default'  # Default assignment
+                server_name = 'default_app'  # Default assignment
 
                 # Check if this tool belongs to any detected application
                 for app_name, app_tools in detected_applications.items():
@@ -233,12 +233,15 @@ class ActivityTracker(object):
                 if server_name:
                     if server_name not in app_tools_map:
                         app_tools_map[server_name] = []
-                    app_tools_map[server_name].append(tool.name)
+                    app_tools_map[server_name].append(tool)
 
         # Step 7: Create AppDefinition objects
         app_definitions = []
         for app_name, tool_list in app_tools_map.items():
-            tools_description = "Available tools: " + ", ".join(sorted(tool_list))
+            tools_description = "Available tools:\n" + "\n".join(
+                f"{tool.name}: {tool.description}" if tool.description else f"{tool.name}:"
+                for tool in sorted(tool_list, key=lambda x: x.name)
+            )
 
             app_def = AppDefinition(name=app_name, description=tools_description, url=None)
             app_definitions.append(app_def)
@@ -367,10 +370,6 @@ class ActivityTracker(object):
         # Generate experiment folder name using mask_with_timestamp
         self.experiment_folder = mask_with_timestamp(experiment_name, full_date=True)
 
-        # Create directory structure
-        experiment_dir = os.path.join(self._base_dir, self.experiment_folder)
-        os.makedirs(experiment_dir, exist_ok=True)
-
         # Create metadata
         self.tasks_metadata = TasksMetadata(
             task_ids=task_ids,
@@ -380,13 +379,19 @@ class ActivityTracker(object):
             created_at=datetime.now().isoformat(),
         )
 
-        # Save metadata to file
-        metadata_path = os.path.join(experiment_dir, "metadata.json")
-        with open(metadata_path, 'w', encoding='utf-8') as f:
-            json.dump(self.tasks_metadata.model_dump(), f, indent=2, ensure_ascii=False)
+        # Only create files and directories if tracker is enabled
+        if settings.advanced_features.tracker_enabled:
+            # Create directory structure
+            experiment_dir = os.path.join(self._base_dir, self.experiment_folder)
+            os.makedirs(experiment_dir, exist_ok=True)
 
-        # Initialize empty files
-        self._initialize_experiment_files(experiment_dir)
+            # Save metadata to file
+            metadata_path = os.path.join(experiment_dir, "metadata.json")
+            with open(metadata_path, 'w', encoding='utf-8') as f:
+                json.dump(self.tasks_metadata.model_dump(), f, indent=2, ensure_ascii=False)
+
+            # Initialize empty files
+            self._initialize_experiment_files(experiment_dir)
 
         # Reset tasks dictionary
         self.tasks = {}
@@ -545,7 +550,8 @@ class ActivityTracker(object):
         step.prompts = copy.deepcopy(self.prompts)
         self.prompts = []
         self.steps.append(step)
-        self.to_file()
+        if settings.advanced_features.tracker_enabled:
+            self.to_file()
         self.prompts = []
 
     def collect_step_external(self, step: Step, full_path: str) -> None:
@@ -560,6 +566,9 @@ class ActivityTracker(object):
             step (Step): The Step object to collect.
         """
         try:
+            if not settings.advanced_features.tracker_enabled:
+                return
+
             if not full_path or not os.path.exists(os.path.dirname(full_path)):
                 logger.error(
                     f"External path directory not found or does not exist: {os.path.dirname(full_path)}"
@@ -649,7 +658,8 @@ class ActivityTracker(object):
             score (str): The description of the step to collect.
         """
         self.score = score
-        self.to_file()
+        if settings.advanced_features.tracker_enabled:
+            self.to_file()
 
     def collect_step_with_pass(self) -> None:
         """
@@ -734,9 +744,10 @@ class ActivityTracker(object):
             "agent_v": agent_v,
         }
 
-        # Update result files
-        self._update_result_files()
-        self._add_to_progress_file(task_id)
+        # Update result files only if tracker is enabled
+        if settings.advanced_features.tracker_enabled:
+            self._update_result_files()
+            self._add_to_progress_file(task_id)
 
         return task_id
 
@@ -855,7 +866,8 @@ class ActivityTracker(object):
         if agent_v is not None:
             self.tasks[task_id]["agent_v"] = agent_v
 
-        self._update_result_files()
+        if settings.advanced_features.tracker_enabled:
+            self._update_result_files()
         return True
 
     def remove_task(self, task_id: str) -> bool:
@@ -870,7 +882,8 @@ class ActivityTracker(object):
         """
         if task_id in self.tasks:
             del self.tasks[task_id]
-            self._update_result_files()
+            if settings.advanced_features.tracker_enabled:
+                self._update_result_files()
             return True
         return False
 
@@ -946,7 +959,7 @@ class ActivityTracker(object):
     def clear_all_tasks(self) -> None:
         """Remove all tasks from result files."""
         self.tasks = {}
-        if self.experiment_folder:
+        if self.experiment_folder and settings.advanced_features.tracker_enabled:
             self._update_result_files()
             # Clear progress file
             progress_path = os.path.join(self._base_dir, self.experiment_folder, ".progress")
@@ -1175,17 +1188,19 @@ class ActivityTracker(object):
             with open(metadata_path, 'w', encoding='utf-8') as f:
                 json.dump(self.tasks_metadata.model_dump(), f, indent=2, ensure_ascii=False)
 
-        # Update result files with merged data
-        self._update_result_files()
+        # Update result files with merged data only if tracker is enabled
+        if settings.advanced_features.tracker_enabled:
+            self._update_result_files()
 
-        # Update progress file with all task IDs
-        for task_id in merged_tasks.keys():
-            self._add_to_progress_file(task_id)
+            # Update progress file with all task IDs
+            for task_id in merged_tasks.keys():
+                self._add_to_progress_file(task_id)
 
-        # Copy individual task JSON files
-        logger.info("Copying individual task JSON files...")
-        selected_task_ids = list(merged_tasks.keys())
-        self._copy_task_json_files(experiment_folders, merged_folder, selected_task_ids)
+        # Copy individual task JSON files only if tracker is enabled
+        if settings.advanced_features.tracker_enabled:
+            logger.info("Copying individual task JSON files...")
+            selected_task_ids = list(merged_tasks.keys())
+            self._copy_task_json_files(experiment_folders, merged_folder, selected_task_ids)
 
         logger.success(f"Successfully merged {len(merged_tasks)} tasks into {merged_folder}")
         logger.info(f"Source experiments: {experiment_folders}")

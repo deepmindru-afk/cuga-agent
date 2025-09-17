@@ -1,7 +1,6 @@
 import json
 from typing import Literal
 
-from langgraph.graph.state import CompiledStateGraph
 
 from cuga.backend.activity_tracker.tracker import ActivityTracker, Step
 from cuga.backend.cuga_graph.nodes.api.variables_manager.manager import VariablesManager
@@ -19,13 +18,12 @@ from langgraph.types import Command
 from cuga.backend.cuga_graph.state.api_planner_history import HistoricalAction
 from loguru import logger
 
-from langgraph.prebuilt import create_react_agent
 from langchain_core.tools import tool
 
 from cuga.backend.llm.models import LLMManager
-from cuga.backend.llm.utils.helpers import load_one_prompt
 from cuga.config import settings
 from cuga.configurations.instructions_manager import InstructionsManager
+from cuga.backend.cuga_graph.nodes.api.tasks.reflection import reflection_task
 
 instructions_manager = InstructionsManager()
 var_manager = VariablesManager()
@@ -47,15 +45,7 @@ class ApiPlanner(BaseNode):
     def __init__(self, router_agent: APIPlannerAgent):
         super().__init__()
         self.name = router_agent.name
-        pmt_path = "reflection/prompts/system.jinja2"
-        pmt = load_one_prompt(pmt_path)
-        instructions = instructions_manager.get_instructions("api_reflection")
-        pmt_text = pmt.format(instructions=instructions)
-        self.guidance = create_react_agent(
-            model=llm_manager.get_model(settings.agent.planner.model),
-            tools=[think],
-            prompt=pmt_text,
-        )
+        self.guidance = reflection_task(llm=llm_manager.get_model(settings.agent.planner.model))
         self.agent = router_agent
         self.node = create_partial(
             ApiPlanner.node_handler,
@@ -71,7 +61,7 @@ class ApiPlanner(BaseNode):
 
     @staticmethod
     async def node_handler(
-        state: AgentState, agent: APIPlannerAgent, strategic_agent: CompiledStateGraph, name: str
+        state: AgentState, agent: APIPlannerAgent, strategic_agent, name: str
     ) -> Command[Literal['APICodePlannerAgent', 'ShortlisterAgent', 'PlanControllerAgent']]:
         # First time visit
         if (
@@ -81,15 +71,14 @@ class ApiPlanner(BaseNode):
         ):
             res_2 = await strategic_agent.ainvoke(
                 {
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": f"Variables history: {var_manager.get_variables_summary(last_n=5)}\n\ntask: {state.sub_task}\nHere's the history of actions/steps:\n\n{state.api_planner_history}\n\nUser information ( User already logged in ): {state.pi}\n\nCurrent datetime: {tracker.current_date}",
-                        }
-                    ]
+                    "instructions": instructions_manager.get_instructions("api_reflection"),
+                    "current_task": state.sub_task,
+                    "agent_history": str(state.api_planner_history),
+                    "shortlister_agent_output": "N/A",  # This would need to be populated from actual shortlister output
+                    "coder_agent_output": f"Variables history: {var_manager.get_variables_summary(last_n=5)}\n\nUser information ( User already logged in ): {state.pi}\n\nCurrent datetime: {tracker.current_date}",
                 }
             )
-            summary = res_2['messages'][-1].content
+            summary = res_2.content
             state.guidance = summary
             tracker.collect_step(step=Step(name=name, data=summary))
             logger.debug(f"Guidance:\n{summary}")

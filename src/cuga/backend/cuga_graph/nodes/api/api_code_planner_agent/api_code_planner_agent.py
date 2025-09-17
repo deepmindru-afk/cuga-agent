@@ -61,12 +61,22 @@ class APICodePlannerAgent(BaseAgent):
     @staticmethod
     def create():
         dyna_model = settings.agent.code_planner.model
-        return APICodePlannerAgent(
-            prompt_template=load_prompt_simple(
+        # check if settings.feature.code_generation is fast
+        if settings.features.code_generation == "fast":
+            prompt_template = load_prompt_simple(
+                "./prompts/system_fast.jinja2",
+                "./prompts/user.jinja2",
+                model_config=dyna_model,
+                format_instructions=BaseAgent.get_format_instructions(parser),
+            )
+        else:
+            prompt_template = load_prompt_simple(
                 "./prompts/system.jinja2",
                 "./prompts/user.jinja2",
                 model_config=dyna_model,
                 format_instructions=BaseAgent.get_format_instructions(parser),
-            ),
+            )
+        return APICodePlannerAgent(
+            prompt_template=prompt_template,
             llm=llm_manager.get_model(dyna_model),
         )

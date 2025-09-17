@@ -68,7 +68,13 @@ def run_eval_api():
 
 def run_digital_sales_mcp():
     subprocess.run(
-        ["uv", "run", os.path.join(PACKAGE_ROOT, "docs/examples/client_package_usage/fast_mcp_example.py")]
+        [
+            "uv",
+            "run",
+            os.path.join(
+                PACKAGE_ROOT, "..", "..", "docs/examples/cuga_with_runtime_tools/fast_mcp_example.py"
+            ),
+        ]
     )
 
 

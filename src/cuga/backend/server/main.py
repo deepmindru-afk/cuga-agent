@@ -82,7 +82,8 @@ SAVE_REUSE_PY_PATH = os.path.join(
 )
 
 # Create logging directory
-os.makedirs(LOGGING_DIR, exist_ok=True)
+if settings.advanced_features.tracker_enabled:
+    os.makedirs(LOGGING_DIR, exist_ok=True)
 
 
 class AppState:
@@ -345,7 +346,7 @@ async def event_stream(query: str, api_mode=False, resume=None):
                 return
 
             async for event in agent_stream_gen:
-                await asyncio.sleep(0.5)
+                # await asyncio.sleep(0.5)
                 if app_state.stop_agent:
                     logger.info("Agent execution stopped by user during event processing")
                     yield StreamEvent(name="Stopped", data="Agent execution was stopped by user.").format()
@@ -447,9 +448,10 @@ async def event_stream(query: str, api_mode=False, resume=None):
                     )
                     name = ((event.split("\n")[0]).split(":")[1]).strip()
                     logger.debug("Yield {}".format(event))
-                    yield StreamEvent(name=name, data=event).format(
-                        app_state.output_format, thread_id=app_state.thread_id
-                    )
+                    if name not in ["ChatAgent"]:
+                        yield StreamEvent(name=name, data=event).format(
+                            app_state.output_format, thread_id=app_state.thread_id
+                        )
     except Exception as e:
         logger.exception(e)
         app_state.tracker.finish_task(

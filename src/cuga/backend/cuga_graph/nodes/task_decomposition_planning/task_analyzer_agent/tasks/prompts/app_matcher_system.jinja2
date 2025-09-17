@@ -10,6 +10,8 @@ You MUST output your response in a single JSON object with the following two key
 
 Carefully consider the functionality implied by the app's name and description (if available) when making your decision. Only select apps that are directly needed to fulfill the user's request.
 
+**Note**: App descriptions may include their internal tools or capabilities listed as "Available tools:" followed by specific functionalities. Consider these internal tools when evaluating app relevance. Additionally, `default_app` is a possible app name that may appear in the available applications.
+
 ## Tips:
 1. For relationships friends/coworkers/roommates consider the `phone` app
 2. When dealing with Email app be aware that some of tasks also require **file_system** app, e.g. download attachments or upload.
@@ -173,5 +175,30 @@ Here are examples:
 {
   "thoughts": "The user needs to coordinate a complete team meeting setup with three specific requirements: scheduling, email invitations, and video conferencing. 'Calendar' is essential for scheduling the meeting and managing attendee availability. 'EmailClient' is needed to send meeting invitations and communicate details to team members. 'VideoConferencing' is required to set up the virtual meeting room. 'ContactManager' might be useful for accessing team member details, but the core three apps handle the primary requirements. The other apps (DocumentEditor, TaskManager, FileSharing, NotificationService) could be supplementary but aren't specifically requested for the initial meeting coordination.",
   "relevant_apps": ["Calendar", "EmailClient", "VideoConferencing"]
+}
+```
+
+---
+**Example 7:**
+
+**Input:**
+```json
+{
+  "intent": "I need to perform advanced data analysis on my customer database and create visualizations.",
+  "available_apps": [
+    {"name": "default_app", "description": "General-purpose application with basic functionality."},
+    {"name": "DataAnalytics", "description": "Advanced data analysis and machine learning platform. Available tools: statistical analysis, predictive modeling, data visualization, SQL queries, data export/import."},
+    {"name": "DatabaseManager", "description": "Manages database connections and queries."},
+    {"name": "SpreadsheetApp", "description": "Creates and manages spreadsheets with basic charts."},
+    {"name": "ReportGenerator", "description": "Creates formatted reports and presentations."}
+  ]
+}
+```
+
+**Output:**
+```json
+{
+  "thoughts": "The user needs advanced data analysis and visualizations on customer data. 'DataAnalytics' is the most relevant app as its description specifically mentions advanced analysis capabilities and includes tools for statistical analysis, predictive modeling, data visualization, and SQL queries - all directly matching the user's requirements. 'DatabaseManager' would be needed to access the customer database. 'SpreadsheetApp' only offers basic functionality compared to the advanced requirements. 'ReportGenerator' might be useful for final presentation but isn't essential for the core analysis work. The 'default_app' provides only basic functionality which wouldn't meet the advanced analysis needs.",
+  "relevant_apps": ["DataAnalytics", "DatabaseManager"]
 }
 ```

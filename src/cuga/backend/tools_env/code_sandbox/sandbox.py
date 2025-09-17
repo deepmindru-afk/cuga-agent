@@ -34,9 +34,12 @@ try:
 
     logger.info("Successfully imported SandboxSession from llm_sandbox")
 except ImportError as e:
-    logger.error(f"Failed to import SandboxSession from llm_sandbox: {e}")
-    # You might want to handle this gracefully, perhaps by setting a fallback or raising a custom exception
-    raise
+    if settings.features.local_sandbox:
+        logger.info("Skipping import of SandboxSession from llm_sandbox because local_sandbox is enabled")
+        pass
+    else:
+        logger.error(f"Failed to import SandboxSession from llm_sandbox: {e}")
+        raise
 except Exception as e:
     logger.error(f"Unexpected error while importing SandboxSession: {e}")
     raise
@@ -239,10 +242,11 @@ def run_code(code: str, _locals: dict[str, Any] = None) -> tuple[str, dict[str, 
         + "\n"
         + code
     )
-    os.makedirs(python_file_dir, exist_ok=True)
-    with open(file_path, 'w') as f:
-        f.write(code_content)
-        logger.debug(f"Wrote python file at {file_path}")
+    if settings.advanced_features.tracker_enabled:
+        os.makedirs(python_file_dir, exist_ok=True)
+        with open(file_path, 'w') as f:
+            f.write(code_content)
+            logger.debug(f"Wrote python file at {file_path}")
 
     if settings.features.local_sandbox:
         from cuga.backend.utils.code_generator import process_python_file

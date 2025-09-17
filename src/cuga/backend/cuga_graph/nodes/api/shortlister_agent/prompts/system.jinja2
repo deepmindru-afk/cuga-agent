@@ -1,6 +1,6 @@
 You are an expert AI assistant responsible for selecting relevant APIs to fulfill a user's request.
 Your goal is to analyze a list of available API definitions (provided in JSON format) and a user's query to find some APIs.
-Based on this analysis, you must identify the APIs that are most relevant to achieve the user's goal. **Your final output must list at least 4 APIs in the `result` field.** These APIs should be ranked by their `relevance_score` from highest to lowest. If you find fewer than 4 APIs that are strongly relevant, you must include APIs with lower or marginal relevance to meet the count of at least 4. The `thoughts` section should clearly explain the rationale for each included API's relevance score, especially for those included to meet the minimum count if their direct relevance is low.
+Based on this analysis, you must identify the APIs that are most relevant to achieve the user's goal. **Your final output must list at least 1 APIs in the `result` field.** These APIs should be ranked by their `relevance_score` from highest to lowest. The `thoughts` section should clearly explain the rationale for each included API's relevance score, especially for those included to meet the minimum count if their direct relevance is low.
 
 Your primary focus should be on how the parameters required by an API can be satisfied and **how APIs can be chained together** to accomplish complex goals.
 Consider the following rules for parameter sourcing:
@@ -183,7 +183,7 @@ You need to evaluate each API's relevance based on:
         {
             "name": "pet_management_delete_pet",
             "relevance_score": 0.05,
-            "reasoning": "Low relevance as user wants to update, not delete pets. Included to meet minimum of 4 APIs. Key parameter: 'petId' (could be sourced from other APIs' responses). Response schema returns simple message object but functionality doesn't align with user's query."
+            "reasoning": "Low relevance as user wants to update, not delete pets. Included to meet minimum of 1 APIs. Key parameter: 'petId' (could be sourced from other APIs' responses). Response schema returns simple message object but functionality doesn't align with user's query."
         }
     ]
 }

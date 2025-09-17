@@ -1,20 +1,18 @@
 [project]
 name = "cuga"
-version = "0.1.0"
+version = "0.1.1.dev1"
 description = "CUGA is an open-source generalist agent for the enterprise, supporting complex task execution on web and APIs, OpenAPI/MCP integrations, composable architecture, reasoning modes, and policy-aware features."
 readme = "README.md"
 license = "Apache-2.0"
-requires-python = ">=3.12"
+requires-python = ">=3.10, <3.14"
 dependencies = [
-    "langchain==0.3.26",
-    "langchain-ibm==0.3.13",
-    "langchain-openai>=0.3.27",
-    "langchain-core==0.3.66",
-    "llama-index-tools-mcp",
+    "langchain",
+    "langchain-ibm",
+    "langchain-openai",
+    "langchain-core",
     "aiohttp",
-    "llm-sandbox==0.3.12",
     "docker",
-    "langgraph==0.5.3",
+    "langgraph",
     "html2text",
     "uvicorn",
     "fastapi[standard]",
@@ -28,7 +26,7 @@ dependencies = [
     "psutil>=7.0.0",
     "typer>=0.15.3",
     "fastmcp",
-    "langchain-mcp-adapters>=0.1.9",
+    "langchain-mcp-adapters>=0.1.9"
 ]
 
 [project.urls]

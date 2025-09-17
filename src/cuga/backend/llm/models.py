@@ -1,13 +1,13 @@
 import threading
 from datetime import date
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import hashlib
 import json
 import os
 from langchain_openai import ChatOpenAI, AzureChatOpenAI
 from langchain_ibm import ChatWatsonx
 from langchain_core.runnables import ConfigurableField
-from cuga.config import settings
+from langchain_core.language_models.chat_models import BaseChatModel
 from loguru import logger
 
 
@@ -28,6 +28,7 @@ class LLMManager:
     def __init__(self):
         if not self._initialized:
             self._models: Dict[str, Any] = {}
+            self._pre_instantiated_model: Optional[BaseChatModel] = None
             self._initialized = True
 
     def convert_dates_to_strings(self, obj):
@@ -39,6 +40,60 @@ class LLMManager:
             return obj.isoformat()
         else:
             return obj
+
+    def set_llm(self, model: BaseChatModel) -> None:
+        """Set a pre-instantiated model to use for all tasks
+
+        Args:
+            model: Pre-instantiated ChatOpenAI or BaseChatModel instance
+        """
+        if not isinstance(model, BaseChatModel):
+            raise ValueError("Model must be an instance of BaseChatModel or its subclass")
+
+        self._pre_instantiated_model = model
+        logger.info(f"Pre-instantiated model set: {type(model).__name__}")
+
+    def _update_model_parameters(
+        self, model: BaseChatModel, temperature: float = 0.1, max_tokens: int = 1000
+    ) -> BaseChatModel:
+        """Update model parameters (temperature and max_tokens) for the task
+
+        Args:
+            model: The model to update
+            temperature: Temperature setting (default: 0.1)
+            max_tokens: Maximum tokens for the task
+
+        Returns:
+            Updated model with new parameters
+        """
+        # Create a copy of the model with updated parameters
+        model_kwargs = model.model_kwargs.copy() if hasattr(model, 'model_kwargs') else {}
+
+        # Update temperature
+        if hasattr(model, 'temperature'):
+            model.temperature = temperature
+        elif 'temperature' in model_kwargs:
+            model_kwargs['temperature'] = temperature
+
+        # Update max_tokens
+        if hasattr(model, 'max_tokens'):
+            model.max_tokens = max_tokens
+        elif hasattr(model, 'max_completion_tokens'):
+            model.max_completion_tokens = max_tokens
+        elif 'max_tokens' in model_kwargs:
+            model_kwargs['max_tokens'] = max_tokens
+
+        # Update model_kwargs if it exists
+        if hasattr(model, 'model_kwargs'):
+            model.model_kwargs = model_kwargs
+
+        logger.debug(f"Updated model parameters: temperature={temperature}, max_tokens={max_tokens}")
+        return model
+
+    def clear_pre_instantiated_model(self) -> None:
+        """Clear the pre-instantiated model and return to normal model creation"""
+        self._pre_instantiated_model = None
+        logger.info("Pre-instantiated model cleared, returning to normal model creation")
 
     def _create_cache_key(self, model_settings: Dict[str, Any]) -> str:
         """Create a unique cache key from model settings including resolved values"""
@@ -249,8 +304,22 @@ class LLMManager:
 
         return llm
 
-    def get_model(self, model_settings: Dict[str, Any]):
-        """Get or create LLM instance for the given model settings"""
+    def get_model(self, model_settings: Dict[str, Any], max_tokens: int = 1000):
+        """Get or create LLM instance for the given model settings
+
+        Args:
+            model_settings: Model configuration dictionary
+            max_tokens: Maximum tokens for the task (default: 1000)
+        """
+        # Check if pre-instantiated model is available
+        if self._pre_instantiated_model is not None:
+            logger.debug(f"Using pre-instantiated model: {type(self._pre_instantiated_model).__name__}")
+            # Update parameters for the task
+            updated_model = self._update_model_parameters(
+                self._pre_instantiated_model, temperature=0.1, max_tokens=max_tokens
+            )
+            return updated_model
+
         # Get resolved values for logging and cache key
         platform = model_settings.get('platform', 'unknown')
         model_name = self._get_model_name(model_settings, platform)
@@ -263,7 +332,12 @@ class LLMManager:
             logger.debug(
                 f"Returning cached model: {platform}/{model_name} (api_version={api_version}, base_url={base_url})"
             )
-            return self._models[cache_key]
+            # Update parameters for the task
+            cached_model = self._models[cache_key]
+            updated_model = self._update_model_parameters(
+                cached_model, temperature=0.1, max_tokens=max_tokens
+            )
+            return updated_model
 
         # Create new model instance
         logger.debug(
@@ -272,25 +346,6 @@ class LLMManager:
         model = self._create_llm_instance(model_settings)
         self._models[cache_key] = model
 
-        return model
-
-
-# Example usage
-if __name__ == "__main__":
-    llm_manager = LLMManager()
-
-    # Test 1: Azure model
-
-    model1 = llm_manager.get_model(settings.agent.planner.model)
-    model2 = llm_manager.get_model(settings.agent.planner.model)  # Should return cached
-
-    logger.debug(f"Same Azure instance: {model1 is model2}")  # True
-
-    # Test 2: OpenAI model
-
-    model3 = llm_manager.get_model(settings.agent.code.model)
-
-    logger.debug(f"Different instance for OpenAI: {model1 is model3}")  # False
-
-    manager2 = LLMManager()
-    logger.debug(f"Singleton working: {llm_manager is manager2}")  # True
+        # Update parameters for the task
+        updated_model = self._update_model_parameters(model, temperature=0.1, max_tokens=max_tokens)
+        return updated_model

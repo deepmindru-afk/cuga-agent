@@ -9,7 +9,7 @@ max_steps = 55
 start_url = "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login"
 
 [features]
-cuga_mode = "accurate"
+cuga_mode = "balanced"
 
 [advanced_features]
 web_arena_eval = false
