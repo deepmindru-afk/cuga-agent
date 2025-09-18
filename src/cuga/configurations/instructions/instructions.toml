@@ -19,5 +19,8 @@ instructions = "@format {this.base_path}/{this.instruction_set}/code_agent.md"
 [api_reflection]
 instructions = "@format {this.base_path}/{this.instruction_set}/reflection.md"
 
+[api_code_planner]
+instructions = "@format {this.base_path}/{this.instruction_set}/api_code_planner.md"
+
 [answer]
 instructions = "@format {this.base_path}/{this.instruction_set}/answer.md"

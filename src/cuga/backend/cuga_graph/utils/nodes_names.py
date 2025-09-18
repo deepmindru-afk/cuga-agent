@@ -12,7 +12,7 @@ class NodeNames:
     REUSE_AGENT = "ReuseAgent"
     API_CODE_PLANNER_AGENT = "APICodePlannerAgent"
     SHORTLISTER_AGENT = "ShortlisterAgent"
-    DECOMPOSITION_AGENT = "DecompositionAgent"
+    DECOMPOSITION_AGENT = "TaskDecompositionAgent"
     WAIT_FOR_RESPONSE = "WaitForResponse"
     CHAT_AGENT = "ChatAgent"
     API_PLANNER_AGENT = "APIPlannerAgent"
