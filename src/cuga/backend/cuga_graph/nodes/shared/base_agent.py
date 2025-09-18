@@ -17,6 +17,7 @@ from loguru import logger
 
 from cuga.backend.cuga_graph.nodes.api.api_planner_agent.prompts.load_prompt import (
     APIPlannerOutput,
+    APIPlannerOutputLite,
     APIPlannerOutputWX,
 )
 
@@ -77,7 +78,7 @@ JSON schema:
         #     return prompt_template | llm.bind(extra_body={"guided_json": schema.model_json_schema()}) | parser
         if isinstance(llm, ChatWatsonx):
             logger.debug("Loading LLM for watsonx")
-            if schema == APIPlannerOutput:
+            if schema == APIPlannerOutput or schema == APIPlannerOutputLite:
                 logger.debug("Switched to watsonx schema... for APIPlannerOutput")
                 schema = APIPlannerOutputWX
             parser = PydanticOutputParser(pydantic_object=schema)
