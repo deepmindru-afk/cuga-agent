@@ -13,6 +13,30 @@ Notes:
 - All PRs are merged using "Squash and merge". The PR title will become the final commit message — write it carefully using the Conventional Commits format.
 - Prefer one topic per PR. If your changes touch many areas, split into multiple PRs.
 
+## DCO
+
+This repository requires a Developer's Certificate of Origin 1.1 signoff on every commit. A DCO provides your assurance to the community that you wrote the code you are contributing or have the right to pass on the code that you are contributing. It is generally used in place of a Contributor License Agreement (CLA). You can easily signoff a commit by using the -s or --signoff flag:
+
+```bash
+git commit -s -m 'This is my commit message'
+```
+
+If you are using the web interface, this should happen automatically. If you've already made a commit, you can fix it by amending the commit and force-pushing the change:
+
+```bash
+git commit --amend --no-edit --signoff
+git push -f
+```
+
+This will only amend your most recent commit and will not affect the message. If there are multiple commits that need fixing, you can try:
+
+```bash
+git rebase --signoff HEAD~<n>
+git push -f
+```
+
+where `<n>` is the number of commits missing signoffs.
+
 ## Commit Messages: Conventional Commits
 
 We use the Conventional Commits specification. See the full spec at [conventionalcommits.org](https://www.conventionalcommits.org/en/v1.0.0/).
