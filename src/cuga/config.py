@@ -8,7 +8,7 @@ from pathlib import Path
 
 # third-party imports
 import dynaconf
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from dynaconf import Dynaconf, Validator
 from loguru import logger
 
@@ -32,20 +32,23 @@ MODES_DIR = os.path.join(CONFIGURATIONS_DIR, "modes")
 
 # from feature_flags import FeatureFlags as flags
 
-# Try CI/CD environment variable first
-env_path = os.getenv("ENV_FILE")
+# 1) Let users (or CI) force a path when needed
+if os.getenv("ENV_FILE"):
+    load_dotenv(os.getenv("ENV_FILE"), override=True)
+else:
+    # 2) Try to find it when working from a git clone (searches up from CWD)
+    path = find_dotenv(filename=".env", usecwd=True)
+    if not path:
+        # 3) Try again when your code is used as an installed package
+        #    (searches up from the module’s location)
+        path = find_dotenv(filename=".env", usecwd=False)
 
-if not env_path:
-    # Fallback when running from an installed wheel or from source
-    env_path = ENV_FILE_PATH
-
-load_dotenv(dotenv_path=env_path, override=True)
+    load_dotenv(path, override=False)
 
 for key, value in os.environ.items():
     if key.startswith("WA_"):
         new_key = key[3:]
         os.environ[new_key] = value
-
 
 app_mapping = {
     urlparse(os.getenv("WA_REDDIT")).netloc: "reddit",
