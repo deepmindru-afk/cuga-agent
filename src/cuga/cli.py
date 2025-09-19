@@ -227,15 +227,7 @@ def run_direct_service(service_name: str, command: List[str], cwd: Optional[str]
 
         # Ensure APPWORLD_ROOT is set correctly for appworld commands
         if 'appworld' in ' '.join(command).lower():
-            appworld_root = os.path.join(PACKAGE_ROOT, "appworld")
-            env['APPWORLD_ROOT'] = appworld_root
-            logger.debug(f"Setting APPWORLD_ROOT to: {appworld_root}")
-
-            # Set working directory to the appworld root for appworld commands
-            if cwd is None:
-                cwd = appworld_root
-                logger.debug(f"Setting working directory to: {cwd}")
-
+            cwd = env.get('APPWORLD_ROOT')
         # Log environment variables for debugging
         logger.debug(f"APPWORLD_ROOT: {env.get('APPWORLD_ROOT')}")
         logger.debug(f"Working directory: {cwd or os.getcwd()}")
