@@ -2,6 +2,7 @@ import os
 from contextlib import redirect_stdout, redirect_stderr
 from io import StringIO
 from typing import Any
+from urllib.parse import quote
 
 from cuga.backend.cuga_graph.nodes.api.variables_manager.manager import VariablesManager
 from cuga.backend.activity_tracker.tracker import ActivityTracker
@@ -83,9 +84,9 @@ structured_tools_invocation = """
 
 def get_premable(is_local=False, current_date=None):
     registry_host = (
-        f"http://host.docker.internal:8001/functions/call?trajectory_path={tracker.get_current_trajectory_path()}"
+        f"http://host.docker.internal:8001/functions/call?trajectory_path={quote(tracker.get_current_trajectory_path())}"
         if not is_local
-        else f"http://localhost:8001/functions/call?trajectory_path={tracker.get_current_trajectory_path()}"
+        else f"http://localhost:8001/functions/call?trajectory_path={quote(tracker.get_current_trajectory_path())}"
     )
 
     # Check if structured tools should be enabled

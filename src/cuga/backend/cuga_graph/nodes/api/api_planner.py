@@ -31,6 +31,7 @@ var_manager = VariablesManager()
 tracker = ActivityTracker()
 llm_manager = LLMManager()
 
+
 # --- Minimal tolerant planner parser (handles double-encoded JSON, code fences, minor key typos) ---
 def _parse_planner_output_or_raise(raw: str) -> APIPlannerOutput:
     """
@@ -56,7 +57,7 @@ def _parse_planner_output_or_raise(raw: str) -> APIPlannerOutput:
             # Try to slice the outermost {...}
             first, last = s.find("{"), s.rfind("}")
             if first != -1 and last > first:
-                s = s[first:last + 1].strip()
+                s = s[first : last + 1].strip()
                 continue
             break
 
