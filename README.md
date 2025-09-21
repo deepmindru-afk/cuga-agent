@@ -284,21 +284,23 @@ Experience CUGA's hybrid capabilities by combining API calls with web interactio
 </details>
 
 <details>
-<summary>⚙️ Reasoning modes - Switch between Fast/Accurate modes</summary>
+<summary>⚙️ Reasoning modes - Switch between Fast/Balanced/Accurate modes</summary>
 
 ## Available Modes under `./src/cuga`
 
-| Mode       | File                                   | Description                         |
-| ---------- | -------------------------------------- | ----------------------------------- |
-| `fast`     | `./configurations/modes/fast.toml`     | Optimized for speed                 |
-| `accurate` | `./configurations/modes/accurate.toml` | Optimized for precision _(default)_ |
-| `custom`   | `./configurations/modes/custom.toml`   | User-defined settings               |
+| Mode       | File                                     | Description                         |
+| ---------- | ---------------------------------------- | ----------------------------------- |
+| `fast`     | `./configurations/modes/fast.toml`      | Optimized for speed                 |
+| `balanced` | `./configurations/modes/balanced.toml`  | Balance between speed and precision _(default)_ |
+| `accurate` | `./configurations/modes/accurate.toml`  | Optimized for precision             |
+| `custom`   | `./configurations/modes/custom.toml`    | User-defined settings               |
 
 ## Configuration
 
 ```
 configurations/
 ├── modes/fast.toml
+├── modes/balanced.toml
 ├── modes/accurate.toml
 └── modes/custom.toml
 ```
@@ -307,7 +309,7 @@ Edit `settings.toml`:
 
 ```toml
 [features]
-cuga_mode = "fast"  # or "accurate" or "custom"
+cuga_mode = "fast"  # or "balanced" or "accurate" or "custom"
 ```
 
 **Documentation:** [./docs/flags.html](./docs/flags.html)
@@ -446,44 +448,42 @@ CUGA supports three types of tool integrations. Each approach has its own use ca
 
 </details>
 
+
 ### Test Scenarios - E2E
 
 The test suite covers various execution modes across different scenarios:
 
-| Scenario                       | Fast Mode | Accurate Mode | Save & Reuse Mode |
-| ------------------------------ | --------- | ------------- | ----------------- |
-| **Get top account by revenue** | ✓         | ✓             | ✓                 |
-| **List accounts**              | ✓         | ✓             | -                 |
+| Scenario                              | Fast Mode | Balanced Mode | Accurate Mode | Save & Reuse Mode |
+| ------------------------------------- | --------- | ------------- | ------------- | ----------------- |
+| **Find VP Sales High-Value Accounts** | ✓         | ✓             | ✓             | -                 |
+| **Get top account by revenue**        | ✓         | ✓             | ✓             | ✓                 |
+| **List my accounts**                  | ✓         | ✓             | ✓             | -                 |
 
-### Registry Test Suites
+### Additional Test Categories
 
-The registry tests cover comprehensive validation of the Tools Environment Registry system:
+**Unit Tests**
+- Variables Manager: Core functionality, metadata handling, singleton pattern, reset operations
+- Value Preview: Intelligent truncation, nested structure preservation, length-aware formatting
 
-- **OpenAPI Integration**: Tests loading, listing, and calling legacy OpenAPI services with proper parameter handling and response validation
-- **MCP Server Integration**: Validates FastMCP client initialization, tool loading with parameter flattening, and function calling via SSE-based MCP servers
-- **Mixed Configuration Support**: Tests simultaneous operation of both legacy and MCP services with proper isolation and prefixing
-- **E2E API Registry Server**: End-to-end testing of HTTP endpoints, server lifecycle, and REST API function calling with error handling
-
-The test suite includes:
-
-- **Integration Tests**: Verify all components work together seamlessly
-- **Agent Behavior Tests**: Validate decision-making and task execution
+**Integration Tests**  
+- API Response Handling: Error cases, validation, timeout scenarios, parameter extraction
+- Registry Services: OpenAPI integration, MCP server functionality, mixed service configurations
+- Tool Environment: Service loading, parameter handling, function calling, isolation testing
 
 
 ## 🧪 Running Tests
 
-### Run tests
 
 Focused suites:
 
 ```bash
-uv run pytest ./src/cuga/backend/tools_env/registry/tests/ ./src/system_tests/e2e/ -v
+./src/scripts/run_tests.sh 
 ```
 
 
 ## 📚 Resources
 
-- 📖 [Example](./docs/examples)
+- 📖 [Example applications](./docs/examples)
 - 📧 Contact: [CUGA Team](https://forms.office.com/pages/responsepage.aspx?id=V3D2_MlQ1EqY8__KZK3Z6UtMUa14uFNMi1EyUFiZFGRUQklOQThLRjlYMFM2R1dYTk5GVTFMRzNZVi4u&route=shorturl)
 
 ## Team 

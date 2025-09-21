@@ -177,18 +177,18 @@ uv sync --dev
 
 ### Run tests
 
-Focused unit tests for registry:
+Comprehensive test suite including linting, unit tests, and e2e tests:
 
 ```bash
 chmod +x ./src/scripts/run_tests.sh
 ./src/scripts/run_tests.sh
 ```
 
-e2e tests with llm and server:
+This will run:
+- **Linting checks**: Ruff code quality and formatting validation
+- **Unit tests**: Variables manager, API response handling, registry functionality
+- **E2E tests**: System tests across Fast and Balanced modes for real-world scenarios
 
-```bash
-./src/scripts/run_tests.sh e2e_tests
-```
 
 ## IDE Setup Quick Links
 
