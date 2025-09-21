@@ -87,7 +87,7 @@ class TaskAnalyzer(BaseNode):
                     input={
                         "inp": {
                             "intent": intent,
-                            "applications": [{"name": p.name, "description": p.description} for p in apps],
+                            "available_apps": [{"name": p.name, "description": p.description} for p in apps],
                         }
                     }
                 )

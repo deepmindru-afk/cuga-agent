@@ -1,4 +1,5 @@
 import json
+import re
 from typing import Literal
 
 
@@ -29,6 +30,44 @@ instructions_manager = InstructionsManager()
 var_manager = VariablesManager()
 tracker = ActivityTracker()
 llm_manager = LLMManager()
+
+# --- Minimal tolerant planner parser (handles double-encoded JSON, code fences, minor key typos) ---
+def _parse_planner_output_or_raise(raw: str) -> APIPlannerOutput:
+    """
+    Robust to:
+      - plain JSON object
+      - double-encoded JSON (a JSON string containing JSON)
+      - code fences (```json ... ```) or extra text around JSON
+    Pure parsing retries only; does not re-ask the LLM.
+    """
+    s = (raw or "").strip()
+
+    # Strip code fences if present
+    if s.startswith("```"):
+        s = re.sub(r"^```[a-zA-Z]*\n?", "", s)
+        s = re.sub(r"\n?```$", "", s).strip()
+
+    last_err = None
+    for _ in range(3):
+        try:
+            obj = json.loads(s)
+        except Exception as e:
+            last_err = e
+            # Try to slice the outermost {...}
+            first, last = s.find("{"), s.rfind("}")
+            if first != -1 and last > first:
+                s = s[first:last + 1].strip()
+                continue
+            break
+
+        # If first loads produced a JSON string, decode again (double-encoded case)
+        if isinstance(obj, str) and obj.strip().startswith("{"):
+            s = obj.strip()
+            continue
+
+        return APIPlannerOutput(**obj)
+
+    raise last_err or ValueError("Planner output could not be parsed")
 
 
 @tool
@@ -86,7 +125,12 @@ class ApiPlanner(BaseNode):
         res = await agent.run(state)
         state.guidance = None
         state.messages.append(res)
-        res = APIPlannerOutput(**json.loads(res.content))
+        try:
+            res = APIPlannerOutput(**json.loads(res.content))
+        except Exception as e1:
+            logger.warning(f"Strict parse failed: {e1}; trying tolerant parse...")
+            res = _parse_planner_output_or_raise(res.content)
+
         tracker.collect_step(step=Step(name=name, data=res.model_dump_json()))
         logger.debug("api_planner output:\n {}".format(res.model_dump_json(indent=4)))
 
@@ -140,7 +184,7 @@ class ApiPlanner(BaseNode):
             state.sender = "APIPlannerAgent"
             return Command(update=state.model_dump(), goto="PlanControllerAgent")
 
-        return Command(update=state.model_dump(), goto="ApiCodePlannerAgent")
+        return Command(update=state.model_dump(), goto="APICodePlannerAgent")
 
         # state.api_planner_codeagent_filtered_schemas_plan = res.content
         # return state

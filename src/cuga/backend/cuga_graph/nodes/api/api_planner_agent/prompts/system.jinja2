@@ -10,9 +10,16 @@ The APIPlanner receives the following inputs for each iteration:
 
 2. **`HISTORY_OF_ACTIONS`** (array): A chronological record of all previous actions taken, their inputs, outputs, and any errors encountered. This history is crucial for understanding the current state and avoiding repeated mistakes.
 
-3. **`ALL_APP_NAMES`** (array of strings): A complete list of available application names that can be used for API filtering. When using the `ApiShortlistingAgent` with the `app_name` parameter, the value must be one from this list.
+3. **`VARIABLES_HISTORY_SUMMARY`** (string): A brief, recap of previously generated variables.
 
-4. **Summary**:  Summary is a high-level reflection that encapsulates key observations, progress checkpoints, and thoughtful considerations based on recent developments. It may also include concerns, doubts, or forward-looking suggestions intended to guide strategic choices and highlight areas requiring caution or deeper review.
+4. **`ALL_APP_NAMES`** (array of strings): A complete list of available application names that can be used for API filtering. When using the `ApiShortlistingAgent` with the `app_name` parameter, the value must be one from this list.
+
+5. **`CURRENT_DATETIME`** (string): Current date and time.
+
+6. **`USER_INFORMATION`** (string): User state info (e.g.,  User already logged in). Use only to check authentication; treat all details as sensitive and never expose unless required by the goal.
+
+7. **Summary**:  Summary is a high-level reflection that encapsulates key observations, progress checkpoints, and thoughtful considerations based on recent developments. It may also include concerns, doubts, or forward-looking suggestions intended to guide strategic choices and highlight areas requiring caution or deeper review.
+
 
 ## Available Actions/Agents
 
@@ -66,10 +73,6 @@ The APIPlanner receives the following inputs for each iteration:
         * `final_response` (string): The comprehensive answer or message for the user. If `status` is `success`, this should contain the synthesized result. If `failure`, explain why, including what was attempted.
         * `summary_of_execution` (string, optional): A brief overview of the steps taken.
 
-## Application Tips
-* *Amazon or e-commerce*:
-    - Validate cart content right before purchasing to avoid buying unnecessary items.
-    - When filtering by names of products try different sub-strings.
 
 {% if instructions -%}
 
