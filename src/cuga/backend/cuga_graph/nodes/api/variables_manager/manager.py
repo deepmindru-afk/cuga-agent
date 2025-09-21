@@ -208,15 +208,110 @@ class VariablesManager(object):
         return '\n'.join(summary_lines)
 
     def _get_value_preview(self, value: Any, max_length: int = 5000) -> str:
-        """Get a preview of the value, truncated if too long."""
-        if isinstance(value, str):
-            preview = repr(value)
-        elif isinstance(value, (list, dict)):
-            # Use repr for Python-valid representation
-            preview = repr(value)
-        else:
-            preview = repr(value)
+        """Get a structured preview of the value, truncating nested content when large.
 
+        This preserves high-level structure (e.g., dict keys) while shortening
+        long strings and large lists/tuples nested within.
+        """
+
+        # First try full representation to see if it fits
+        try:
+            full_repr = repr(value)
+            if len(full_repr) <= max_length:
+                return full_repr
+        except Exception:
+            pass  # Fall back to smart truncation if repr fails
+
+        # Tunable preview thresholds
+        max_string_chars = max(50, min(200, max_length // 4))
+        max_list_items = 10
+        max_depth = 6  # Increased from 4 to allow deeper nesting when it fits
+
+        def shorten(val: Any, depth: int = 0, current_length: int = 0) -> str:
+            # Try full representation first if we're not too deep and it might fit
+            if depth < max_depth:
+                try:
+                    full_val_repr = repr(val)
+                    if current_length + len(full_val_repr) <= max_length:
+                        return full_val_repr
+                except Exception:
+                    pass
+
+            if depth >= max_depth:
+                return "..."
+
+            # Strings: cap length and show as repr
+            if isinstance(val, str):
+                if len(val) <= max_string_chars:
+                    return repr(val)
+                truncated = val[:max_string_chars] + "..."
+                return repr(truncated)
+
+            # Lists/Tuples: show first N items, then indicate remainder
+            if isinstance(val, (list, tuple)):
+                open_b, close_b = ("[", "]") if isinstance(val, list) else ("(", ")")
+                items: list[str] = []
+                total = len(val)
+                running_length = current_length + 2  # Account for brackets
+
+                for index, item in enumerate(val):
+                    if index >= max_list_items:
+                        remaining = total - index
+                        items.append(f"... (+{remaining} more)")
+                        break
+
+                    item_repr = shorten(item, depth + 1, running_length)
+                    if running_length + len(item_repr) + 2 > max_length:  # +2 for ", "
+                        remaining = total - index
+                        items.append(f"... (+{remaining} more)")
+                        break
+
+                    items.append(item_repr)
+                    running_length += len(item_repr) + 2  # +2 for ", "
+
+                return f"{open_b}{', '.join(items)}{close_b}"
+
+            # Dicts: preserve keys and shorten nested values
+            if isinstance(val, dict):
+                if not val:
+                    return "{}"
+
+                parts: list[str] = []
+                running_length = current_length + 2  # Account for braces
+
+                for key, nested in val.items():
+                    key_repr = repr(key)
+
+                    # Try to fit at least the key with a truncated value
+                    nested_repr = shorten(nested, depth + 1, running_length + len(key_repr) + 2)
+                    part = f"{key_repr}: {nested_repr}"
+
+                    # If even the key won't fit, just show ellipsis
+                    if running_length + len(key_repr) + 5 > max_length:  # +5 for ": ..."
+                        if not parts:  # If no parts yet, at least show one key
+                            parts.append(f"{key_repr}: ...")
+                        else:
+                            parts.append("...")
+                        break
+
+                    # If the full part won't fit, truncate the nested value more aggressively
+                    if running_length + len(part) + 2 > max_length:
+                        if depth + 1 < max_depth:
+                            # Try with just "..." for the nested value
+                            part = f"{key_repr}: ..."
+                            if running_length + len(part) + 2 <= max_length:
+                                parts.append(part)
+                        break
+
+                    parts.append(part)
+                    running_length += len(part) + 2  # +2 for ", "
+
+                return "{" + ", ".join(parts) + "}"
+
+            # Fallback for other types
+            return repr(val)
+
+        preview = shorten(value, 0, 0)
         if len(preview) > max_length:
             return preview[:max_length] + "..."
         return preview
@@ -481,8 +576,9 @@ class VariablesManager(object):
         Args:
             n (int): The number of last added variables to keep.
         """
-        if n < 0:
-            print("Warning: 'n' cannot be negative. No variables will be kept.")
+        if n <= 0:
+            # For n <= 0, keep no variables (full reset)
+            self.reset()
             return
 
         variables_to_keep = {}
@@ -530,115 +626,3 @@ class VariablesManager(object):
     def __repr__(self) -> str:
         """Detailed representation of the variables manager."""
         return f"VariablesManager(variables={self.variables}, counter={self.variable_counter})"
-
-
-# Example usage:
-if __name__ == "__main__":
-    # Test the singleton pattern
-    vm1 = VariablesManager()
-    vm2 = VariablesManager()
-
-    print(f"Same instance: {vm1 is vm2}")  # Should be True
-
-    # Add variables with descriptions, including booleans in different contexts
-    var1_name = vm1.add_variable("Hello World", description="A simple greeting message")
-    var2_name = vm1.add_variable([1, 2, 3, 4, True, False], description="List with booleans")
-    var3_name = vm1.add_variable(
-        {"key": "value", "active": True, "disabled": False}, "custom_var", "Dict with booleans"
-    )
-    var4_name = vm1.add_variable(True, description="A standalone boolean")
-    var5_name = vm1.add_variable(
-        {"nested": {"flag": True, "items": [False, True]}}, description="Nested structure with booleans"
-    )
-    var6_name = vm1.add_variable(123, description="An integer variable")
-    var7_name = vm1.add_variable(3.14, description="A float variable")
-
-    print(
-        f"Added variables: {var1_name}, {var2_name}, {var3_name}, {var4_name}, {var5_name}, {var6_name}, {var7_name}"
-    )
-    print(f"Current variable count: {vm1.get_variable_count()}")
-    print("\n" + "=" * 50)
-    print("ALL VARIABLES SUMMARY BEFORE RESET")
-    print("=" * 50)
-    print(vm1.get_variables_summary())
-
-    # Test the new last_n functionality
-    print("\n" + "=" * 50)
-    print("TESTING LAST N VARIABLES FUNCTIONALITY")
-    print("=" * 50)
-
-    # Get summary of last 3 variables
-    print("\nLast 3 variables summary:")
-    print(vm1.get_variables_summary(last_n=3))
-
-    # Get summary of last 2 variables
-    print("\nLast 2 variables summary:")
-    print(vm1.get_variables_summary(last_n=2))
-
-    # Test edge case: more variables requested than exist
-    print("\nLast 10 variables summary (more than exist):")
-    print(vm1.get_variables_summary(last_n=10))
-
-    # Test edge case: invalid last_n
-    print("\nInvalid last_n (0):")
-    print(vm1.get_variables_summary(last_n=0))
-
-    # Get names of last 3 variables
-    print(f"\nNames of last 3 variables: {vm1.get_last_n_variable_names(3)}")
-
-    # Get formatted variables (Python-valid format)
-    print("\nFormatted variables (Python format):")
-    print(vm1.get_variables_formatted())
-
-    # Get variables as JSON
-    print("\nVariables in JSON format:")
-    print(vm1.get_variables_as_json())
-
-    # Get variables summary with metadata (all variables)
-    print("\nAll variables summary with metadata:")
-    print(vm1.get_variables_summary())
-
-    # Test specific boolean handling
-    print("\nTesting boolean values:")
-    print(f"Standalone bool: {vm1.get_variable(var4_name)}")
-    print(f"Bool in list: {vm1.get_variable(var2_name)}")
-    print(f"Bool in dict: {vm1.get_variable(var3_name)}")
-
-    print("\n" + "=" * 50)
-    print("TESTING reset_keep_last_n FUNCTIONALITY")
-    print("=" * 50)
-
-    print(f"\nBefore reset_keep_last_n - variable count: {vm1.get_variable_count()}")
-    print("Variables before reset_keep_last_n:")
-    print(vm1.get_variables_summary())
-
-    # Keep the last 3 variables
-    vm1.reset_keep_last_n(3)
-    print(f"\nAfter reset_keep_last_n(3) - variable count: {vm1.get_variable_count()}")
-    print("Variables after keeping last 3:")
-    print(vm1.get_variables_summary())
-    print(f"Creation order after keeping last 3: {vm1._creation_order}")
-
-    # Add new variables to see if auto-generation works correctly
-    new_var1 = vm1.add_variable("new_value_1", description="A new variable after reset")
-    new_var2 = vm1.add_variable("new_value_2", description="Another new variable")
-    print(f"\nAdded new variables: {new_var1}, {new_var2}")
-    print(f"Current variable count: {vm1.get_variable_count()}")
-    print("Variables after adding new ones:")
-    print(vm1.get_variables_summary())
-    print(f"Creation order after adding new ones: {vm1._creation_order}")
-
-    # Test keeping 0 variables
-    vm1.reset()  # Reset to a full state first
-    vm1.add_variable("a")
-    vm1.add_variable("b")
-    vm1.add_variable("c")
-    print(f"\nBefore reset_keep_last_n(0) - variable count: {vm1.get_variable_count()}")
-    vm1.reset_keep_last_n(0)
-    print(f"After reset_keep_last_n(0) - variable count: {vm1.get_variable_count()}")
-    print(vm1.get_variables_summary())
-    print(f"Creation order after keeping 0: {vm1._creation_order}")
-
-    # Reset for clean state
-    vm1.reset()
-    print(f"\nAfter final reset - variable count: {vm1.get_variable_count()}")
