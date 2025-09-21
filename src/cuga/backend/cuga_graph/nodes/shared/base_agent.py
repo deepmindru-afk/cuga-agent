@@ -83,20 +83,7 @@ JSON schema:
                 schema = APIPlannerOutputWX
             parser = PydanticOutputParser(pydantic_object=schema)
             if wx_json_mode == "response_format":
-                chain = (
-                    prompt_template
-                    | llm.bind(
-                        response_format={
-                            "type": "json_schema",
-                            "json_schema": {
-                                "name": "schema",
-                                "strict": True,
-                                "schema": schema.model_json_schema(),
-                            },
-                        }
-                    )
-                    | parser
-                )
+                chain = prompt_template | llm.with_structured_output(schema, method='json_schema')
             elif wx_json_mode == "function_calling" or wx_json_mode == "json_mode":
                 chain = prompt_template | llm.with_structured_output(schema, method=wx_json_mode)
             else:
