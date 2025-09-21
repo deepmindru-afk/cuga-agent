@@ -230,20 +230,28 @@ Experience CUGA's hybrid capabilities by combining API calls with web interactio
    mode = 'hybrid'  # under [advanced_features] section
    ```
 
-2. **Start the demo:**
+2. **Install browser API support:**
+   - Installs playwright browser API and Chromium browser
+   - The `playwright` installer should already be included after installing with [Quick Start](#-quick-start)
+
+   ```bash
+   playwright install chromium
+   ```
+
+3. **Start the demo:**
    ```bash
    cuga start demo
    ```
 
-3. **Enable the browser extension:**
+4. **Enable the browser extension:**
    - Click the extension puzzle icon in your browser
    - Toggle the CUGA extension to activate it
    - This will open the CUGA side panel
 
-4. **Open the test application:**
+5. **Open the test application:**
    - Navigate to: [Sales app](https://samimarreed.github.io/sales/)
 
-5. **Try the hybrid task:**
+6. **Try the hybrid task:**
    ```
    get top account by revenue from digital sales then add it to current page
    ```
