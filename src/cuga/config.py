@@ -23,8 +23,28 @@ TRAJECTORY_DATA_DIR = os.path.join(LOGGING_DIR, "trajectory_data")
 TRACES_DIR = os.path.join(LOGGING_DIR, "traces")
 # Define all path variables at the top (with environment variable overrides)
 ENV_FILE_PATH = os.getenv("ENV_FILE_PATH") or os.path.join(PACKAGE_ROOT, "..", "..", ".env")
-SETTINGS_TOML_PATH = os.getenv("SETTINGS_TOML_PATH") or os.path.join(os.getcwd(), "settings.toml") or os.path.join(PACKAGE_ROOT, "settings.toml")
-EVAL_CONFIG_TOML_PATH = os.getenv("EVAL_CONFIG_TOML_PATH") or os.path.join(os.getcwd(), "eval_config.toml") or os.path.join(PACKAGE_ROOT, "eval_config.toml")
+
+
+# Helper function to find config files with existence check
+def _find_config_file(filename: str, env_var_name: str) -> str:
+    """Find config file, checking existence in getcwd first, then package root."""
+    # First check environment variable
+    env_path = os.getenv(env_var_name)
+    if env_path and os.path.exists(env_path):
+        return env_path
+
+    # Check in current working directory
+    cwd_path = os.path.join(os.getcwd(), filename)
+    if os.path.exists(cwd_path):
+        return cwd_path
+
+    # Fall back to package root
+    package_path = os.path.join(PACKAGE_ROOT, filename)
+    return package_path  # Return even if it doesn't exist for consistency
+
+
+SETTINGS_TOML_PATH = _find_config_file("settings.toml", "SETTINGS_TOML_PATH")
+EVAL_CONFIG_TOML_PATH = _find_config_file("eval_config.toml", "EVAL_CONFIG_TOML_PATH")
 CONFIGURATIONS_DIR = os.path.join(PACKAGE_ROOT, "configurations")
 MODELS_DIR = os.path.join(CONFIGURATIONS_DIR, "models")
 MODES_DIR = os.path.join(CONFIGURATIONS_DIR, "modes")
@@ -110,7 +130,10 @@ base_settings = Dynaconf(
     validators=validators,
 )
 logger.info("Running cuga in *{}* mode".format(base_settings.features.cuga_mode))
-
+if base_settings.advanced_features.tracker_enabled:
+    logger.info("✅ tracker enabled - logs and trajectory data will be saved")
+else:
+    logger.warning("tracker disabled - logs and trajectory data will not be saved")
 # Read and sanitize the model settings filename (Windows users sometimes include quotes)
 default_llm = os.environ.get("AGENT_SETTING_CONFIG", "settings.openai.toml")
 default_llm = default_llm.strip().strip('"').strip("'")

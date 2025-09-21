@@ -14,7 +14,7 @@ import importlib
 
 from datetime import datetime
 from loguru import logger
-from cuga.config import settings, PACKAGE_ROOT
+from cuga.config import settings, LOGGING_DIR
 import docker
 
 
@@ -233,8 +233,9 @@ def run_code(code: str, _locals: dict[str, Any] = None) -> tuple[str, dict[str, 
     :return: The output of the code.
     """
     variables = var_manager.get_variables_formatted()
-    python_file_dir = f"./logging/code/{tracker.experiment_folder}/{tracker.task_id}"
-    python_file_dir = os.path.join(PACKAGE_ROOT, python_file_dir)
+    python_file_dir = f"./code/{tracker.experiment_folder}/{tracker.task_id}"
+    os.makedirs(python_file_dir, exist_ok=True)
+    python_file_dir = os.path.join(LOGGING_DIR, python_file_dir)
     file_path = python_file_dir + "/" + f"{mask_with_timestamp(tracker.task_id)}.py"
     code_content = (
         get_premable(is_local=settings.features.local_sandbox, current_date=tracker.current_date)

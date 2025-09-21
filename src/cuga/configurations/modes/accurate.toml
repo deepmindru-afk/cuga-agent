@@ -1,7 +1,7 @@
 [features]
 chat = false
 task_decomposition = true
-local_sandbox = true
+local_sandbox = false
 thoughts = true
 code_output_summary = true
 code_generation = "accurate"
