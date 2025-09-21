@@ -81,7 +81,7 @@ def run_digital_sales_mcp():
 def run_digital_sales_openapi():
     """Run the digital sales OpenAPI server."""
     host = os.environ.get("CUGA_HOST", "127.0.0.1")
-    server_module = os.path.join(PACKAGE_ROOT, "docs/examples/digital_sales_openapi/main.py")
+    server_module = os.path.join(PACKAGE_ROOT, "..", "..", "docs/examples/digital_sales_openapi/main.py")
     subprocess.run(
         [
             "uv",

@@ -244,7 +244,12 @@ async def lifespan(app: FastAPI):
 
     logger.info("Application finished starting up...")
     url = f"http://localhost:8005?t={random_id_with_timestamp()}"
-    if settings.advanced_features.mode == "api":
+    if settings.advanced_features.mode == "api" and os.getenv("CUGA_TEST_ENV", "false").lower() not in (
+        "true",
+        "1",
+        "yes",
+        "on",
+    ):
         if platform.system() == 'Darwin':  # macOS
             os.system(f'open {url}')
         elif platform.system() == 'Windows':  # Windows

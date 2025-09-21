@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import traceback
+import shutil
 
 import httpx
 import json
@@ -16,11 +17,16 @@ from cuga.config import settings
 # Define server and registry commands
 DEMO_COMMAND = ["uv", "run", "demo"]  # Assuming demo runs on port 8005 as per main.py
 REGISTRY_COMMAND = ["uv", "run", "registry"]  # Assuming default port for registry
+DIGITAL_SALES_MCP_COMMAND = ["uv", "run", "digital_sales_openapi"]  # Digital sales MCP server
 
 # Server URL
 SERVER_URL = "http://localhost:8005"
 STREAM_ENDPOINT = f"{SERVER_URL}/stream"
 STOP_ENDPOINT = f"{SERVER_URL}/stop"
+os.environ["MCP_SERVERS_FILE"] = os.path.join(os.path.dirname(__file__), "config", "mcp_servers.yaml")
+os.environ["CUGA_TEST_ENV"] = "true"
+os.environ["CUGA_LOGGING_DIR"] = os.path.join(os.path.dirname(__file__), "logging")
+os.environ["DYNACONF_ADVANCED_FEATURES__TRACKER_ENABLED"] = "true"
 
 
 class BaseTestServerStream(unittest.IsolatedAsyncioTestCase):
@@ -45,9 +51,9 @@ class BaseTestServerStream(unittest.IsolatedAsyncioTestCase):
         """
         killed_any = False
         try:
-            for proc in psutil.process_iter(['pid', 'name', 'connections']):
+            for proc in psutil.process_iter(['pid', 'name']):
                 try:
-                    connections = proc.info['connections']
+                    connections = proc.net_connections()
                     if connections:
                         for conn in connections:
                             if (
@@ -79,36 +85,62 @@ class BaseTestServerStream(unittest.IsolatedAsyncioTestCase):
         return killed_any
 
     def _create_log_files(self):
-        """Create log files for demo and registry processes."""
-        # Ensure logs directory exists
-        log_dir = "logs"
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-            print(f"Created logs directory: {log_dir}")
+        """Create log files for demo and registry processes per test method in separate folders."""
+        # Create logs directory within e2e folder
+        e2e_dir = os.path.dirname(__file__)
+        base_log_dir = os.path.join(e2e_dir, "logs")
 
-        # Create log file paths
-        self.demo_log_file = os.path.join(log_dir, "demo_server.log")
-        self.registry_log_file = os.path.join(log_dir, "registry_server.log")
+        # Get test class and method names for folder naming
+        test_class_name = self.__class__.__name__
+        test_method_name = getattr(self, '_testMethodName', 'unknown_test')
+
+        # Create a unique folder for this specific test
+        test_folder_name = f"{test_class_name}_{test_method_name}"
+        self.test_log_dir = os.path.join(base_log_dir, test_folder_name)
+
+        # Remove existing test folder if it exists (to reset for rerun)
+        if os.path.exists(self.test_log_dir):
+            shutil.rmtree(self.test_log_dir)
+            print(f"Removed existing test folder: {self.test_log_dir}")
+
+        # Create the test-specific folder
+        os.makedirs(self.test_log_dir, exist_ok=True)
+        print(f"Created test folder: {self.test_log_dir}")
+
+        # Create log file paths within the test folder
+        self.demo_log_file = os.path.join(self.test_log_dir, "demo_server.log")
+        self.registry_log_file = os.path.join(self.test_log_dir, "registry_server.log")
+        self.digital_sales_mcp_log_file = os.path.join(self.test_log_dir, "digital_sales_mcp.log")
+
+        # Clear/truncate log files to ensure they start fresh for each test
+        for log_file in [self.demo_log_file, self.registry_log_file, self.digital_sales_mcp_log_file]:
+            with open(log_file, 'w') as f:
+                f.write('')  # Clear the file
+            print(f"Cleared log file: {log_file}")
 
         print(f"Demo server logs will be saved to: {self.demo_log_file}")
         print(f"Registry server logs will be saved to: {self.registry_log_file}")
+        print(f"Digital sales MCP logs will be saved to: {self.digital_sales_mcp_log_file}")
 
     async def asyncSetUp(self):
         """
         Sets up the test environment before each test method.
-        Starts the demo server and registry processes with configured environment.
+        Starts the demo server, registry, and digital sales MCP processes with configured environment.
         """
         print(f"\n--- Setting up test environment for {self.__class__.__name__} ---")
         self.demo_process = None
         self.registry_process = None
+        self.digital_sales_mcp_process = None
         self.demo_log_handle = None
         self.registry_log_handle = None
+        self.digital_sales_mcp_log_handle = None
 
-        # Create log files
+        # Create log files (this will also clear any existing ones)
         self._create_log_files()
 
         # Clean up any existing processes on our ports before starting
         print("Cleaning up any existing processes on target ports...")
+        self._kill_process_by_port(8000, "digital sales MCP")
         self._kill_process_by_port(settings.server_ports.demo, "demo server")
         self._kill_process_by_port(settings.server_ports.registry, "registry")
         if hasattr(settings.server_ports, 'saved_flows'):
@@ -130,7 +162,19 @@ class BaseTestServerStream(unittest.IsolatedAsyncioTestCase):
         # Open log files for writing
         self.registry_log_handle = open(self.registry_log_file, 'w', buffering=1)  # Line buffered
         self.demo_log_handle = open(self.demo_log_file, 'w', buffering=1)  # Line buffered
-
+        self.digital_sales_mcp_log_handle = open(
+            self.digital_sales_mcp_log_file, 'w', buffering=1
+        )  # Line buffered
+        print("Starting digital sales MCP process...")
+        self.digital_sales_mcp_process = subprocess.Popen(
+            DIGITAL_SALES_MCP_COMMAND,
+            stdout=self.digital_sales_mcp_log_handle,
+            stderr=subprocess.STDOUT,  # Redirect stderr to stdout (and thus to log file)
+            text=True,
+            env=os.environ.copy(),  # Pass the updated environment
+            preexec_fn=os.setsid,  # For proper process group management
+        )
+        await asyncio.sleep(3)
         print("Starting registry process...")
         self.registry_process = subprocess.Popen(
             REGISTRY_COMMAND,
@@ -141,7 +185,6 @@ class BaseTestServerStream(unittest.IsolatedAsyncioTestCase):
             preexec_fn=os.setsid,  # For proper process group management
         )
         print(f"Registry process started with PID: {self.registry_process.pid}")
-        await asyncio.sleep(5)
 
         print("Starting demo server process...")
         self.demo_process = subprocess.Popen(
@@ -163,7 +206,7 @@ class BaseTestServerStream(unittest.IsolatedAsyncioTestCase):
     async def asyncTearDown(self):
         """
         Cleans up the test environment after each test method.
-        Stops the demo server and registry processes by port and PID.
+        Stops the demo server, registry, and digital sales MCP processes by port and PID.
         """
         print(f"\n--- Tearing down test environment for {self.__class__.__name__} ---")
         print("Stopping processes...")
@@ -207,6 +250,25 @@ class BaseTestServerStream(unittest.IsolatedAsyncioTestCase):
                     pass  # Process was already gone
             self.registry_process = None
 
+        if self.digital_sales_mcp_process:
+            try:
+                if self.digital_sales_mcp_process.poll() is None:  # Process is still running
+                    # Send SIGTERM to the process group
+                    os.killpg(os.getpgid(self.digital_sales_mcp_process.pid), signal.SIGTERM)
+                    self.digital_sales_mcp_process.wait(timeout=5)
+                    print("Digital sales MCP process terminated gracefully.")
+                else:
+                    print("Digital sales MCP process already terminated.")
+            except (subprocess.TimeoutExpired, ProcessLookupError, OSError):
+                print("Digital sales MCP process did not terminate gracefully or was already gone.")
+                try:
+                    if self.digital_sales_mcp_process.poll() is None:
+                        os.killpg(os.getpgid(self.digital_sales_mcp_process.pid), signal.SIGKILL)
+                        self.digital_sales_mcp_process.wait()
+                except (ProcessLookupError, OSError):
+                    pass  # Process was already gone
+            self.digital_sales_mcp_process = None
+
         # Close log file handles
         if self.demo_log_handle:
             self.demo_log_handle.close()
@@ -217,6 +279,11 @@ class BaseTestServerStream(unittest.IsolatedAsyncioTestCase):
             self.registry_log_handle.close()
             self.registry_log_handle = None
             print(f"Registry server log file closed: {self.registry_log_file}")
+
+        if self.digital_sales_mcp_log_handle:
+            self.digital_sales_mcp_log_handle.close()
+            self.digital_sales_mcp_log_handle = None
+            print(f"Digital sales MCP log file closed: {self.digital_sales_mcp_log_file}")
 
         # Then, kill any remaining processes by port as a backup
         print("Cleaning up any remaining processes on target ports...")
