@@ -139,4 +139,37 @@ while True:
 print(json.dumps({"variable_name": "all_items", "description": "Complete list of items retrieved from all pages", "value": all_items}))
 ```
 
+**Special Schema Handling Example:**
+When an API parameter has a schema structure requiring array of objects, first identify the schema pattern:
+```json
+{
+  "parameters": [
+    {
+      "name": "parameter_name",
+      "type": "array",
+      "required": true,
+      "schema": [
+        {
+          "field_name": "string"
+        }
+      ]
+    }
+  ]
+}
+```
+Then convert string arrays to the required object format:
+```python
+import json
+object_array = [{"field_name": item} for item in ["value1", "value2", "value3"]]
+response = call_api("service_name", "api_name", {
+    "parameter_name": object_array,
+    "other_params": "value"
+})
+if isinstance(response, dict) and response.get("status") == "exception":
+    final_result = None
+else:
+    final_result = response.get("data", [])
+print(json.dumps({"variable_name": "final_result", "description": "Data retrieved from API", "value": final_result}))
+```
+
 **Focus:** Your output is Python code. Generate *only* the minimal code required to execute the plan using `call_api` and conclude with the mandatory JSON output line. Adhere strictly to the constraints regarding code minimality, focus on orchestration without comments or intermediate printing, while still including appropriate error handling and complete data retrieval through proper page index handling. **Ensure complete data retrieval through proper page index handling when APIs return multi-page responses, always handle API errors gracefully, directly access variables from history without regenerating them, and always end with the required JSON output format.**

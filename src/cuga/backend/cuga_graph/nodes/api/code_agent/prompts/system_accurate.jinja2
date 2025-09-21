@@ -182,5 +182,48 @@ while True:
 print(json.dumps({"variable_name": "all_items", "description": "Complete list of items retrieved from all pages", "value": all_items}))
 ```
 
+**Special Schema Handling Example:**
+When an API parameter has a schema structure requiring array of objects, first identify the schema pattern:
+```json
+{
+  "parameters": [
+    {
+      "name": "parameter_name",
+      "type": "array",
+      "required": true,
+      "schema": [
+        {
+          "field_name": "string"
+        }
+      ]
+    }
+  ]
+}
+```
+Then convert string arrays to the required object format:
+```python
+import json
+
+print("Preparing data for API call with schema conversion")
+object_array = [{"field_name": item} for item in ["value1", "value2", "value3"]]
+print("Converted to objects:", object_array)
+
+print("Calling API with proper schema format")
+response = call_api("service_name", "api_name", {
+    "parameter_name": object_array,
+    "other_params": "value"
+})
+
+if isinstance(response, dict) and response.get("status") == "exception":
+    print(f"API call failed: {response.get('message', 'Unknown error')}")
+    final_result = None
+else:
+    print("API call successful, data retrieved")
+    final_result = response.get("data", [])
+    print(f"Found {len(final_result)} items")
+
+print(json.dumps({"variable_name": "final_result", "description": "Data retrieved from API", "value": final_result}))
+```
+
 
 **Focus:** Your output is Python code. Generate *only* the code required to execute the plan using `call_api` and conclude with the mandatory JSON output line. Adhere strictly to the constraints regarding intermediate code simplicity and focus on orchestration while including appropriate progress tracking and error handling. **Ensure complete data retrieval through proper page index handling when APIs return multi-page responses, always handle API errors gracefully, directly access variables from history without regenerating them, and always end with the required JSON output format.**
