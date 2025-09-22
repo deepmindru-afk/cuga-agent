@@ -21,7 +21,7 @@ wxo_integration = false
 benchmark = "default"
 mode = 'api'
 use_extension = false
-
+code_planner_enabled = true
 
 [server_ports]
 registry = 8001

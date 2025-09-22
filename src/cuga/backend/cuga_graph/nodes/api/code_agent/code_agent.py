@@ -27,11 +27,15 @@ class CodeAgent(BaseAgent):
     def __init__(self, llm: BaseChatModel, tools: Any = None):
         super().__init__()
         self.name = "CodeAgent"
-        pmt_path = (
-            "./prompts/system_fast.jinja2"
-            if settings.features.code_generation == "fast"
-            else "./prompts/system_accurate.jinja2"
-        )
+        self.code_planner_enabled = settings.advanced_features.code_planner_enabled
+        if not self.code_planner_enabled:
+            pmt_path = "./prompts/system_no_plan.jinja2"
+        else:
+            pmt_path = (
+                "./prompts/system_fast.jinja2"
+                if settings.features.code_generation == "fast"
+                else "./prompts/system_accurate.jinja2"
+            )
         pmt = load_one_prompt(pmt_path)
         instructions = instructions_manager.get_instructions(self.name)
         pmt_text = pmt.format(instructions=instructions)
@@ -119,37 +123,65 @@ class CodeAgent(BaseAgent):
             if context_variables and len(context_variables) > 0
             else "N/A"
         )
-        messages = [
-            {
-                "role": "user",
-                "content": """
-**Input 1:Relevant variable history**:
-```text
-{}
-```
+        if not self.code_planner_enabled:
+            messages = [
+                {
+                    "role": "user",
+                    "content": """
+                    **Input 1: User Goal**
+                    {}
 
----
+                    **Input 2: Relevant variable history**
+                    ```text
+                    {}
+                    ```
 
-**Input 2: Plan**
-{}
+                    **Input 3: API Definitions**
+                    ```json
+                    {}
+                    ```
 
----
+                    current datetime: {}
+                    """.format(
+                        input_variables.coder_task,
+                        context_variables_preview,
+                        input_variables.api_shortlister_planner_filtered_apis,
+                        input_variables.current_datetime,
+                    ),
+                }
+            ]
+        else:
+            messages = [
+                {
+                    "role": "user",
+                    "content": """
+                    **Input 1: User Goal**
+                    {}
 
-**Input 2: API Definitions**
+                    **Input 2: Generated Plan**
+                    ```json
+                    {}
+                    ```
 
-```json
-{}
-```
+                    **Input 3: Relevant variable history**
+                    ```text
+                    {}
+                    ```
 
-current datetime: {}
-""".format(
-                    context_variables_preview,
-                    self.extract_from_json_marker(input_variables.api_planner_codeagent_plan),
-                    input_variables.api_shortlister_planner_filtered_apis,
-                    input_variables.current_datetime,
-                ),
-            }
-        ]
+                    **Input 4: API Definitions**
+                    ```json
+                    {}
+                    ```
+                    current datetime: {}
+                    """.format(
+                        input_variables.coder_task,
+                        self.extract_from_json_marker(input_variables.api_planner_codeagent_plan),
+                        context_variables_preview,
+                        input_variables.api_shortlister_planner_filtered_apis,
+                        input_variables.current_datetime,
+                    ),
+                }
+            ]
         # answer = None
         # try:
         #     answer = await self.agent.ainvoke(input={"messages": messages},stream_mode="updates",interrupt_before="sandbox")
@@ -206,6 +238,9 @@ current datetime: {}
                             }
                         )
 
+                    logger.debug(
+                        f"\nvariable_name: {out.get('variable_name')}\ndescription: {out.get('description', '')}\nvalue: {out.get('value')}\n"
+                    )
                     return AIMessage(
                         content=CodeAgentOutput(
                             code=code_copy,

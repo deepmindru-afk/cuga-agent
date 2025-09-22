@@ -85,11 +85,13 @@ Plans must end with:
 
 *Generated Plan*:
 ```json
-[
-  "1. Start collecting sold pets by setting up a container to store all results and beginning with the first page.",
-  "2. Keep calling `petstore.findPetsByStatus` with status is 'sold' for each page, adding the pets found to our collection until no more pets are returned, then move to the next page.",
-  "3. Prepare the final result with all collected sold pets and display it using the standard output format."
-]
+{
+  "plan": [
+    "1. Start collecting sold pets by setting up a container to store all results and beginning with the first page.",
+    "2. Keep calling `petstore.findPetsByStatus` with status is 'sold' for each page, adding the pets found to our collection until no more pets are returned, then move to the next page.",
+    "3. Prepare the final result with all collected sold pets and display it using the standard output format."
+  ]
+}
 ```
 
 **Example 2: API Chaining with Filtering**
@@ -126,11 +128,13 @@ Plans must end with:
 
 *Generated Plan*:
 ```json
-[
-  "1. Call `yelp.search_restaurants` with location is 'San Francisco', then for each restaurant found, call `yelp.get_restaurant_details` to get full details.",
-  "2. Keep only restaurants that serve Italian cuisine and are currently open, collecting their ratings.",
-  "3. Calculate the average rating from the selected restaurants, prepare the final result and display it using the standard output format."
-]
+{
+  "plan": [
+    "1. Call `yelp.search_restaurants` with location is 'San Francisco', then for each restaurant found, call `yelp.get_restaurant_details` to get full details.",
+    "2. Keep only restaurants that serve Italian cuisine and are currently open, collecting their ratings.",
+    "3. Calculate the average rating from the selected restaurants, prepare the final result and display it using the standard output format."
+  ]
+}
 ```
 
 **Example 3: Using Historical Variables**
@@ -168,10 +172,12 @@ Plans must end with:
 
 *Generated Plan*:
 ```json
-[
-  "1. Check `notification_enabled` from history - if disabled, create error result. If enabled, iterate through `admin_users_list` and call `messaging.send_notification` for each user ID.",
-  "2. Collect all notification responses, prepare the final result with delivery status for admin notifications and display it using the standard output format."
-]
+{
+  "plan": [
+    "1. Check `notification_enabled` from history - if disabled, create error result. If enabled, iterate through `admin_users_list` and call `messaging.send_notification` for each user ID.",
+    "2. Collect all notification responses, prepare the final result with delivery status for admin notifications and display it using the standard output format."
+  ]
+}
 ```
 
 **Example 4: Simple Direct Action**
@@ -196,10 +202,12 @@ Plans must end with:
 
 *Generated Plan*:
 ```json
-[
-  "1. Create pet information with name is 'Fido', status is 'available', and category is 'dog', then call `petstore.addPet` with this information.",
-  "2. Prepare the final result with details of the newly added pet and display it using the standard output format."
-]
+{
+  "plan": [
+    "1. Create pet information with name is 'Fido', status is 'available', and category is 'dog', then call `petstore.addPet` with this information.",
+    "2. Prepare the final result with details of the newly added pet and display it using the standard output format."
+  ]
+}
 ```
 
 **Example 5: Using Historical Variables with Complex Data**
@@ -249,12 +257,14 @@ Plans must end with:
 
 *Generated Plan*:
 ```json
-[
-  "1. Iterate through each product update in `pricing_strategy` and call `inventory.update_product_price` with the product ID and new price.",
-  "2. Collect all successful price updates and prepare a notification message about the price changes.",
-  "3. Call `messaging.send_bulk_notification` with `affected_customers` and the prepared message.",
-  "4. Prepare the final result with update summary and notification status, then display it using the standard output format."
-]
+{
+  "plan": [
+    "1. Iterate through each product update in `pricing_strategy` and call `inventory.update_product_price` with the product ID and new price.",
+    "2. Collect all successful price updates and prepare a notification message about the price changes.",
+    "3. Call `messaging.send_bulk_notification` with `affected_customers` and the prepared message.",
+    "4. Prepare the final result with update summary and notification status, then display it using the standard output format."
+  ]
+}
 ```
 
 **Example 6: Missing Required Parameter**

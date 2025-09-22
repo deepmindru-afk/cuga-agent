@@ -41,8 +41,8 @@ class ApiCodePlanner(BaseNode):
         ):
             logger.debug("** Tool call ** missing apis")
             missing_apis_msg = res.tool_calls[0].get("args").get("message")
+            logger.debug(f"missing_apis_msg: {missing_apis_msg}")
             state.api_planner_codeagent_plan = ""
-            logger.debug(res.tool_calls[0])
             tracker.collect_step(step=Step(name=name, data=json.dumps(res.tool_calls[0])))
             state.messages.append(AIMessage(content=json.dumps({"data": res.tool_calls[0]})))
             state.api_planner_history[-1].agent_output = CoderAgentHistoricalOutput(
@@ -52,6 +52,7 @@ class ApiCodePlanner(BaseNode):
 
         else:
             state.api_planner_codeagent_plan = res.content
+            logger.debug(f"\ncode_planner_plan:\n {res.content}")
             tracker.collect_step(step=Step(name=name, data=res.content))
             state.messages.append(AIMessage(content=json.dumps({"data": res.content})))
             return Command(update=state.model_dump(), goto="CodeAgent")

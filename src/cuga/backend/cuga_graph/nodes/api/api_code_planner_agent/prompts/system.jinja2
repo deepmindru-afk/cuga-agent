@@ -180,16 +180,18 @@ The plan must conclude with describing the construction of a **single JSON seria
     *(Note: The above schema is a simplified representation for clarity in this example.)*
 * **Generated Plan:**
 ```json
-[
-  "1. To collect all sold pets across multiple pages, first initialize an empty list called `all_sold_pets` to aggregate the results. Also, initialize a variable `current_page_index` to 0 to start from the first page.",
-  "2. Start a loop that will repeatedly call the API to fetch pages of results. This loop will continue as long as the API returns a non-empty list of pets.",
-  "3. Inside the loop, call the 'find pets by status' API (`petstore.findPetsByStatus`) using the status 'sold' and the current `current_page_index`.",
-  "4. Check the list of pets returned from the API call. If the list is empty, it means we have reached the last page, and we should exit the loop.",
-  "5. If the list is not empty, add all the pet objects from the response to our `all_sold_pets` list.",
-  "6. After processing the results from the current page, increment the `current_page_index` by 1 to prepare for fetching the next page in the following iteration.",
-  "7. Once the loop has finished, prepare the final result as a JSON serializable dictionary: `{'variable_name': 'sold_pets_list', 'description': 'A complete list of all pets with the status of sold, retrieved from all available pages.', 'value': all_sold_pets}`.",
-  "8. Print the final result dictionary as a JSON string using `print(json.dumps(result_dict))`."
-]
+{
+  "plan": [
+    "1. To collect all sold pets across multiple pages, first initialize an empty list called `all_sold_pets` to aggregate the results. Also, initialize a variable `current_page_index` to 0 to start from the first page.",
+    "2. Start a loop that will repeatedly call the API to fetch pages of results. This loop will continue as long as the API returns a non-empty list of pets.",
+    "3. Inside the loop, call the 'find pets by status' API (`petstore.findPetsByStatus`) using the status 'sold' and the current `current_page_index`.",
+    "4. Check the list of pets returned from the API call. If the list is empty, it means we have reached the last page, and we should exit the loop.",
+    "5. If the list is not empty, add all the pet objects from the response to our `all_sold_pets` list.",
+    "6. After processing the results from the current page, increment the `current_page_index` by 1 to prepare for fetching the next page in the following iteration.",
+    "7. Once the loop has finished, prepare the final result as a JSON serializable dictionary: `{'variable_name': 'sold_pets_list', 'description': 'A complete list of all pets with the status of sold, retrieved from all available pages.', 'value': all_sold_pets}`.",
+    "8. Print the final result dictionary as a JSON string using `print(json.dumps(result_dict))`."
+  ]
+}
 ```
 ---
 **Example 2: Looping**
@@ -214,14 +216,16 @@ The plan must conclude with describing the construction of a **single JSON seria
     ```
 * **Generated Plan:**
 ```json
-[
-  "1. Initialize an empty list called `collected_cat_names` to store the names of the cats.",
-  "2. Call the `petstore.findPetsByStatusAndTag` API with status='pending' and tag='cat' to find all matching pets. Store the returned list in a variable called `pending_cats_list`.",
-  "3. For each `pet` in the `pending_cats_list` that we just retrieved:",
-  "4.   Extract the 'name' from the `pet` object and add it to the `collected_cat_names` list.",
-  "5. After the loop, prepare the result as a JSON serializable dictionary: `{'variable_name': 'cat_names', 'description': 'A list of names of all pending cats.', 'value': collected_cat_names}`.",
-  "6. Print the final result using `print(json.dumps(result_dict))`."
-]
+{
+  "plan": [
+    "1. Initialize an empty list called `collected_cat_names` to store the names of the cats.",
+    "2. Call the `petstore.findPetsByStatusAndTag` API with status='pending' and tag='cat' to find all matching pets. Store the returned list in a variable called `pending_cats_list`.",
+    "3. For each `pet` in the `pending_cats_list` that we just retrieved:",
+    "4.   Extract the 'name' from the `pet` object and add it to the `collected_cat_names` list.",
+    "5. After the loop, prepare the result as a JSON serializable dictionary: `{'variable_name': 'cat_names', 'description': 'A list of names of all pending cats.', 'value': collected_cat_names}`.",
+    "6. Print the final result using `print(json.dumps(result_dict))`."
+  ]
+}
 ```
 
 ---
@@ -246,12 +250,14 @@ The plan must conclude with describing the construction of a **single JSON seria
     ```
 * **Generated Plan:**
 ```json
-[
-  "1. First, create a data object for the new pet with its details: set the name to 'Fido', status to 'available', and include a category object where the name is 'dog', according to the API's schema. Let's call this `new_pet_data`.",
-  "2. Call the `petstore.addPet` API, passing the `new_pet_data` in the body of the request to add the pet to the store. Store the response, which contains the details of the newly created pet, in a variable named `added_pet_response`.",
-  "3. Prepare the result as a JSON serializable dictionary: `{'variable_name': 'added_pet_info', 'description': 'Details of the newly added pet, as returned by the store.', 'value': added_pet_response}`.",
-  "4. Print the final result using `print(json.dumps(result_dict))`."
-]
+{
+  "plan": [
+    "1. First, create a data object for the new pet with its details: set the name to 'Fido', status to 'available', and include a category object where the name is 'dog', according to the API's schema. Let's call this `new_pet_data`.",
+    "2. Call the `petstore.addPet` API, passing the `new_pet_data` in the body of the request to add the pet to the store. Store the response, which contains the details of the newly created pet, in a variable named `added_pet_response`.",
+    "3. Prepare the result as a JSON serializable dictionary: `{'variable_name': 'added_pet_info', 'description': 'Details of the newly added pet, as returned by the store.', 'value': added_pet_response}`.",
+    "4. Print the final result using `print(json.dumps(result_dict))`."
+  ]
+}
 ```
 
 ---
@@ -277,13 +283,15 @@ The plan must conclude with describing the construction of a **single JSON seria
     ```
 * **Generated Plan:**
 ```json
-[
-  "1. First, call the `amazon.show_account` API using the required access token to retrieve the user's account details. Store the API response in a variable called `account_response`.",
-  "2. Next, check if the API call was successful. A successful response will contain an 'email' key, while a failure will contain a 'message' key, according to the schema.",
-  "3. If the call was successful, extract the account details such as 'email' and 'is_prime' from the `account_response`. Then, prepare the result dictionary as `{'variable_name': 'account_details', 'description': 'The user\\'s Amazon account details.', 'value': <extracted_details>}`.",
-  "4. Otherwise, if the call failed, extract the error message from the `account_response`. Prepare the result dictionary as `{'variable_name': 'error_message', 'description': 'An error message indicating the request failed.', 'value': <error_details>}`.",
-  "5. Print the resulting dictionary as a JSON string using `print(json.dumps(result_dict))`."
-]
+{
+  "plan": [
+    "1. First, call the `amazon.show_account` API using the required access token to retrieve the user's account details. Store the API response in a variable called `account_response`.",
+    "2. Next, check if the API call was successful. A successful response will contain an 'email' key, while a failure will contain a 'message' key, according to the schema.",
+    "3. If the call was successful, extract the account details such as 'email' and 'is_prime' from the `account_response`. Then, prepare the result dictionary as `{'variable_name': 'account_details', 'description': 'The user\\'s Amazon account details.', 'value': <extracted_details>}`.",
+    "4. Otherwise, if the call failed, extract the error message from the `account_response`. Prepare the result dictionary as `{'variable_name': 'error_message', 'description': 'An error message indicating the request failed.', 'value': <error_details>}`.",
+    "5. Print the resulting dictionary as a JSON string using `print(json.dumps(result_dict))`."
+  ]
+}
 ```
 ---
 **Example 5: Using Historical Variables**
@@ -321,7 +329,8 @@ The plan must conclude with describing the construction of a **single JSON seria
     ```
 * **Generated Plan:**
 ```json
-[
+{
+  "plan": [
     "1. First, check the `notification_enabled` variable from history. If it is `False`, create an error message and skip to the final preparation step.",
     "2. If notifications are enabled, get the `admin_users_list` from the historical variables.",
     "3. Initialize an empty list called `notification_results` to track the outcome of each notification sent.",
@@ -331,7 +340,8 @@ The plan must conclude with describing the construction of a **single JSON seria
     "7.   Add the response from the API call to the `notification_results` list.",
     "8. After the loop, prepare the final result dictionary: `{'variable_name': 'notification_summary', 'description': 'A summary of the notification delivery statuses for admin users.', 'value': notification_results}`.",
     "9. Print this dictionary as a JSON string using `print(json.dumps(result_dict))`."
-]
+  ]
+}
 ```
 
 ---
@@ -359,13 +369,15 @@ The plan must conclude with describing the construction of a **single JSON seria
     ```
 * **Generated Plan:**
 ```json
-[
-  "1. To find the requested products, I will use the `amazon.searchProducts` API. To ensure the most accurate results, I will use the specific filter parameters available in the schema rather than a generic query.",
-  "2. Call the `amazon.searchProducts` API with the `category` parameter set to 'electronics', the `brand` parameter to 'Apple', and the `status` parameter to 'available'.",
-  "3. Store the list of products returned by the API in a variable named `found_products`.",
-  "4. Prepare the result as a JSON serializable dictionary: `{'variable_name': 'apple_products', 'description': 'A list of available Apple electronics found.', 'value': found_products}`.",
-  "5. Print this dictionary as a JSON string using `print(json.dumps(result_dict))`."
-]
+{
+  "plan": [
+    "1. To find the requested products, I will use the `amazon.searchProducts` API. To ensure the most accurate results, I will use the specific filter parameters available in the schema rather than a generic query.",
+    "2. Call the `amazon.searchProducts` API with the `category` parameter set to 'electronics', the `brand` parameter to 'Apple', and the `status` parameter to 'available'.",
+    "3. Store the list of products returned by the API in a variable named `found_products`.",
+    "4. Prepare the result as a JSON serializable dictionary: `{'variable_name': 'apple_products', 'description': 'A list of available Apple electronics found.', 'value': found_products}`.",
+    "5. Print this dictionary as a JSON string using `print(json.dumps(result_dict))`."
+  ]
+}
 ```
 ---
 **Example 7: Planning from History (No API required)**
@@ -382,15 +394,17 @@ The plan must conclude with describing the construction of a **single JSON seria
 * **Available Tool Schemas:** `[]` (empty list)
 * **Generated Plan:**
 ```json
-[
-  "1. The necessary data is already available in the `detailed_spotify_playlists` variable from history, so no API calls are needed. First, initialize two variables: `max_tracks` to 0 and `playlist_with_most_tracks` to None, to keep track of the playlist with the most songs.",
-  "2. Iterate through each `playlist` in the `detailed_spotify_playlists` list.",
-  "3. For each `playlist`, get the number of tracks by counting the items in its `tracks` list.",
-  "4. Compare this count with the current `max_tracks`. If the current playlist has more tracks, update `max_tracks` to this new count and set `playlist_with_most_tracks` to the current `playlist` object.",
-  "5. After checking all the playlists, `playlist_with_most_tracks` will hold the target playlist. If a playlist was found, extract its 'name' and the final `max_tracks` count to create a summary object. Otherwise, create an error message.",
-  "6. Prepare the result as a JSON serializable dictionary. If a playlist was found, the dictionary will be `{'variable_name': 'playlist_with_most_tracks', 'description': 'The name of the playlist with the most tracks and its track count.', 'value': {'playlist_name': <name_of_the_playlist>, 'track_count': <max_tracks>}}`. Otherwise, it will indicate no playlists were found.",
-  "7. Print the final result dictionary as a JSON string using `print(json.dumps(result_dict))`."
-]
+{
+  "plan": [
+    "1. The necessary data is already available in the `detailed_spotify_playlists` variable from history, so no API calls are needed. First, initialize two variables: `max_tracks` to 0 and `playlist_with_most_tracks` to None, to keep track of the playlist with the most songs.",
+    "2. Iterate through each `playlist` in the `detailed_spotify_playlists` list.",
+    "3. For each `playlist`, get the number of tracks by counting the items in its `tracks` list.",
+    "4. Compare this count with the current `max_tracks`. If the current playlist has more tracks, update `max_tracks` to this new count and set `playlist_with_most_tracks` to the current `playlist` object.",
+    "5. After checking all the playlists, `playlist_with_most_tracks` will hold the target playlist. If a playlist was found, extract its 'name' and the final `max_tracks` count to create a summary object. Otherwise, create an error message.",
+    "6. Prepare the result as a JSON serializable dictionary. If a playlist was found, the dictionary will be `{'variable_name': 'playlist_with_most_tracks', 'description': 'The name of the playlist with the most tracks and its track count.', 'value': {'playlist_name': <name_of_the_playlist>, 'track_count': <max_tracks>}}`. Otherwise, it will indicate no playlists were found.",
+    "7. Print the final result dictionary as a JSON string using `print(json.dumps(result_dict))`."
+  ]
+}
 ```
 
 **Example 8: Chaining of APIs with Loop**
@@ -440,15 +454,17 @@ The plan must conclude with describing the construction of a **single JSON seria
 
 **Generated Plan:**
 ```json
-[
-  "1. To find the average rating of Italian restaurants that are currently open, we need to chain two APIs and perform filtering and aggregation.",
-  "2. Call the `yelp.search_restaurants` API with the user's location to get a list of nearby restaurants. Store the results in `nearby_restaurants`.",
-  "3. Initialize an empty list called `italian_open_restaurants` to store details of Italian restaurants that are currently open.",
-  "4. Loop through each restaurant in the `nearby_restaurants` list.",
-  "5. For each restaurant, extract the `restaurant_id` and call `yelp.get_restaurant_details` to fetch full details including cuisine, rating, and open status.",
-  "6. Check if the restaurant's `cuisine` is 'Italian' AND `is_open` is True. If both conditions are met, add the restaurant details to our `italian_open_restaurants` list.",
-  "7. After processing all restaurants, calculate the average rating from the `italian_open_restaurants` list by summing all ratings and dividing by the count.",
-  "8. Prepare the result as a JSON serializable dictionary: `{'variable_name': 'avg_italian_rating', 'description': 'Average rating of open Italian restaurants nearby', 'value': <calculated_average>}`.",
-  "9. Print the final result dictionary as a JSON string using `print(json.dumps(result_dict))`."
-]
+{
+  "plan": [
+    "1. To find the average rating of Italian restaurants that are currently open, we need to chain two APIs and perform filtering and aggregation.",
+    "2. Call the `yelp.search_restaurants` API with the user's location to get a list of nearby restaurants. Store the results in `nearby_restaurants`.",
+    "3. Initialize an empty list called `italian_open_restaurants` to store details of Italian restaurants that are currently open.",
+    "4. Loop through each restaurant in the `nearby_restaurants` list.",
+    "5. For each restaurant, extract the `restaurant_id` and call `yelp.get_restaurant_details` to fetch full details including cuisine, rating, and open status.",
+    "6. Check if the restaurant's `cuisine` is 'Italian' AND `is_open` is True. If both conditions are met, add the restaurant details to our `italian_open_restaurants` list.",
+    "7. After processing all restaurants, calculate the average rating from the `italian_open_restaurants` list by summing all ratings and dividing by the count.",
+    "8. Prepare the result as a JSON serializable dictionary: `{'variable_name': 'avg_italian_rating', 'description': 'Average rating of open Italian restaurants nearby', 'value': <calculated_average>}`.",
+    "9. Print the final result dictionary as a JSON string using `print(json.dumps(result_dict))`."
+  ]
+}
 ```

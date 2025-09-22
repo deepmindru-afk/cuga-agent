@@ -284,6 +284,7 @@ async def get_job_roles(campaign_name: str):
         return JobTitlesOutput(
             job_titles=[
                 JobTitle(title="Chief Technology Officer"),
+                JobTitle(title="Vice President of Sales"),
                 JobTitle(title="Product Manager"),
             ]
         )
@@ -291,7 +292,6 @@ async def get_job_roles(campaign_name: str):
         return JobTitlesOutput(
             job_titles=[
                 JobTitle(title="Chief Executive Officer"),
-                JobTitle(title="Vice President of Sales"),
                 JobTitle(title="Sales Manager"),
                 JobTitle(title="Account Executive"),
             ]

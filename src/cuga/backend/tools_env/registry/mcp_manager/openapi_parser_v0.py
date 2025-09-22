@@ -57,8 +57,8 @@ class OpenAPITransformer:
                 item_variant = self._select_variant(item_resolved)
                 if isinstance(item_variant, dict):
                     item_resolved = item_variant
-            # recurse for items
-            return [self._summarize_param_schema(item_resolved)]
+            # Return proper array structure with items property
+            return {"type": "array", "items": self._summarize_param_schema(item_resolved)}
 
         # object with properties
         if t == 'object' or 'properties' in resolved:
@@ -373,8 +373,11 @@ class OpenAPITransformer:
                     "description": param_obj_val.get('description', ''),
                     "default": resolved_param_schema.get('default'),
                     "constraints": self._format_constraints(resolved_param_schema),
-                    # Include shape only when it adds structure
-                    "schema": param_repr if isinstance(param_repr, (dict, list)) else None,
+                    # Include shape only when it adds structure (objects, arrays, or complex types)
+                    "schema": param_repr
+                    if isinstance(param_repr, dict)
+                    and (param_repr.get("type") == "array" or len(param_repr) > 1)
+                    else None,
                 }
             )
 
@@ -432,7 +435,10 @@ class OpenAPITransformer:
                                         "default": resolved_prop_schema.get('default'),
                                         "constraints": self._format_constraints(resolved_prop_schema),
                                         # Include nested shape for object/array fields
-                                        "schema": prop_repr if isinstance(prop_repr, (dict, list)) else None,
+                                        "schema": prop_repr
+                                        if isinstance(prop_repr, dict)
+                                        and (prop_repr.get("type") == "array" or len(prop_repr) > 1)
+                                        else None,
                                     }
                                 )
 
