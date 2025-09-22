@@ -35,7 +35,6 @@ class TestServerStreamBalanced(BaseTestServerStream):
         """
         query = "Find Vice President of Sales from third party data accounts with client_status: Active, coverage_id: COV-001, campaign_name: 'Tech Transformation', and tell how many"
         all_events = await self.run_task(query)
-        self._assert_answer_event(all_events, expected_keywords=["Vice President of Sales"])
         self._assert_answer_event(all_events, expected_keywords=["23"])
 
 

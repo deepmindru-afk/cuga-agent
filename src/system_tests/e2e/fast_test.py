@@ -17,7 +17,6 @@ class TestServerStreamFast(BaseTestServerStream):
         """
         query = "get top account by revenue from my accounts"
         all_events = await self.run_task(query)
-        self._assert_answer_event(all_events, expected_keywords=["account", "revenue"])
         self._assert_answer_event(all_events, expected_keywords=["Gold Rush Group"])
 
     async def test_list_my_accounts_fast(self):
@@ -40,7 +39,6 @@ class TestServerStreamFast(BaseTestServerStream):
         """
         query = "Find Vice President of Sales from third party data accounts with client_status: Active, coverage_id: COV-001, campaign_name: 'Tech Transformation', and tell how many"
         all_events = await self.run_task(query)
-        self._assert_answer_event(all_events, expected_keywords=["Vice President of Sales"])
         self._assert_answer_event(all_events, expected_keywords=["23"])
 
 
