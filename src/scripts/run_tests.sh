@@ -34,13 +34,15 @@ if [ "$1" = "full_tests" ]; then
     echo "Running all tests (registry + e2e system tests)..."
     uv run pytest ./src -v
 elif [ "$1" = "unit_tests" ]; then
-    echo "Running unit tests (registry + variables manager tests)..."
+    echo "Running unit tests (registry + variables manager + local sandbox tests)..."
     uv run pytest ./src/cuga/backend/tools_env/registry/tests/ -v
     uv run pytest ./src/cuga/backend/cuga_graph/nodes/api/variables_manager/tests/ -v
+    uv run pytest ./src/cuga/backend/tools_env/code_sandbox/tests/ -v
 else
-    echo "Running default tests (registry + e2e without save_reuse and without sandbox docker)..."
+    echo "Running default tests (registry + variables manager + local sandbox + e2e without save_reuse and without sandbox docker)..."
     uv run pytest ./src/cuga/backend/tools_env/registry/tests/ -v
     uv run pytest ./src/cuga/backend/cuga_graph/nodes/api/variables_manager/tests/ -v
+    uv run pytest ./src/cuga/backend/tools_env/code_sandbox/tests/ -v
     uv run pytest ./src/system_tests/e2e/balanced_test.py ./src/system_tests/e2e/fast_test.py -v
 fi
 
