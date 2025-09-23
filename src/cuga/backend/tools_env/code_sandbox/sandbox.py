@@ -28,8 +28,6 @@ def time_timestamp():
     return f"{now:%H-%M-%S}-{ms:03d}"
 
 
-registry_host = "http://host.docker.internal:8001/functions/call"
-
 try:
     from llm_sandbox import SandboxSession
 
@@ -84,9 +82,9 @@ structured_tools_invocation = """
 
 def get_premable(is_local=False, current_date=None):
     registry_host = (
-        f"http://host.docker.internal:8001/functions/call?trajectory_path={quote(tracker.get_current_trajectory_path())}"
+        f"http://host.docker.internal:{str(settings.server_ports.registry)}/functions/call?trajectory_path={quote(tracker.get_current_trajectory_path())}"
         if not is_local
-        else f"http://localhost:8001/functions/call?trajectory_path={quote(tracker.get_current_trajectory_path())}"
+        else f"http://localhost:{str(settings.server_ports.registry)}/functions/call?trajectory_path={quote(tracker.get_current_trajectory_path())}"
     )
 
     # Check if structured tools should be enabled

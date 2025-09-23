@@ -233,4 +233,6 @@ if __name__ == "__main__":
     # os.environ["MCP_SERVERS_FILE"] = args.config
 
     # print(f"Starting API Registry server with config: {args.config}...")
-    uvicorn.run(app, host="127.0.0.1", port=8001)
+    from cuga.config import settings
+
+    uvicorn.run(app, host="127.0.0.1", port=settings.server_ports.registry)
