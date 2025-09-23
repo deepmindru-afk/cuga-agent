@@ -114,8 +114,10 @@ class TaskAnalyzer(BaseNode):
     async def call_authenticate_apps(apps: List[str]):
         payload = {"apps": apps}  # JSON body
         async with httpx.AsyncClient() as client:
+            from cuga.config import settings
+
             response = await client.post(  # Changed from GET to POST
-                "http://127.0.0.1:8001/api/authenticate_apps",
+                f"http://127.0.0.1:{settings.server_ports.registry}/api/authenticate_apps",
                 json=payload,  # Send as JSON body
             )
             print(response.status_code)

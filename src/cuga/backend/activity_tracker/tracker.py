@@ -276,7 +276,7 @@ class ActivityTracker(object):
         """
         if self.experiment_folder:
             return os.path.join(self._base_dir, self.experiment_folder, self.task_id + ".json")
-        return None
+        return ""
 
     def generate_session_id(self):
         self.session_id = random_id_with_timestamp(full_date=True)

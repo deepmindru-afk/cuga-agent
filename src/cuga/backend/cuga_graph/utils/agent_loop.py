@@ -332,7 +332,7 @@ class AgentLoop:
             return AgentLoopAnswer(
                 end=True,
                 has_tools=False,
-                answer="Done!\n---\n [Click here for an explained walkthrough of the flow](http://localhost:8005/flows/flow.html)",
+                answer=f"Done!\n---\n [Click here for an explained walkthrough of the flow](http://localhost:{settings.server_ports.demo}/flows/flow.html)",
                 flow_generalized=True,
                 tools=msg.tool_calls,
             )

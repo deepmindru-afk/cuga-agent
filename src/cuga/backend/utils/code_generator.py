@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+from cuga.config import settings
 
 
 def indent_code(code, num_tabs=2):
@@ -62,8 +63,8 @@ def main(task_id):
     with AppWorld(
         task_id=task_id,
         experiment_name="test",
-        remote_environment_url="http://localhost:8000",
-        remote_apis_url="http://localhost:9000",
+        remote_environment_url=f"http://localhost:{settings.server_ports.environment_url}",
+        remote_apis_url=f"http://localhost:{settings.server_ports.apis_url}",
     ) as world:
         logger.info(f"Running task: {{task_id}}")
 

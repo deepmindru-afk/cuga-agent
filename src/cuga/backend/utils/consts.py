@@ -1,5 +1,6 @@
 import os
 from enum import Enum
+from cuga.config import settings
 
 
 class ServiceType(str, Enum):
@@ -8,8 +9,8 @@ class ServiceType(str, Enum):
     MCP_SERVER = "mcp_server"
 
 
-LOCAL_ORCHESTRATE_URL = "http://localhost:4321"
-LOCAL_TRM_URL = "http://localhost:8080"
+LOCAL_ORCHESTRATE_URL = f"http://localhost:{settings.server_ports.orchestrate_url}"
+LOCAL_TRM_URL = f"http://localhost:{settings.server_ports.trm_url}"
 
 STATELESS_ACTIONS = [
     "go_back",
