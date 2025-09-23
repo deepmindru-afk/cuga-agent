@@ -9,11 +9,9 @@ from cuga.backend.cuga_graph.nodes.shared.base_agent import BaseAgent
 from cuga.backend.cuga_graph.nodes.api.tasks.summarize_code import summarize_steps
 from cuga.backend.cuga_graph.state.agent_state import AgentState
 from cuga.backend.llm.models import LLMManager
-from cuga.backend.llm.utils.helpers import load_one_prompt
+from cuga.backend.llm.utils.helpers import load_prompt_simple
 from cuga.config import settings
-from cuga.backend.cuga_graph.nodes.api.code_agent.code_act_agent import create_codeact
 from cuga.backend.tools_env.code_sandbox.sandbox import run_code
-from langgraph.checkpoint.memory import MemorySaver
 from loguru import logger
 from cuga.backend.cuga_graph.nodes.api.variables_manager.manager import VariablesManager
 from cuga.configurations.instructions_manager import InstructionsManager
@@ -29,23 +27,19 @@ class CodeAgent(BaseAgent):
         self.name = "CodeAgent"
         self.code_planner_enabled = settings.advanced_features.code_planner_enabled
         if not self.code_planner_enabled:
-            pmt_path = "./prompts/system_no_plan.jinja2"
+            pmt_user_path = "./prompts/user_no_plan.jinja2"
+            systempmt_path = "./prompts/system_no_plan.jinja2"
         else:
-            pmt_path = (
+            pmt_user_path = "./prompts/user.jinja2"
+            systempmt_path = (
                 "./prompts/system_fast.jinja2"
                 if settings.features.code_generation == "fast"
                 else "./prompts/system_accurate.jinja2"
             )
-        pmt = load_one_prompt(pmt_path)
-        instructions = instructions_manager.get_instructions(self.name)
-        pmt_text = pmt.format(instructions=instructions)
-        code_act = create_codeact(
-            llm,
-            prompt=pmt_text,
-            tools=[],
-            eval_fn=run_code,
-        )
-        self.agent = code_act.compile(checkpointer=MemorySaver())
+        pmt_template = load_prompt_simple(systempmt_path, pmt_user_path)
+        self.instructions = instructions_manager.get_instructions(self.name)
+        # For CodeAgent, we don't need structured output, just raw text to extract code from
+        self.chain = BaseAgent.get_chain(prompt_template=pmt_template, llm=llm, wx_json_mode="no_format")
         self.summary_task = summarize_steps(llm_manager.get_model(settings.agent.final_answer.model))
 
     @staticmethod
@@ -116,6 +110,45 @@ class CodeAgent(BaseAgent):
             return text[start_pos:].strip()
         return text
 
+    def extract_code_from_response(self, text: str) -> str:
+        """
+        Extracts all codeblocks from a text string and combines them into a single code string.
+
+        Args:
+            text: A string containing zero or more codeblocks, where each codeblock is
+                surrounded by triple backticks (```).
+
+        Returns:
+            A string containing the combined code from all codeblocks, with each codeblock
+                separated by a newline.
+        """
+        import re
+
+        BACKTICK_PATTERN = r"(?:^|\n)```(.*?)(?:```(?:\n|$))"
+        # Find all code blocks in the text using regex
+        # Pattern matches anything between triple backticks, with or without a language identifier
+        code_blocks = re.findall(BACKTICK_PATTERN, text, re.DOTALL)
+        if not code_blocks:
+            logger.debug("Generated code has no code blocks")
+            return text
+        # Process each codeblock
+        processed_blocks = []
+        for block in code_blocks:
+            # Strip leading and trailing whitespace
+            block = block.strip()
+
+            # If the first line looks like a language identifier, remove it
+            lines = block.split("\n")
+            if lines and (not lines[0].strip() or " " not in lines[0].strip()):
+                # First line is empty or likely a language identifier (no spaces)
+                block = "\n".join(lines[1:])
+
+            processed_blocks.append(block)
+
+        # Combine all codeblocks with newlines between them
+        combined_code = "\n\n".join(processed_blocks)
+        return combined_code
+
     async def run(self, input_variables: AgentState = None) -> AIMessage:
         context_variables = input_variables.coder_variables
         context_variables_preview = (
@@ -123,137 +156,81 @@ class CodeAgent(BaseAgent):
             if context_variables and len(context_variables) > 0
             else "N/A"
         )
-        if not self.code_planner_enabled:
-            messages = [
-                {
-                    "role": "user",
-                    "content": """
-                    **Input 1: User Goal**
-                    {}
 
-                    **Input 2: Relevant variable history**
-                    ```text
-                    {}
-                    ```
+        # Invoke the chain to get code
+        response = await self.chain.ainvoke(
+            input={
+                "coder_task": input_variables.coder_task,
+                "api_planner_codeagent_plan": self.extract_from_json_marker(
+                    input_variables.api_planner_codeagent_plan
+                ),
+                "variables_preview": context_variables_preview,
+                "api_shortlister_planner_filtered_apis": input_variables.api_shortlister_planner_filtered_apis,
+                "current_datetime": input_variables.current_datetime,
+                "instructions": self.instructions if self.instructions else "",
+            }
+        )
+        logger.debug(f"Response: {response.content}")
+        # Extract code from response (assuming it contains code blocks)
+        code = self.extract_code_from_response(response.content)
+        logger.debug(f"Generated code: {code}")
 
-                    **Input 3: API Definitions**
-                    ```json
-                    {}
-                    ```
+        # Run code in sandbox
+        try:
+            execution_output, _ = run_code(code)
+        except Exception as e:
+            logger.error(f"Error running code: {e}")
+            execution_output = str(e)
 
-                    current datetime: {}
-                    """.format(
-                        input_variables.coder_task,
-                        context_variables_preview,
-                        input_variables.api_shortlister_planner_filtered_apis,
-                        input_variables.current_datetime,
-                    ),
+        logger.debug(f"Execution output: {execution_output}")
+
+        # Process the output
+        out, remaining_text = self.get_last_nonempty_line(execution_output, limit=5)
+        steps_summary = []
+        if out:
+            steps_summary = [remaining_text]
+
+        if not out:
+            out = {
+                "variable_name": "output_status",
+                "value": execution_output,
+            }
+            logger.warning("Not json output")
+
+        var_manager.add_variable(
+            name=out.get("variable_name"),
+            description=out.get("description", ""),
+            value=out.get("value"),
+        )
+
+        if not input_variables.variables_memory:
+            input_variables.variables_memory = {}
+
+        final_answer = None
+        if settings.features.code_output_summary:
+            final_answer = await self.summary_task.ainvoke(
+                input={
+                    "api_calling_plan": input_variables.api_planner_codeagent_plan,
+                    "execution_output": remaining_text[:50000],
+                    "variable_summary": var_manager.get_variables_summary(),
                 }
-            ]
-        else:
-            messages = [
-                {
-                    "role": "user",
-                    "content": """
-                    **Input 1: User Goal**
-                    {}
+            )
 
-                    **Input 2: Generated Plan**
-                    ```json
-                    {}
-                    ```
+        logger.debug(
+            f"\nvariable_name: {out.get('variable_name')}\ndescription: {out.get('description', '')}\nvalue: {out.get('value')}\n"
+        )
 
-                    **Input 3: Relevant variable history**
-                    ```text
-                    {}
-                    ```
-
-                    **Input 4: API Definitions**
-                    ```json
-                    {}
-                    ```
-                    current datetime: {}
-                    """.format(
-                        input_variables.coder_task,
-                        self.extract_from_json_marker(input_variables.api_planner_codeagent_plan),
-                        context_variables_preview,
-                        input_variables.api_shortlister_planner_filtered_apis,
-                        input_variables.current_datetime,
-                    ),
-                }
-            ]
-        # answer = None
-        # try:
-        #     answer = await self.agent.ainvoke(input={"messages": messages},stream_mode="updates",interrupt_before="sandbox")
-        # except Exception as e:
-        #     logger.error(answer)
-        #     logger.error(e)
-        #     answer = str(e)
-        # logger.debug(answer)
-        allowed_calls_of_llm = 1
-        count_llms = 0
-        async for event in self.agent.astream(
-            {"messages": messages},
-            stream_mode="updates",
-            config={"configurable": {"thread_id": 1}},
-        ):
-            print(event.keys())
-            logger.debug(event)
-            if "call_model" in event.keys():
-                code_copy = event['call_model']['messages'][0].content
-                logger.debug(code_copy)
-                count_llms += 1
-            if "sandbox" in event.keys():
-                out = event['sandbox']['messages'][0]['content']
-                logger.debug(f"sandbox ouput: {out}")
-                out, remaining_text = self.get_last_nonempty_line(out, limit=5)
-                steps_summary = []
-                if out:
-                    steps_summary = [remaining_text]
-
-                if not out:
-                    out = {
-                        "variable_name": "output_status",
-                        "value": f"{event['sandbox']['messages'][0]['content']}",
-                    }
-                    logger.warning("Not json output")
-
-                var_manager.add_variable(
-                    name=out.get("variable_name"),
-                    description=out.get("description", ""),
-                    value=out.get("value"),
-                )
-                # input_variables.api_planner_history[-1].agent_output = CoderAgentHistoricalOutput(variables_summary=)
-                # input_variables.variables_memory[out.get("variable_name")] =
-                if allowed_calls_of_llm == count_llms:
-                    if not input_variables.variables_memory:
-                        input_variables.variables_memory = {}
-                    final_answer = None
-                    if settings.features.code_output_summary:
-                        final_answer = await self.summary_task.ainvoke(
-                            input={
-                                "api_calling_plan": input_variables.api_planner_codeagent_plan,
-                                "execution_output": remaining_text[:50000],
-                                "variable_summary": var_manager.get_variables_summary(),
-                            }
-                        )
-
-                    logger.debug(
-                        f"\nvariable_name: {out.get('variable_name')}\ndescription: {out.get('description', '')}\nvalue: {out.get('value')}\n"
-                    )
-                    return AIMessage(
-                        content=CodeAgentOutput(
-                            code=code_copy,
-                            summary=final_answer.content
-                            if final_answer
-                            else f"The output of code stored in variable {out.get("variable_name")} - {out.get("description", "")}",
-                            steps_summary=steps_summary,
-                            variables=out,
-                            execution_output=event['sandbox']['messages'][0]['content'],
-                        ).model_dump_json()
-                    )
-            # return AIMessage(content="No code running")
-        return AIMessage(content="Failed to run")
+        return AIMessage(
+            content=CodeAgentOutput(
+                code=code,
+                summary=final_answer.content
+                if final_answer
+                else f"The output of code stored in variable {out.get("variable_name")} - {out.get("description", "")}",
+                steps_summary=steps_summary,
+                variables=out,
+                execution_output=execution_output,
+            ).model_dump_json()
+        )
 
     @staticmethod
     def create():
