@@ -8,7 +8,7 @@ import uuid
 from contextlib import asynccontextmanager
 from typing import List, Dict, Any, Union, Optional
 from cuga.backend.utils.id_utils import random_id_with_timestamp, mask_with_timestamp
-
+import traceback
 from pydantic import BaseModel, ValidationError
 
 from fastapi import FastAPI, Request, HTTPException
@@ -243,7 +243,7 @@ async def lifespan(app: FastAPI):
     app_state.thread_id = str(uuid.uuid4())
 
     logger.info("Application finished starting up...")
-    url = f"http://localhost:8005?t={random_id_with_timestamp()}"
+    url = f"http://localhost:{settings.server_ports.demo}?t={random_id_with_timestamp()}"
     if settings.advanced_features.mode == "api" and os.getenv("CUGA_TEST_ENV", "false").lower() not in (
         "true",
         "1",
@@ -459,6 +459,7 @@ async def event_stream(query: str, api_mode=False, resume=None):
                         )
     except Exception as e:
         logger.exception(e)
+        logger.error(traceback.format_exc())
         app_state.tracker.finish_task(
             intent=app_state.state.input,
             site="",
