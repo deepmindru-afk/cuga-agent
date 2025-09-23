@@ -185,7 +185,7 @@ def signal_handler(signum, frame):
     stop_direct_processes()
 
     # Kill processes by common ports used by the services
-    kill_processes_by_port([8001, 8005, 8000, 3000])
+    kill_processes_by_port([settings.server_ports.registry, settings.server_ports.demo])
 
     logger.info("All processes stopped.")
     sys.exit(0)
@@ -351,7 +351,7 @@ def start(
                     "--host",
                     host,
                     "--port",
-                    "8001",
+                    str(settings.server_ports.registry),
                 ],
             )
 
@@ -370,7 +370,7 @@ def start(
                     host,
                     "--no-reload",
                     "--port",
-                    "8005",
+                    str(settings.server_ports.demo),
                 ],
             )
 
@@ -380,8 +380,8 @@ def start(
                 logger.info(
                     "\n\033[1;36m┌──────────────────────────────────────────────────┐\n"
                     "\033[1;36m│\033[0m \033[1;33mDemo services are running. Press Ctrl+C to stop\033[0m \033[1;36m │\033[0m\n"
-                    "\033[1;36m│\033[0m \033[1;37mRegistry: http://localhost:8001                 \033[0m \033[1;36m│\033[0m\n"
-                    "\033[1;36m│\033[0m \033[1;37mDemo: http://localhost:8005                     \033[0m \033[1;36m│\033[0m\n"
+                    f"\033[1;36m│\033[0m \033[1;37mRegistry: http://localhost:{settings.server_ports.registry}                 \033[0m \033[1;36m│\033[0m\n"
+                    f"\033[1;36m│\033[0m \033[1;37mDemo: http://localhost:{settings.server_ports.demo}                     \033[0m \033[1;36m│\033[0m\n"
                     "\033[1;36m└──────────────────────────────────────────────────┘\033[0m"
                 )
                 wait_for_direct_processes()
@@ -402,13 +402,13 @@ def start(
                     "--host",
                     host,
                     "--port",
-                    "8001",
+                    str(settings.server_ports.registry),
                 ],
             )
 
             if direct_processes:
                 logger.info(
-                    "\n\033[1;36m┌────────────────────────────────────────┐\n\033[1;36m│\033[0m \033[1;33mRegistry service is running. Press Ctrl+C to stop\033[0m \033[1;36m│\033[0m\n\033[1;36m│\033[0m \033[1;37mRegistry: http://localhost:8001\033[0m         \033[1;36m│\033[0m\n\033[1;36m└────────────────────────────────────────┘\033[0m"
+                    f"\n\033[1;36m┌────────────────────────────────────────┐\n\033[1;36m│\033[0m \033[1;33mRegistry service is running. Press Ctrl+C to stop\033[0m \033[1;36m│\033[0m\n\033[1;36m│\033[0m \033[1;37mRegistry: http://localhost:{settings.server_ports.registry}\033[0m         \033[1;36m│\033[0m\n\033[1;36m└────────────────────────────────────────┘\033[0m"
                 )
                 wait_for_direct_processes()
         except Exception as e:
@@ -420,21 +420,26 @@ def start(
     elif service == "appworld":
         try:
             # Start environment server first
-            run_direct_service("appworld-environment", ["appworld", "serve", "environment", "--port", "8000"])
+            run_direct_service(
+                "appworld-environment",
+                ["appworld", "serve", "environment", "--port", str(settings.server_ports.environment_url)],
+            )
 
             # Wait for environment server to start
             logger.info("Waiting for AppWorld environment server to start...")
             time.sleep(5)
 
             # Then start API server
-            run_direct_service("appworld-api", ["appworld", "serve", "apis", "--port", "9000"])
+            run_direct_service(
+                "appworld-api", ["appworld", "serve", "apis", "--port", str(settings.server_ports.apis_url)]
+            )
 
             if direct_processes:
                 logger.info(
                     "\n\033[1;36m┌──────────────────────────────────────────────────┐\n"
                     "\033[1;36m│\033[0m \033[1;33mAppWorld services are running. Press Ctrl+C to stop\033[0m \033[1;36m │\033[0m\n"
-                    "\033[1;36m│\033[0m \033[1;37mEnvironment: http://localhost:8000              \033[0m \033[1;36m│\033[0m\n"
-                    "\033[1;36m│\033[0m \033[1;37mAPI: http://localhost:9000                      \033[0m \033[1;36m│\033[0m\n"
+                    f"\033[1;36m│\033[0m \033[1;37mEnvironment: http://localhost:{settings.server_ports.environment_url}              \033[0m \033[1;36m│\033[0m\n"
+                    f"\033[1;36m│\033[0m \033[1;37mAPI: http://localhost:{settings.server_ports.apis_url}                      \033[0m \033[1;36m│\033[0m\n"
                     "\033[1;36m└──────────────────────────────────────────────────┘\033[0m"
                 )
                 wait_for_direct_processes()

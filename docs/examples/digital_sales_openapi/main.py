@@ -335,4 +335,6 @@ async def filter_contacts(contacts_output: ContactsOutput):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    from cuga.config import settings
+
+    uvicorn.run(app, host="0.0.0.0", port=settings.server_ports.digital_sales_api)
