@@ -10,7 +10,19 @@ tracker = ActivityTracker()
 
 def run_petstore():
     server_module = "agent/api/example_api_servers/petstore.py"
-    subprocess.run(["uv", "run", "fastapi", "dev", server_module, "--no-reload", "--port=8081"])
+    from cuga.config import settings
+
+    subprocess.run(
+        [
+            "uv",
+            "run",
+            "fastapi",
+            "dev",
+            server_module,
+            "--no-reload",
+            f"--port={settings.server_ports.petstore_api}",
+        ]
+    )
 
 
 def run_api_registry_base(mode):
@@ -91,7 +103,7 @@ def run_digital_sales_openapi():
             server_module,
             f"--host={host}",
             "--no-reload",
-            "--port=8000",
+            f"--port={settings.server_ports.digital_sales_api}",
         ]
     )
 

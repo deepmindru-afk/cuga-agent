@@ -17,15 +17,17 @@ async def _main():
     graph: Graph = agent.graph.get_graph(xray=True)
 
     # Write graph data to JSON file
-    json_path = os.path.join(PACKAGE_ROOT, "scripts", "graph_visualization", "graph.json")
+    json_path = os.path.join(PACKAGE_ROOT, "..", "scripts", "graph_visualization", "graph.json")
     with open(json_path, "w") as f:
         f.write(json.dumps(graph.to_json()))
 
     # Start a local HTTP server to serve the files
-    graph_viz_dir = os.path.join(PACKAGE_ROOT, "scripts", "graph_visualization")
+    graph_viz_dir = os.path.join(PACKAGE_ROOT, "..", "scripts", "graph_visualization")
+
+    from cuga.config import settings
 
     # Find an available port
-    port = 8080
+    port = settings.server_ports.graph_visualization
     while port < 8090:  # Try ports 8080-8089
         try:
             test_socket = socketserver.TCPServer(("", port), http.server.SimpleHTTPRequestHandler)
@@ -34,8 +36,10 @@ async def _main():
         except OSError:
             port += 1
     else:
-        print("Could not find an available port. Using port 8080 anyway...")
-        port = 8080
+        print(
+            f"Could not find an available port. Using port {settings.server_ports.graph_visualization} anyway..."
+        )
+        port = settings.server_ports.graph_visualization
 
     # Change to the graph visualization directory
     os.chdir(graph_viz_dir)

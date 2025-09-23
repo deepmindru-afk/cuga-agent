@@ -20,7 +20,7 @@ REGISTRY_COMMAND = ["uv", "run", "registry"]  # Assuming default port for regist
 DIGITAL_SALES_MCP_COMMAND = ["uv", "run", "digital_sales_openapi"]  # Digital sales MCP server
 
 # Server URL
-SERVER_URL = "http://localhost:8005"
+SERVER_URL = f"http://localhost:{settings.server_ports.demo}"
 STREAM_ENDPOINT = f"{SERVER_URL}/stream"
 STOP_ENDPOINT = f"{SERVER_URL}/stop"
 os.environ["MCP_SERVERS_FILE"] = os.path.join(os.path.dirname(__file__), "config", "mcp_servers.yaml")
@@ -140,7 +140,7 @@ class BaseTestServerStream(unittest.IsolatedAsyncioTestCase):
 
         # Clean up any existing processes on our ports before starting
         print("Cleaning up any existing processes on target ports...")
-        self._kill_process_by_port(8000, "digital sales MCP")
+        self._kill_process_by_port(settings.server_ports.digital_sales_api, "digital sales MCP")
         self._kill_process_by_port(settings.server_ports.demo, "demo server")
         self._kill_process_by_port(settings.server_ports.registry, "registry")
         if hasattr(settings.server_ports, 'saved_flows'):
