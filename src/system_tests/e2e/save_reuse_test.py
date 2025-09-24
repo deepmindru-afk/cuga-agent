@@ -15,7 +15,9 @@ class TestServerStreamFast(BaseTestServerStream):
 
     async def test_get_top_account_by_revenue_stream_fast(self):
         """
-        Tests the /stream endpoint with the query 'get top account by revenue' in fast mode.
+        Tests the save and reuse functionality with the query 'get top account by revenue' in fast mode.
+        This test verifies the complete save/reuse flow including human approval steps and intent capture.
+        Ground Truth: The final answer should contain keywords 'account' and 'revenue'.
         """
         query = "get top account by revenue"
         print(f"\n=== Running FAST mode test for query: '{query}' ===")
