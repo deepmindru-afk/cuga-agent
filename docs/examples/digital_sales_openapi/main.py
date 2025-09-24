@@ -1,33 +1,31 @@
-from fastapi import FastAPI
+import random
+from typing import Dict, List, Optional, Set
+
+from fastapi import FastAPI, Path, Query
 from pydantic import BaseModel
-from typing import List, Dict
-import uvicorn
-
-# Campaign configurations
-CAMPAIGN_HIGH_VALUE_OUTREACH = "High Value Outreach"
-CAMPAIGN_TECH_TRANSFORMATION = "Tech Transformation"
-
-app = FastAPI(
-    title="Digital Sales Skills API",
-    description="An API for managing sales accounts, contacts, and campaigns.",
-    version="1.0.0",
-)
 
 # --- Pydantic Models ---
 
 
 class Account(BaseModel):
+    """Represents a single sales account."""
+
     id: str
     name: str
     state: str
     revenue: int
+    is_third_party: bool = False  # New field to indicate if the account is from a third-party provider
 
 
 class JobTitle(BaseModel):
+    """Represents a job title."""
+
     title: str
 
 
 class Contact(BaseModel):
+    """Represents a contact person at an account."""
+
     id: str
     name: str
     email: str
@@ -36,33 +34,35 @@ class Contact(BaseModel):
 
 
 class MyAccountsOutput(BaseModel):
+    """Response model for getting a user's accounts."""
+
     accounts: List[Account]
     coverage_id: str
     client_status: str
 
 
 class AccountsOutput(BaseModel):
+    """Response model for getting a list of accounts."""
+
     accounts: List[Account]
-    campaign_name: str
 
 
 class JobTitlesOutput(BaseModel):
+    """Response model for getting a list of job titles."""
+
     job_titles: List[JobTitle]
 
 
 class ContactsOutput(BaseModel):
+    """Response model for getting a list of contacts."""
+
     contacts: List[Contact]
 
 
-class GetContactsRequest(BaseModel):
-    job_titles: List[JobTitle]
-    accounts: List[Account]
-
-
-# --- Sample Data ---
+# --- Sample Data Generation ---
 
 # A static list of 100 accounts for consistent testing
-accounts_list = [
+accounts_list_raw = [
     ("Apex Industries", "NY", 1200000),
     ("Starlight Corp", "FL", 300000),
     ("Phoenix Holdings", "CA", 9500000),
@@ -165,176 +165,237 @@ accounts_list = [
     ("North Star Inc.", "MN", 2300000),
 ]
 
+# Use a fixed seed for reproducible random assignments
+random.seed(42)
+
 SAMPLE_ACCOUNTS: Dict[str, Account] = {
-    f"acc_{i}": Account(id=f"acc_{i}", name=name, state=state, revenue=rev)
-    for i, (name, state, rev) in enumerate(accounts_list, start=1)
+    f"acc_{i}": Account(
+        id=f"acc_{i}",
+        name=name,
+        state=state,
+        revenue=rev,
+        is_third_party=(i % 2 == 0),  # Make every even-indexed account a third-party account
+    )
+    for i, (name, state, rev) in enumerate(accounts_list_raw, start=1)
 }
 
-SAMPLE_JOB_TITLES: List[JobTitle] = [
-    JobTitle(title="Chief Executive Officer"),
-    JobTitle(title="Chief Technology Officer"),
-    JobTitle(title="Chief Financial Officer"),
-    JobTitle(title="Vice President of Sales"),
-    JobTitle(title="Director of Marketing"),
-    JobTitle(title="Sales Manager"),
-    JobTitle(title="Product Manager"),
-    JobTitle(title="Account Executive"),
+# Job titles used for contacts
+job_titles_list = [
+    "Chief Executive Officer",
+    "Chief Technology Officer",
+    "Chief Financial Officer",
+    "Vice President of Sales",
+    "Director of Marketing",
+    "Sales Manager",
+    "Product Manager",
+    "Account Executive",
+    "Data Scientist",
+    "Software Engineer",
 ]
 
-# Generate deterministic contacts linked to accounts (2-3 contacts per account = ~250 total)
 first_names = ["Alice", "Bob", "Charlie", "Diana", "Ethan", "Fiona", "George", "Helen", "Ian", "Julia"]
-last_names = [
-    "Johnson",
-    "Williams",
-    "Davis",
-    "Miller",
-    "Garcia",
-    "Rodriguez",
-    "Wilson",
-    "Martinez",
-    "Anderson",
-    "Taylor",
-]
-job_titles_list = [jt.title for jt in SAMPLE_JOB_TITLES]
+last_names = ["Johnson", "Williams", "Davis", "Miller", "Garcia", "Rodriguez", "Wilson", "Martinez"]
 
-# Distribution pattern: ensure each account gets contacts from different job categories
-job_patterns = [
-    ["Chief Executive Officer", "Chief Financial Officer"],  # Executive level
-    ["Vice President of Sales", "Director of Marketing"],  # Senior management
-    ["Sales Manager", "Product Manager"],  # Mid-level
-    ["Account Executive", "Chief Technology Officer"],  # Individual contributors
-]
-
-contacts_list = []
+# Generate contacts linked to accounts
+SAMPLE_CONTACTS: Dict[str, Contact] = {}
 contact_index = 1
-
-for acc_id in range(1, 101):  # For each of the 100 accounts
-    account_id = f"acc_{acc_id}"
-    account = SAMPLE_ACCOUNTS[account_id]
-    account_name_part = account.name.split(' ')[0].lower().replace('.', '')
-
-    # Determine how many contacts for this account (2 or 3, alternating)
-    num_contacts = 2 if acc_id % 2 == 0 else 3
-
-    # Get job titles for this account based on pattern
-    pattern_index = (acc_id - 1) % len(job_patterns)
-    account_job_titles = job_patterns[pattern_index]
-
-    for contact_num in range(num_contacts):
-        # Deterministic name generation based on account and contact number
-        first_name_idx = (acc_id + contact_num) % len(first_names)
-        last_name_idx = (acc_id * contact_num + contact_num) % len(last_names)
-
-        first_name = first_names[first_name_idx]
-        last_name = last_names[last_name_idx]
+for account_id, account in SAMPLE_ACCOUNTS.items():
+    num_contacts = random.randint(1, 3)  # Each account has 1-3 contacts
+    for _ in range(num_contacts):
+        contact_id = f"con_{contact_index}"
+        first_name = random.choice(first_names)
+        last_name = random.choice(last_names)
         name = f"{first_name} {last_name}"
+        email = f"{first_name.lower()}.{last_name.lower()}@{account.name.split(' ')[0].lower()}.com".replace(
+            '.', ''
+        )
+        job_title = random.choice(job_titles_list)
 
-        # Email generation
-        email = f"{first_name.lower()}.{last_name[0].lower()}@{account_name_part}.com"
-
-        # Job title assignment (cycle through available titles for this account)
-        job_title = account_job_titles[contact_num % len(account_job_titles)]
-
-        contacts_list.append((f"con_{contact_index}", name, email, account_id, job_title))
+        SAMPLE_CONTACTS[contact_id] = Contact(
+            id=contact_id, name=name, email=email, account_id=account_id, job_title=job_title
+        )
         contact_index += 1
 
-SAMPLE_CONTACTS: Dict[str, Contact] = {
-    cid: Contact(id=cid, name=cname, email=cemail, account_id=cacc_id, job_title=cjob_title)
-    for cid, cname, cemail, cacc_id, cjob_title in contacts_list
-}
+# --- FastAPI App Initialization ---
 
+app = FastAPI(
+    title="Digital Sales Skills API (Stabilized)",
+    description="An API for managing sales accounts, contacts, and campaigns.",
+    version="2.0.0",
+)
 
 # --- API Endpoints ---
-@app.get("/getMyAccounts", response_model=MyAccountsOutput, summary="Get My Territory Accounts")
+
+
+@app.get("/my-accounts", response_model=MyAccountsOutput, summary="Get My Territory Accounts")
 async def get_my_accounts():
     """
-    Retrieves the list of accounts assigned to the current user's territory.
+    Retrieves a deterministically selected list of accounts assigned to the current user's territory.
     """
+    # Simulate a user's territory by returning accounts with odd IDs
+    my_accounts = [acc for acc_id, acc in SAMPLE_ACCOUNTS.items() if int(acc_id.split('_')[1]) % 2 != 0]
+
     return MyAccountsOutput(
-        accounts=list(SAMPLE_ACCOUNTS.values()),
+        accounts=my_accounts,
         coverage_id="COV-001",
         client_status="Active",
     )
 
 
-@app.get("/getAccountsTPP", response_model=AccountsOutput, summary="Get Accounts by Campaign Criteria")
-async def get_accounts_tpp(client_status: str, coverage_id: str, campaign_name: str):
+@app.get("/third-party-accounts", response_model=AccountsOutput, summary="Get Third-Party Accounts")
+async def get_third_party_accounts(
+    campaign_name: Optional[str] = Query(None, title="Optional filter by campaign name"),
+):
     """
-    Retrieve accounts from the Third-Party Provider (TPP) based on client status,
-    coverage ID, and a specific campaign name.
-    """
-    # This logic simulates filtering based on TPP criteria.
-    # For this example, "Active" status returns high-revenue accounts,
-    # and "Inactive" returns low-revenue accounts.
-    if client_status.lower() == "active":
-        filtered_accounts = [acc for acc in SAMPLE_ACCOUNTS.values() if acc.revenue > 1000000]
-    else:
-        filtered_accounts = [acc for acc in SAMPLE_ACCOUNTS.values() if acc.revenue <= 1000000]
+    Retrieves a list of accounts from a third-party provider, with optional filtering by campaign.
 
-    return AccountsOutput(accounts=filtered_accounts, campaign_name=campaign_name)
-
-
-@app.post("/getJobRoles", response_model=JobTitlesOutput, summary="Get Job Roles for a Campaign")
-async def get_job_roles(campaign_name: str):
+    If `campaign_name` is "Tech Transformation", it returns accounts with revenue over $5M.
+    If `campaign_name` is "High Value Outreach", it returns accounts in CA or NY.
+    Otherwise, it returns all third-party accounts.
     """
-    Get a list of relevant job roles based on a product or campaign name.
-    """
-    # Return specific roles based on campaign type
-    if campaign_name == CAMPAIGN_TECH_TRANSFORMATION:
-        return JobTitlesOutput(
-            job_titles=[
-                JobTitle(title="Chief Technology Officer"),
-                JobTitle(title="Vice President of Sales"),
-                JobTitle(title="Product Manager"),
-            ]
-        )
-    elif campaign_name == CAMPAIGN_HIGH_VALUE_OUTREACH:
-        return JobTitlesOutput(
-            job_titles=[
-                JobTitle(title="Chief Executive Officer"),
-                JobTitle(title="Sales Manager"),
-                JobTitle(title="Account Executive"),
-            ]
-        )
-    else:
-        return JobTitlesOutput(job_titles=SAMPLE_JOB_TITLES)
+    third_party_accounts = [acc for acc in SAMPLE_ACCOUNTS.values() if acc.is_third_party]
+
+    if campaign_name:
+        if campaign_name.lower() == "tech transformation":
+            filtered_accounts = [acc for acc in third_party_accounts if acc.revenue > 5000000]
+            return AccountsOutput(accounts=filtered_accounts)
+        elif campaign_name.lower() == "high value outreach":
+            filtered_accounts = [acc for acc in third_party_accounts if acc.state in ["CA", "NY"]]
+            return AccountsOutput(accounts=filtered_accounts)
+
+    return AccountsOutput(accounts=third_party_accounts)
 
 
-@app.post("/getContacts", response_model=ContactsOutput, summary="Get Contacts from Accounts")
-async def get_contacts(request: GetContactsRequest):
+@app.get(
+    "/accounts/{account_id}/job-titles",
+    response_model=JobTitlesOutput,
+    summary="Get Job Titles by Account ID",
+)
+async def get_job_titles_by_account(account_id: str = Path(..., title="The ID of the account")):
     """
-    Get contacts from a third-party data provider (e.g., ZoomInfo)
-    for a given list of accounts and job titles.
+    Retrieves all unique job titles associated with contacts at a specific account.
     """
-    requested_account_ids = {acc.id for acc in request.accounts}
-    requested_job_titles = {jt.title for jt in request.job_titles}
+    if account_id not in SAMPLE_ACCOUNTS:
+        return JobTitlesOutput(job_titles=[])
 
-    # Filter contacts based on the provided accounts and job titles
-    found_contacts = [
-        contact
-        for contact in SAMPLE_CONTACTS.values()
-        if contact.account_id in requested_account_ids and contact.job_title in requested_job_titles
-    ]
+    # Find all contacts for the given account ID
+    account_contacts = [contact for contact in SAMPLE_CONTACTS.values() if contact.account_id == account_id]
+
+    # Get unique job titles from these contacts
+    unique_job_titles: Set[str] = {contact.job_title for contact in account_contacts}
+
+    return JobTitlesOutput(job_titles=[JobTitle(title=jt) for jt in unique_job_titles])
+
+
+@app.get("/contacts", response_model=ContactsOutput, summary="Get Contacts")
+async def get_contacts(
+    account_id: Optional[str] = Query(None, title="Optional filter by account ID"),
+    job_title: Optional[str] = Query(None, title="Optional filter by job title"),
+):
+    """
+    Retrieves a list of contacts, with optional filters for account ID and job title.
+    """
+    found_contacts = list(SAMPLE_CONTACTS.values())
+
+    if account_id:
+        found_contacts = [contact for contact in found_contacts if contact.account_id == account_id]
+
+    if job_title:
+        found_contacts = [
+            contact for contact in found_contacts if contact.job_title.lower() == job_title.lower()
+        ]
 
     return ContactsOutput(contacts=found_contacts)
 
 
-@app.post("/filterContacts", response_model=ContactsOutput, summary="Filter Contacts by Seniority")
-async def filter_contacts(contacts_output: ContactsOutput):
-    """
-    Filters a list of contacts to identify senior-level decision-makers,
-    simulating a filtering step in a sales automation tool (e.g., Salesloft).
-    """
-    senior_titles = {"chief", "director", "vice president", "vp"}
-    filtered_contacts = [
-        contact
-        for contact in contacts_output.contacts
-        if any(keyword in contact.job_title.lower() for keyword in senior_titles)
-    ]
-    return ContactsOutput(contacts=filtered_contacts)
+# --- Test Functions ---
 
 
+async def test_get_top_account():
+    """Test case 1: Get top account by revenue from my accounts."""
+    my_accounts_data = await get_my_accounts()
+    my_accounts = my_accounts_data.accounts
+
+    if not my_accounts:
+        print("No accounts found in my territory.")
+        return
+
+    # Sort accounts by revenue in descending order and get the first one
+    top_account = sorted(my_accounts, key=lambda acc: acc.revenue, reverse=True)[0]
+
+    print("\n--- Test 1: Top Account in My Territory by Revenue ---")
+    print(f"Top Account: {top_account.name} (Revenue: ${top_account.revenue:,})")
+    print("-" * 50)
+
+
+async def test_get_tech_transformation_contacts():
+    """Test case 2: Get 'Vice President of Sales' contacts for Tech Transformation campaign."""
+    print("\n--- Test 2: 'VP of Sales' Contacts in 'Tech Transformation' Campaign ---")
+
+    # First, get third-party accounts for the "Tech Transformation" campaign
+    third_party_accounts_output = await get_third_party_accounts(campaign_name="Tech Transformation")
+    third_party_accounts = third_party_accounts_output.accounts
+
+    if not third_party_accounts:
+        print("No third-party accounts found for the 'Tech Transformation' campaign.")
+        return
+
+    # Now, get contacts for each of these accounts with the specific job title
+    all_contacts = []
+    for account in third_party_accounts:
+        contacts_output = await get_contacts(account_id=account.id, job_title="Vice President of Sales")
+        all_contacts.extend(contacts_output.contacts)
+
+    if all_contacts:
+        print(f"Found {len(all_contacts)} contacts:")
+        for contact in all_contacts:
+            print(f"- {contact.name}, {contact.job_title} at {SAMPLE_ACCOUNTS[contact.account_id].name}")
+    else:
+        print("No 'Vice President of Sales' contacts found for the selected accounts.")
+    print("-" * 50)
+
+
+async def test_get_my_accounts():
+    """Test case 3: Verify the 'my-accounts' endpoint behavior."""
+    print("\n--- Test 3: Verify 'my-accounts' Endpoint ---")
+
+    # Call the endpoint function
+    my_accounts_data = await get_my_accounts()
+    my_accounts = my_accounts_data.accounts
+
+    # Verify the response fields
+    print(f"Coverage ID: {my_accounts_data.coverage_id}")
+    print(f"Client Status: {my_accounts_data.client_status}")
+    print(f"Number of accounts found: {len(my_accounts)}")
+
+    # Verify expected values (based on the deterministic logic in the endpoint)
+    expected_count = 50
+    expected_coverage_id = "COV-001"
+    expected_client_status = "Active"
+
+    # Add a simple assertion-like check
+    if (
+        len(my_accounts) == expected_count
+        and my_accounts_data.coverage_id == expected_coverage_id
+        and my_accounts_data.client_status == expected_client_status
+    ):
+        print("Verification successful: All values match expectations.")
+    else:
+        print("Verification failed: Values do not match expectations.")
+
+    # Show a sample of the data to confirm it's not empty
+    if my_accounts:
+        print("\nExample of the first 6 accounts:")
+        for acc in my_accounts[:6]:
+            print(f" - {acc.name} (ID: {acc.id})")
+
+    print("-" * 50)
+
+
+# --- Main entry point ---
 if __name__ == "__main__":
-    from cuga.config import settings
+    import asyncio
 
-    uvicorn.run(app, host="0.0.0.0", port=settings.server_ports.digital_sales_api)
+    asyncio.run(test_get_top_account())
+    asyncio.run(test_get_tech_transformation_contacts())
+    asyncio.run(test_get_my_accounts())
