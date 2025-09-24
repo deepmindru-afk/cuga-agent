@@ -24,16 +24,18 @@ class DigitalSalesTestHelpers:
         """
         query = "list all my accounts, how many are there?"
         all_events = await test_instance.run_task(query)
-        test_instance._assert_answer_event(
-            all_events,
-            expected_keywords=[
-                "Apex Industries",
-                "Phoenix Holdings",
-                "Zenith Group",
-                "Frontier Tech",
-                "Innovate Inc.",
-            ],
-        )
+        if mode_suffix == "fast":
+            # Since we are using the fast mode, final answer returns also variables
+            test_instance._assert_answer_event(
+                all_events,
+                expected_keywords=[
+                    "Apex Industries",
+                    "Phoenix Holdings",
+                    "Zenith Group",
+                    "Frontier Tech",
+                    "Innovate Inc.",
+                ],
+            )
         test_instance._assert_answer_event(all_events, expected_keywords=["50"])
 
     async def test_find_vp_sales_active_high_value_accounts(self, test_instance, mode_suffix):
