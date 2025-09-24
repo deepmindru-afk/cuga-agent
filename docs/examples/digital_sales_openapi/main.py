@@ -230,7 +230,8 @@ app = FastAPI(
 @app.get("/my-accounts", response_model=MyAccountsOutput, summary="Get My Territory Accounts")
 async def get_my_accounts():
     """
-    Retrieves a deterministically selected list of accounts assigned to the current user's territory.
+    Retrieves a list of accounts that are specifically assigned to the current user's territory,
+    providing consistent and predictable results for the user's account management.
     """
     # Simulate a user's territory by returning accounts with odd IDs
     my_accounts = [acc for acc_id, acc in SAMPLE_ACCOUNTS.items() if int(acc_id.split('_')[1]) % 2 != 0]

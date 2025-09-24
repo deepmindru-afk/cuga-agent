@@ -59,7 +59,11 @@ def build_model(model_name: str, field_defs: dict[str, FieldSpec]) -> type:
             # default for nested: None (you can change to sub_model() if you want an instance by default)
             attrs[field_name] = None
         # Leaf (type, default) case
-        elif isinstance(spec, tuple) and len(spec) == 2 and isinstance(spec[0], type):
+        elif (
+            isinstance(spec, tuple)
+            and len(spec) == 2
+            and (isinstance(spec[0], type) or hasattr(spec[0], '__origin__'))
+        ):
             field_type, default = spec
             annotations[field_name] = field_type
             attrs[field_name] = default

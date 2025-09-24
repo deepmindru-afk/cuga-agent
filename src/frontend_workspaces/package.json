@@ -16,9 +16,14 @@
   "devDependencies": {
     "@types/jest-image-snapshot": "^6.4.0",
     "jest-image-snapshot": "^6.4.0",
-    "puppeteer": "^24.6.0"
+    "puppeteer": "^24.22.3"
   },
   "dependencies": {
     "lodash.debounce": "^4.0.8"
+  },
+  "pnpm": {
+    "overrides": {
+      "tar-fs": "^3.1.1"
+    }
   }
 }

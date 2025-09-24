@@ -15,7 +15,7 @@ First, carefully analyze the intent and the provided application details to unde
 # Output
 
 1.  "thoughts": Your thoughts on the decomposition strategy and how each application contributes to fulfilling the intent.
-2.  "task\_decomposition": A list of objects, where each object contains:
+2.  "task_decomposition": A list of objects, where each object contains:
       * `task`: A string describing the subtask.
       * `type`: A string indicating the task type, either `'web'` or `'api'`.
       * `app`: A string indicating the name of the application chosen for the subtask.
@@ -24,23 +24,50 @@ First, carefully analyze the intent and the provided application details to unde
 
 # General Instructions
 
-1.  **Primary Rule**: If the intent involves only a **single application**, do not decompose and return the intent verbatim as a single subtask (within the described object structure, with its appropriate type and app).
-2.  **Multi-Application Rule**: When **multiple applications** are provided, the intent **MUST** involve **ALL** applications in the list. Each application must contribute to fulfilling the user's intent with **exactly one subtask** per application.
-3.  **Mandatory Requirement**: For multiple applications, you must generate **exactly the same number of subtasks as the number of applications provided**. Each application gets exactly one subtask.
-4.  **Decompose only when multiple applications are involved** - when the task requires interactions across different applications or services. For single applications, return the intent as-is.
-5.  For multiple applications, always generate subtasks that utilize all applications in a logical sequence or parallel manner to achieve the user's intent.
-6.  **Crucially, do not generate subtasks for low-level operational actions.**
-      * For **web applications**, avoid terms like `click`, `type`, `Maps`, `enter`, `scroll`, `find element`.
-      * For **service-based applications**, avoid technical terms like `call endpoint`, `send HTTP request`, `parse JSON/XML`, `authenticate`, `token`, `payload`, `parameter`.
-      * You do not interact with UIs or service interfaces directly; you **MUST** remain at a high-level description of goals.
-7.  **Ensure Task Clarity and Context**: Each subtask description must be self-contained. When a task depends on a previous one, its description must explicitly reference the data it needs, for example: "Using the account ID from the previous step, ..." or "Summarize the article content found on 'TechNews Portal'.". This ensures no information is lost between steps.
-8.  **Critical - Answer Expectation Rule**: If the intent contains question words or phrases that expect a specific answer (such as "how much", "what is", "tell me", "find out", "calculate", "determine", "show me", etc.), ensure that one of the subtasks explicitly provides or calculates that answer. The subtask should clearly state what specific information or calculation will be delivered to the user.
-9.  If the intent involves returning a response, the final subtask should provide the answer using the most relevant application for delivering that response.
-10. Do not generate subtasks that require extraction or query of excessively large data (e.g., "Extract all data of 'x'" or "get entire history of products"). Focus on specific, bounded information.
-11. If an operation in a subtask needs to be performed on a list of dynamic values, use a 'for each' clause in the subtask description.
-12. **Critical**: For multiple applications, you must output exactly the same number of subtasks as applications provided - no more, no less. For single applications, output exactly one subtask with the original intent.
-13. **Strict Adherence to Application Capabilities**: Ensure each subtask strictly aligns with the described capabilities of the assigned application. Do not infer or assign capabilities that are not explicitly mentioned in the application's description.
-14. **Do not forget any necessary details from intent**: If user mentions some details about parameters or dates make sure to include all relevant information's in the subtasks!.
+## CORE DECOMPOSITION LOGIC
+
+**Primary Rule**: If the intent involves only a **single application**, do not decompose and return the intent verbatim as a single subtask (within the described object structure, with its appropriate type and app).
+
+**Multi-Application Rule**: When **multiple applications** are provided, the intent **MUST** involve **ALL** applications in the list. Each application must contribute to fulfilling the user's intent with **exactly one subtask** per application.
+
+**Mandatory Requirement**: For multiple applications, you must generate **exactly the same number of subtasks as the number of applications provided**. Each application gets exactly one subtask.
+
+**Decompose only when multiple applications are involved** - when the task requires interactions across different applications or services. For single applications, return the intent as-is.
+
+For multiple applications, always generate subtasks that utilize all applications in a logical sequence or parallel manner to achieve the user's intent.
+
+## ABSTRACTION LEVEL CONTROL
+
+**Crucially, do not generate subtasks for low-level operational actions.**  
+* For **web applications**, avoid terms like `click`, `type`, `Maps`, `enter`, `scroll`, `find element`.  
+* For **service-based applications**, avoid technical terms like `call endpoint`, `send HTTP request`, `parse JSON/XML`, `authenticate`, `token`, `payload`, `parameter`.  
+* You do not interact with UIs or service interfaces directly; you **MUST** remain at a high-level description of goals.  
+
+## TASK CONTEXT & DEPENDENCIES
+
+**Ensure Task Clarity and Context**: Each subtask description must be self-contained. When a task depends on a previous one, its description must explicitly reference the data it needs, for example: "Using the account ID from the previous step, ..." or "Summarize the article content found on 'TechNews Portal'.". This ensures no information is lost between steps.
+
+**Critical - Maintain User Context**: Pay close attention to personal pronouns and possessive adjectives (e.g., "my," "our," "I," "we") and other personal identifiers. The generated subtasks **must** preserve these details to ensure the action is performed for the specific user and their resources. For example, "my accounts" must be reflected as "my accounts" and not "all accounts."
+
+## OUTPUT & RESPONSE HANDLING
+
+**Critical - Answer Expectation Rule**: If the intent contains question words or phrases that expect a specific answer (such as "how much", "what is", "tell me", "find out", "calculate", "determine", "show me", etc.), ensure that one of the subtasks explicitly provides or calculates that answer. The subtask should clearly state what specific information or calculation will be delivered to the user.
+
+If the intent involves returning a response, the final subtask should provide the answer using the most relevant application for delivering that response.
+
+## DATA SCOPE & BOUNDARIES
+
+Do not generate subtasks that require extraction or query of excessively large data (e.g., "Extract all data of 'x'" or "get entire history of products"). Focus on specific, bounded information.
+
+If an operation in a subtask needs to be performed on a list of dynamic values, use a 'for each' clause in the subtask description.
+
+## VALIDATION & COMPLIANCE
+
+**Critical**: For multiple applications, you must output exactly the same number of subtasks as applications provided - no more, no less. For single applications, output exactly one subtask with the original intent.
+
+**Strict Adherence to Application Capabilities**: Ensure each subtask strictly aligns with the described capabilities of the assigned application. Do not infer or assign capabilities that are not explicitly mentioned in the application's description.
+
+**Do not forget any necessary details from intent**: If user mentions some details about parameters or dates make sure to include all relevant information in the subtasks!
 
 {% if instructions -%}
 
@@ -198,7 +225,7 @@ First, carefully analyze the intent and the provided application details to unde
 ```json
 {
   "thoughts": "...",
-  "task_decomposition":[
+  "task_decomposition": [
       {
         "task": "Access the shared Google Sheet or email to retrieve all upcoming Friday 'Product Sync' dates and store them in a structured list.",
         "type": "api",
@@ -207,7 +234,7 @@ First, carefully analyze the intent and the provided application details to unde
       {
         "task": "Read the email template from the local file '~/team_docs/templates/product_sync_reminder.txt'.",
         "type": "api",
-        "app": "filesystem"
+        "app": "file_system"
       },
       {
         "task": "For each Friday listed, schedule an email to the product team at 8 AM with subject 'Reminder: Product Sync Today' and use the template as the email body.",
@@ -255,7 +282,7 @@ First, carefully analyze the intent and the provided application details to unde
       "app": "TechNews Portal"
     },
     {
-      "task": "Generate a brief summary of the Quantum Computing article content using the Content Summarizer service",
+      "task": "Generate a brief summary of the Quantum Computing article content",
       "type": "api",
       "app": "Content Summarizer"
     },
@@ -336,12 +363,12 @@ First, carefully analyze the intent and the provided application details to unde
   "thoughts": "...",
   "task_decomposition": [
     {
-      "task": "Determine the amount I owe Jane from the Expense Tracker service",
+      "task": "Determine the amount I owe Jane",
       "type": "api",
       "app": "Expense Tracker"
     },
     {
-      "task": "Send the determined amount to Jane using the Payment App",
+      "task": "Send the determined amount to Jane",
       "type": "api",
       "app": "Payment App"
     }
@@ -386,12 +413,12 @@ First, carefully analyze the intent and the provided application details to unde
   "thoughts": "...",
   "task_decomposition": [
     {
-      "task": "Research and identify the best laptop models under $1000 using the Product Review Site",
+      "task": "Research and identify the best laptop models under $1000",
       "type": "web",
       "app": "Product Review Site"
     },
     {
-      "task": "Compare prices for the top-rated laptops identified from the review research using the Price Comparison Service",
+      "task": "Compare prices for the top-rated laptops identified from the review research",
       "type": "api",
       "app": "Price Comparison Service"
     },
@@ -434,10 +461,10 @@ First, carefully analyze the intent and the provided application details to unde
 
 ```json
 {
-  "thoughts": "..,",
+  "thoughts": "...",
   "task_decomposition": [
     {
-      "task": "Identify and retrieve contact information for my roommates from the Phone application",
+      "task": "Identify and retrieve contact information for my roommates",
       "type": "api",
       "app": "Phone"
     },
@@ -452,7 +479,7 @@ First, carefully analyze the intent and the provided application details to unde
 
 -----
 
-## Example 10 (Two Applications )
+## Example 10 (Two Applications):
 
 **Intent**: "I went on a dinner with some of my coworkers. I paid the entire bill to simplify the payment. I’ve made a note of individual shares in Simple Note. Some people have already sent me their share on Venmo. Make payment requests for others with a description note 'Work Dinner'."
 **applications**:
@@ -478,12 +505,12 @@ First, carefully analyze the intent and the provided application details to unde
   "thoughts": "...",
   "task_decomposition": [
     {
-      "task": "Retrieve the note containing individual shares for the dinner from the Simple Note application",
+      "task": "Retrieve the note containing individual shares for the dinner",
       "type": "api",
       "app": "Simple Note"
     },
     {
-      "task": "For each coworker whose share is noted and has not yet paid, make a payment request with the description 'Work Dinner' using the Venmo application",
+      "task": "For each coworker whose share is noted in the retrieved note and has not yet paid, make a payment request with the description 'Work Dinner'",
       "type": "web",
       "app": "Venmo"
     }
@@ -492,7 +519,7 @@ First, carefully analyze the intent and the provided application details to unde
 ```
 
 
-Example 11 ( complex task ):
+## Example 11 (Complex Task):
 
 **Intent**: "I coordinated a team subscription to a new online whiteboard tool we decided to use for our remote project. I emailed my teammates yesterday to confirm if they are in and listed the tool's total annual cost of $120. Three teammates responded confirming their participation. We agreed to split the cost evenly among the four of us, including me. I now need to retrieve the confirmed participants, find their contact info, and request their share on Venmo with the note "Whiteboard Tool Subscription"."
 **applications**:
@@ -524,17 +551,17 @@ Example 11 ( complex task ):
     {
       "task": "Retrieve the email thread sent yesterday regarding participation in the whiteboard tool subscription and extract the names/emails of teammates who responded positively.",
       "type": "api",
-      "app": "gmail"
+      "app": "Gmail"
     },
     {
-      "task": "Resolve the contact information of each confirmed participant (name/email) into phone numbers or Venmo handles using the Phone app.",
+      "task": "Resolve the contact information of each confirmed participant (name/email) into phone numbers or Venmo handles",
       "type": "api",
-      "app": "phone"
+      "app": "Phone"
     },
     {
-      "task": "Calculate each participant’s equal share of the $120 subscription cost (i.e., $30 per person including the user), and send a public Venmo payment request to each participant with the description 'Whiteboard Tool Subscription'.",
+      "task": "Calculate each participant's equal share of the $120 subscription cost (i.e., $30 per person including the user), and send a public Venmo payment request to each participant with the description 'Whiteboard Tool Subscription'.",
       "type": "api",
-      "app": "venmo"
+      "app": "Venmo"
     }
   ]
 }
