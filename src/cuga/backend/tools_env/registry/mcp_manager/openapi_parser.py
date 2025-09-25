@@ -1,5 +1,5 @@
 from typing import List, Dict, Optional, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 import json
 import yaml
 
@@ -29,22 +29,21 @@ class Schema(BaseModel):
     title: Optional[str] = ""  # handy, many specs use it
 
 
-Schema.update_forward_refs()
+Schema.model_rebuild()
 
 
 class Parameter(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     name: Optional[str] = ""
     in_: Optional[str] = Field("", alias="in")  # allow aliasing "in"
     required: Optional[bool] = False
     description: Optional[str] = ""
-    schema: Optional[Schema] = None
-
-    class Config:
-        allow_population_by_field_name = True
+    schema_field: Optional[Schema] = Field(None, alias="schema")
 
 
 class MediaType(BaseModel):
-    schema: Optional[Schema] = None
+    schema_field: Optional[Schema] = Field(None, alias="schema")
 
 
 class RequestBody(BaseModel):
@@ -156,7 +155,7 @@ class SimpleOpenAPIParser:
             p.required = item.get("required", False)
             p.description = item.get("description", "")
             if "schema" in item:
-                p.schema = self._parse_schema(item["schema"])
+                p.schema_field = self._parse_schema(item["schema"])
             result.append(p)
         return result
 
@@ -168,7 +167,7 @@ class SimpleOpenAPIParser:
         for media_type, media_data in (rb_data.get("content") or {}).items():
             media = MediaType()
             if "schema" in media_data:
-                media.schema = self._parse_schema(media_data["schema"])
+                media.schema_field = self._parse_schema(media_data["schema"])
             rb.content[media_type] = media
         return rb
 
@@ -180,7 +179,7 @@ class SimpleOpenAPIParser:
             for media_type, media_data in (response.get("content") or {}).items():
                 media = MediaType()
                 if "schema" in media_data:
-                    media.schema = self._parse_schema(media_data["schema"])
+                    media.schema_field = self._parse_schema(media_data["schema"])
                 r.content[media_type] = media
             result[code] = r
         return result

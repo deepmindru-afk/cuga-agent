@@ -282,25 +282,25 @@ def extract_field_definitions(api) -> Dict[str, tuple[type, Any]]:
             if not name:
                 continue
             sch = None
-            if param.schema:
-                # param.schema here is a Schema model; convert to dict-ish view
+            if param.schema_field:
+                # param.schema_field here is a Schema model; convert to dict-ish view
                 sch = {
-                    "type": param.schema.type,
-                    "format": param.schema.format,
-                    "description": param.schema.description,
-                    "enum": param.schema.enum or None,
-                    "nullable": param.schema.nullable,
+                    "type": param.schema_field.type,
+                    "format": param.schema_field.format,
+                    "description": param.schema_field.description,
+                    "enum": param.schema_field.enum or None,
+                    "nullable": param.schema_field.nullable,
                 }
             py_type = str
-            if sch and (param.schema.type and param.schema.type in TYPE_MAP):
-                py_type = TYPE_MAP[param.schema.type]
+            if sch and (param.schema_field.type and param.schema_field.type in TYPE_MAP):
+                py_type = TYPE_MAP[param.schema_field.type]
             default = ... if param.required else None
             field_defs[name] = (py_type, default)
 
     # 2) Request body
     if api.request_body:
         for media in api.request_body.content.values():
-            schema = media.schema
+            schema = media.schema_field
             if not schema:
                 continue
 
@@ -452,7 +452,7 @@ def create_handler(api, model, base_url: str, name: str, schemas: Dict[str, Serv
     """
 
     def handler(params: model, headers: dict = None):
-        all_params = params.dict()
+        all_params = params.model_dump()
         headers = headers if headers else {}
 
         try:
