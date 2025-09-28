@@ -73,6 +73,11 @@ const simulateFakeStream = async (instance: ChatInstance, query: string) => {
 
     workflowInitialized = true;
 
+    // Card manager message is already created in customSendMessage, so we don't need to create another one here
+    if (window.aiSystemInterface) {
+      console.log("Card manager interface available for fake stream, skipping duplicate message creation");
+    }
+
     // Use abortable delay for initial wait
     await abortableDelay(300, abortController.signal);
 
@@ -108,21 +113,26 @@ const simulateFakeStream = async (instance: ChatInstance, query: string) => {
       let stepTitle = step.name;
 
       // Add the message (this is not abortable, but it's fast)
-      await instance.messaging.addMessage({
-        output: {
-          generic: [
-            {
-              id: workflowId + stepTitle,
-              response_type: "user_defined",
-              user_defined: {
-                user_defined_type: "my_unique_identifier",
-                data: currentStep,
-                step_title: stepTitle,
+      // Use the card manager if available, otherwise add individual messages
+      if (window.aiSystemInterface) {
+        window.aiSystemInterface.addStep(stepTitle, currentStep);
+      } else {
+        await instance.messaging.addMessage({
+          output: {
+            generic: [
+              {
+                id: workflowId + stepTitle,
+                response_type: "user_defined",
+                user_defined: {
+                  user_defined_type: "my_unique_identifier",
+                  data: currentStep,
+                  step_title: stepTitle,
+                },
               },
-            },
-          ],
-        },
-      });
+            ],
+          },
+        });
+      }
 
       // Final check after adding message
       if (abortController.signal.aborted) {
@@ -148,7 +158,7 @@ const simulateFakeStream = async (instance: ChatInstance, query: string) => {
             {
               id: workflowId + "_stopped",
               response_type: "text",
-              text: "⏹️ Processing was stopped by user.",
+              text: `<div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; color: #64748b; text-align: center; margin: 8px 0; display: flex; align-items: center; justify-content: center; gap: 8px;"><div style="font-size: 1.1rem;"></div><div><div style="font-size: 0.9rem; font-weight: 500; margin: 0; color: #475569;">Processing Stopped</div><div style="font-size: 0.75rem; opacity: 0.8; margin: 0; color: #64748b;">You stopped the task</div></div></div>`,
             },
           ],
         },
@@ -213,28 +223,38 @@ const addStreamMessage = async (
   data: any,
   responseType: "user_defined" | "text" = "user_defined"
 ) => {
-  const messageConfig =
-    responseType === "text"
-      ? {
-          id: workflowId + stepTitle,
-          response_type: "text",
-          text: typeof data === "string" ? data : JSON.stringify(data),
-        }
-      : {
-          id: workflowId + stepTitle,
-          response_type: "user_defined",
-          user_defined: {
-            user_defined_type: "my_unique_identifier",
-            data: data,
-            step_title: stepTitle,
-          },
-        };
+  // For the new card system, we don't add individual messages
+  // Instead, we let the CardManager handle the steps through the global interface
+  if (window.aiSystemInterface && responseType === "user_defined") {
+    console.log("Adding step to card manager:", stepTitle, data);
+    console.log("aiSystemInterface available:", !!window.aiSystemInterface);
+    console.log("addStep function available:", !!window.aiSystemInterface.addStep);
+    
+    try {
+      window.aiSystemInterface.addStep(stepTitle, data);
+      console.log("Step added successfully");
+    } catch (error) {
+      console.error("Error adding step:", error);
+    }
+    return;
+  } else {
+    console.log("Not using card manager - aiSystemInterface:", !!window.aiSystemInterface, "responseType:", responseType);
+  }
 
-  await instance.messaging.addMessage({
-    output: {
-      generic: [messageConfig],
-    },
-  });
+  // For text messages, still add them normally
+  if (responseType === "text") {
+    const messageConfig = {
+      id: workflowId + stepTitle,
+      response_type: "text",
+      text: typeof data === "string" ? data : JSON.stringify(data),
+    };
+
+    await instance.messaging.addMessage({
+      output: {
+        generic: [messageConfig],
+      },
+    });
+  }
 };
 
 const fetchStreamingData = async (instance: ChatInstance, query: string, action: object = null) => {
@@ -270,14 +290,7 @@ const fetchStreamingData = async (instance: ChatInstance, query: string, action:
       return fullResponse;
     }
 
-    // IMPORTANT: Force a complete reset of the UI component for each new request
-    if (window.aiSystemInterface && window.aiSystemInterface.forceReset) {
-      console.log("🔄 Forcing complete reset of the UI component");
-      window.aiSystemInterface.forceReset();
-
-      // Use abortable delay instead of regular setTimeout
-      await abortableDelayV2(500, abortController.signal);
-    }
+    // Do not reset the existing UI; we want to preserve prior cards/history
 
     // Check after reset delay
     if (abortController.signal.aborted) {
@@ -286,11 +299,10 @@ const fetchStreamingData = async (instance: ChatInstance, query: string, action:
     }
 
     // First create the workflow component
-    console.log("💬 Adding initial workflow message");
-    await addStreamMessage(instance, workflowId, "init", "Processing your request...", "text");
+    console.log("💬 Initializing workflow without adding placeholder chat message");
     workflowInitialized = true;
 
-    // Give a moment for the component to initialize
+    // Give a moment for the new CardManager message to mount
     await abortableDelayV2(300, abortController.signal);
 
     // Check after initialization delay
@@ -318,14 +330,7 @@ const fetchStreamingData = async (instance: ChatInstance, query: string, action:
           console.log("🛑 Stream aborted during connection opening");
           return;
         }
-
-        await addStreamMessage(
-          instance,
-          workflowId,
-          "simple_text",
-          "Processing request and preparing response...",
-          "text"
-        );
+        // Intentionally no chat message here to avoid polluting history
       },
 
       async onmessage(ev) {
@@ -399,7 +404,7 @@ const fetchStreamingData = async (instance: ChatInstance, query: string, action:
 
       // Add a message indicating the stream was stopped
       if (workflowInitialized) {
-        await addStreamMessage(instance, workflowId, "stopped", "⏹️ Processing was stopped by user.", "text");
+        await addStreamMessage(instance, workflowId, "stopped", `<div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 8px; padding: 12px 16px; color: white; text-align: center; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); margin: 8px 0; display: flex; align-items: center; justify-content: center; gap: 8px;"><div style="font-size: 1.2rem;">⏹</div><div><div style="font-size: 0.9rem; font-weight: 600; margin: 0;">Processing Stopped</div><div style="font-size: 0.75rem; opacity: 0.9; margin: 0;">Stopped by user</div></div></div>`, "text");
       }
 
       return fullResponse; // Return partial response
@@ -482,30 +487,27 @@ export const streamViaBackground = async (
   // rendered through the side-panel component.
   // -------------------------------------------------------------
 
-  // 1. Hard-reset the custom workflow component if it already exists
-  if (window.aiSystemInterface && window.aiSystemInterface.forceReset) {
-    window.aiSystemInterface.forceReset();
-    // Give React a brief moment to remount the component tree
-    await new Promise((resolve) => setTimeout(resolve, 500));
-  }
+  // Preserve previous cards/history; do not force-reset the UI here
 
   // 2. Insert an initial user_defined message that hosts our Workflow UI
   const workflowId = "workflow_" + generateTimestampId();
 
-  await instance.messaging.addMessage({
-    output: {
-      generic: [
-        {
-          id: workflowId,
-          response_type: "user_defined",
-          user_defined: {
-            user_defined_type: "my_unique_identifier",
-            text: "Processing your request...",
-          },
-        } as any,
-      ],
-    },
-  });
+  // For the new card system, we don't need to add the initial message here
+  // as it's already handled in customSendMessage
+  // await instance.messaging.addMessage({
+  //   output: {
+  //     generic: [
+  //       {
+  //         id: workflowId,
+  //         response_type: "user_defined",
+  //         user_defined: {
+  //           user_defined_type: "my_unique_identifier",
+  //           text: "Processing your request...",
+  //         },
+  //       } as any,
+  //     },
+  //   },
+  // });
 
   // Wait until the workflow component has mounted
   await waitForInterfaceReady();

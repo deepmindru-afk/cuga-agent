@@ -1,9 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { Check, X, Send, ChevronDown, Clock } from "lucide-react";
+import { Check, X, Send } from "lucide-react";
 
-export const FollowupAction = ({ followupAction, callback }) => {
+interface Option {
+  value: string;
+  label: string;
+  description?: string;
+}
+
+interface FollowupActionProps {
+  followupAction: {
+    action_id: string;
+    action_name: string;
+    description?: string;
+    type: string;
+    button_text?: string;
+    placeholder?: string;
+    options?: Option[];
+    max_selections?: number;
+    min_selections?: number;
+    required?: boolean;
+    validation_pattern?: string;
+    max_length?: number;
+    min_length?: number;
+    color?: string;
+  };
+  callback: (response: any) => void;
+}
+
+export const FollowupAction = ({ followupAction, callback }: FollowupActionProps) => {
   const [response, setResponse] = useState("");
-  const [selectedValues, setSelectedValues] = useState([]);
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [startTime] = useState(Date.now());
   const [isWaiting, setIsWaiting] = useState(true);
@@ -15,68 +41,49 @@ export const FollowupAction = ({ followupAction, callback }) => {
     type,
     button_text,
     placeholder,
-    options = [],
+    options,
     max_selections,
     min_selections = 1,
     required = true,
     validation_pattern,
     max_length,
     min_length,
-    priority = 1,
-    icon,
     color = "primary",
   } = followupAction;
 
-  // Simulate initial loading/waiting state
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsWaiting(false);
-    }, 800);
+    }, 300);
     return () => clearTimeout(timer);
   }, []);
 
-  // Color themes with enhanced gradients and shadows
   const colorThemes = {
     primary: {
-      button:
-        "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-blue-500 shadow-lg hover:shadow-xl",
+      button: "bg-blue-500 hover:bg-blue-600 text-white",
       accent: "text-blue-600 border-blue-200 bg-blue-50",
-      ring: "ring-blue-500",
-      glow: "shadow-blue-200",
     },
     success: {
-      button:
-        "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-green-500 shadow-lg hover:shadow-xl",
+      button: "bg-green-500 hover:bg-green-600 text-white",
       accent: "text-green-600 border-green-200 bg-green-50",
-      ring: "ring-green-500",
-      glow: "shadow-green-200",
     },
     warning: {
-      button:
-        "bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white border-yellow-500 shadow-lg hover:shadow-xl",
+      button: "bg-yellow-500 hover:bg-yellow-600 text-white",
       accent: "text-yellow-600 border-yellow-200 bg-yellow-50",
-      ring: "ring-yellow-500",
-      glow: "shadow-yellow-200",
     },
     danger: {
-      button:
-        "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white border-red-500 shadow-lg hover:shadow-xl",
+      button: "bg-red-500 hover:bg-red-600 text-white",
       accent: "text-red-600 border-red-200 bg-red-50",
-      ring: "ring-red-500",
-      glow: "shadow-red-200",
     },
     secondary: {
-      button:
-        "bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white border-gray-500 shadow-lg hover:shadow-xl",
+      button: "bg-gray-500 hover:bg-gray-600 text-white",
       accent: "text-gray-600 border-gray-200 bg-gray-50",
-      ring: "ring-gray-500",
-      glow: "shadow-gray-200",
     },
   };
 
-  const theme = colorThemes[color] || colorThemes.primary;
+  const theme = colorThemes[color as keyof typeof colorThemes] || colorThemes.primary;
 
-  const createResponse = (responseData) => {
+  const createResponse = (responseData: any) => {
     const baseResponse = {
       action_id,
       response_type: type,
@@ -92,7 +99,7 @@ export const FollowupAction = ({ followupAction, callback }) => {
     return { ...baseResponse, ...responseData };
   };
 
-  const handleSubmit = (responseData) => {
+  const handleSubmit = (responseData: any) => {
     if (isSubmitted) return;
 
     setIsSubmitted(true);
@@ -128,19 +135,19 @@ export const FollowupAction = ({ followupAction, callback }) => {
     handleSubmit({ button_clicked: true });
   };
 
-  const handleConfirmation = (confirmed) => {
+  const handleConfirmation = (confirmed: boolean) => {
     handleSubmit({ confirmed });
   };
 
-  const handleSelectChange = (value) => {
-    let newSelection;
+  const handleSelectChange = (value: string) => {
+    let newSelection: string[];
 
     if (type === "multi_select") {
       if (selectedValues.includes(value)) {
         newSelection = selectedValues.filter((v) => v !== value);
       } else {
         if (max_selections && selectedValues.length >= max_selections) {
-          return; // Max selections reached
+          return;
         }
         newSelection = [...selectedValues, value];
       }
@@ -150,9 +157,8 @@ export const FollowupAction = ({ followupAction, callback }) => {
 
     setSelectedValues(newSelection);
 
-    // Auto-submit for single select
     if (type === "select") {
-      const selectedOptions = options.filter((opt) => newSelection.includes(opt.value));
+      const selectedOptions = (options || []).filter((opt) => newSelection.includes(opt.value));
       handleSubmit({
         selected_values: newSelection,
         selected_options: selectedOptions,
@@ -166,7 +172,7 @@ export const FollowupAction = ({ followupAction, callback }) => {
       return;
     }
 
-    const selectedOptions = options.filter((opt) => selectedValues.includes(opt.value));
+    const selectedOptions = (options || []).filter((opt) => selectedValues.includes(opt.value));
     handleSubmit({
       selected_values: selectedValues,
       selected_options: selectedOptions,
@@ -174,14 +180,8 @@ export const FollowupAction = ({ followupAction, callback }) => {
   };
 
   const renderWaitingState = () => (
-    <div className="flex items-center justify-center py-8">
-      <div className="flex items-center space-x-3">
-        <div className="relative">
-          <Clock className="w-5 h-5 text-gray-400 animate-pulse" />
-          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-blue-500 animate-spin"></div>
-        </div>
-        <span className="text-sm text-gray-500 animate-pulse">Preparing your action...</span>
-      </div>
+    <div className="flex items-center justify-center py-4">
+      <span className="text-sm text-gray-500">Loading...</span>
     </div>
   );
 
@@ -192,9 +192,9 @@ export const FollowupAction = ({ followupAction, callback }) => {
 
     if (isSubmitted) {
       return (
-        <div className="flex items-center justify-center py-4 text-green-600 animate-in fade-in duration-300">
-          <div className="flex items-center space-x-2 bg-green-50 px-4 py-2 rounded-full border border-green-200">
-            <Check className="w-5 h-5 animate-in zoom-in duration-200" />
+        <div className="flex items-center justify-center py-4 text-green-600">
+          <div className="flex items-center space-x-2 bg-green-50 px-4 py-2 rounded border border-green-200">
+            <Check className="w-5 h-5" />
             <span className="text-sm font-medium">Response submitted successfully!</span>
           </div>
         </div>
@@ -206,47 +206,43 @@ export const FollowupAction = ({ followupAction, callback }) => {
         return (
           <button
             onClick={handleButtonClick}
-            className={`w-full px-4 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] ${theme.button} flex items-center justify-center gap-2 animate-in slide-in-from-bottom-4 duration-500`}
+            disabled={isSubmitted}
+            className={`w-full px-4 py-3 rounded font-medium ${theme.button} flex items-center justify-center gap-2 ${
+              isSubmitted ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
-            {icon && <span className="animate-in zoom-in duration-300 delay-100">{icon}</span>}
-            <span className="animate-in fade-in duration-300 delay-200">{button_text || action_name}</span>
+            <span>{button_text || action_name}</span>
           </button>
         );
 
       case "text_input":
       case "natural_language":
         return (
-          <div className="space-y-3 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="relative">
-              <textarea
-                value={response}
-                onChange={(e) => setResponse(e.target.value)}
-                placeholder={placeholder || "Enter your response..."}
-                className={`w-full px-4 py-3 border-2 border-gray-200 rounded-xl resize-none focus:outline-none focus:border-transparent focus:ring-4 focus:${
-                  theme.ring
-                } focus:ring-opacity-20 text-sm transition-all duration-200 ${response.trim() ? theme.accent : ""}`}
-                rows={type === "natural_language" ? 3 : 1}
-                maxLength={max_length}
-              />
-              {response.trim() && (
-                <div className="absolute right-3 top-3 animate-in zoom-in duration-200">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                </div>
-              )}
-            </div>
+          <div className="space-y-3">
+            <textarea
+              value={response}
+              onChange={(e) => setResponse(e.target.value)}
+              placeholder={placeholder || "Enter your response..."}
+              disabled={isSubmitted}
+              className={`w-full px-4 py-3 border border-gray-200 rounded resize-none focus:outline-none focus:border-blue-500 text-sm ${response.trim() ? theme.accent : ""} ${
+                isSubmitted ? "opacity-50 cursor-not-allowed bg-gray-50" : ""
+              }`}
+              rows={type === "natural_language" ? 3 : 1}
+              maxLength={max_length}
+            />
             {max_length && (
-              <div className="text-xs text-gray-500 text-right transition-all duration-200">
+              <div className="text-xs text-gray-500 text-right">
                 <span className={response.length > max_length * 0.8 ? "text-orange-500" : ""}>{response.length}</span>/
                 {max_length}
               </div>
             )}
             <button
               onClick={handleTextSubmit}
-              disabled={!response.trim() && required}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] ${
-                !response.trim() && required
+              disabled={isSubmitted || (!response.trim() && required)}
+              className={`px-4 py-2 rounded text-sm font-medium ${
+                isSubmitted || (!response.trim() && required)
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : `${theme.button} hover:shadow-lg`
+                  : theme.button
               } flex items-center gap-2`}
             >
               <Send className="w-4 h-4" />
@@ -257,19 +253,17 @@ export const FollowupAction = ({ followupAction, callback }) => {
 
       case "select":
         return (
-          <div className="space-y-2 animate-in slide-in-from-bottom-4 duration-500">
-            {options.map((option, index) => (
+          <div className="space-y-2">
+            {(options || []).map((option) => (
               <button
                 key={option.value}
                 onClick={() => handleSelectChange(option.value)}
-                className={`w-full px-4 py-3 text-left rounded-xl border-2 transition-all duration-200 text-sm transform hover:scale-[1.01] hover:shadow-md ${
+                disabled={isSubmitted}
+                className={`w-full px-4 py-3 text-left rounded border text-sm ${
                   selectedValues.includes(option.value)
-                    ? `${theme.button} border-current shadow-lg animate-in zoom-in duration-200`
+                    ? theme.button
                     : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                }`}
-                style={{
-                  animationDelay: `${index * 100}ms`,
-                }}
+                } ${isSubmitted ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <div className="font-medium">{option.label}</div>
                 {option.description && <div className="text-xs opacity-75 mt-1">{option.description}</div>}
@@ -280,31 +274,27 @@ export const FollowupAction = ({ followupAction, callback }) => {
 
       case "multi_select":
         return (
-          <div className="space-y-3 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="space-y-3">
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {options.map((option, index) => (
+              {(options || []).map((option) => (
                 <label
                   key={option.value}
-                  className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md transform hover:scale-[1.01] ${
+                  className={`flex items-start gap-3 p-3 rounded border cursor-pointer ${
                     selectedValues.includes(option.value)
-                      ? `${theme.accent} border-current shadow-sm`
+                      ? theme.accent
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   }`}
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                  }}
                 >
                   <input
                     type="checkbox"
                     checked={selectedValues.includes(option.value)}
                     onChange={() => handleSelectChange(option.value)}
-                    className={`mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500 transition-all duration-200 ${
-                      selectedValues.includes(option.value) ? "animate-in zoom-in duration-200" : ""
-                    }`}
+                    className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                     disabled={
-                      !selectedValues.includes(option.value) &&
-                      max_selections &&
-                      selectedValues.length >= max_selections
+                      isSubmitted ||
+                      (!selectedValues.includes(option.value) &&
+                      !!max_selections &&
+                      selectedValues.length >= max_selections)
                     }
                   />
                   <div className="flex-1">
@@ -315,7 +305,7 @@ export const FollowupAction = ({ followupAction, callback }) => {
               ))}
             </div>
             {max_selections && (
-              <div className="text-xs text-gray-500 transition-all duration-200">
+              <div className="text-xs text-gray-500">
                 <span className={selectedValues.length === max_selections ? "text-orange-500 font-medium" : ""}>
                   {selectedValues.length}
                 </span>
@@ -324,11 +314,11 @@ export const FollowupAction = ({ followupAction, callback }) => {
             )}
             <button
               onClick={handleMultiSelectSubmit}
-              disabled={selectedValues.length < min_selections}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] ${
-                selectedValues.length < min_selections
+              disabled={isSubmitted || selectedValues.length < min_selections}
+              className={`px-4 py-2 rounded text-sm font-medium ${
+                isSubmitted || selectedValues.length < min_selections
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : `${theme.button} hover:shadow-lg`
+                  : theme.button
               } flex items-center gap-2`}
             >
               <Check className="w-4 h-4" />
@@ -339,17 +329,23 @@ export const FollowupAction = ({ followupAction, callback }) => {
 
       case "confirmation":
         return (
-          <div className="flex gap-3 animate-in slide-in-from-bottom-4 duration-500">
+          <div className="flex gap-3">
             <button
               onClick={() => handleConfirmation(true)}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-medium transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              disabled={isSubmitted}
+              className={`flex-1 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded font-medium flex items-center justify-center gap-2 ${
+                isSubmitted ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               <Check className="w-4 h-4" />
               Confirm
             </button>
             <button
               onClick={() => handleConfirmation(false)}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white rounded-xl font-medium transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+              disabled={isSubmitted}
+              className={`flex-1 px-4 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded font-medium flex items-center justify-center gap-2 ${
+                isSubmitted ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             >
               <X className="w-4 h-4" />
               Cancel
@@ -363,57 +359,17 @@ export const FollowupAction = ({ followupAction, callback }) => {
   };
 
   return (
-    // The main container div for the FollowupAction component.
-    // It applies various styling classes based on the component's state.
-    // - `bg-white`, `border-2`, `border-gray-100`, `rounded-2xl`, `p-5`, `mx-auto`: Basic styling for the card.
-    // - `transition-all duration-300`: Smooth transitions for state changes.
-    // - Conditional classes:
-    //   - `isWaiting ? "animate-pulse"`: Applies a pulse animation when the component is initially waiting.
-    //   - `!isWaiting && !isSubmitted`: These conditions mean the component is ready for user interaction.
-    //     - `animate-in slide-in-from-bottom-6 duration-700`: An entrance animation.
-    //     - `hover:shadow-xl hover:border-gray-200`: Hover effects.
-    //     - `animate-subtle-glow`: **NEW!** This class applies a subtle, continuous glow animation
-    //                                  to indicate it's waiting for user interaction.
-    //   - `${!isWaiting && !isSubmitted ? theme.glow : ""}`: Applies a theme-specific glow shadow.
-    <div
-      className={`bg-white border-2 border-gray-100 rounded-2xl p-5 mx-auto transition-all duration-300 ${
-        isWaiting
-          ? "animate-pulse"
-          : `animate-in slide-in-from-bottom-6 duration-700 hover:shadow-xl hover:border-gray-200 ${
-              !isSubmitted ? "animate-subtle-glow" : ""
-            }`
-      } ${!isWaiting && !isSubmitted ? theme.glow : ""}`}
-    >
-      {/* Defines the keyframe animation for a subtle glow effect. */}
-      {/* This animation makes the element's shadow subtly expand and contract, */}
-      {/* giving a "breathing" or "waiting" visual cue without being too distracting. */}
-      {/* It targets the `box-shadow` property and runs infinitely. */}
-      <style jsx>{`
-        @keyframes subtle-glow {
-          0%,
-          100% {
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05), 0 0 0 0px rgba(0, 0, 0, 0);
-          }
-          50% {
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(var(--accent-rgb), 0.2);
-          }
-        }
-        .animate-subtle-glow {
-          animation: subtle-glow 2s infinite alternate ease-in-out;
-        }
-      `}</style>
-
+    <div className="bg-white border border-gray-200 rounded p-4 mx-auto">
       {!isWaiting && (
-        <div className="mb-4 animate-in fade-in duration-500 delay-300">
+        <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
-            {icon && <span className="text-lg animate-in zoom-in duration-300 delay-400">{icon}</span>}
-            <h3 className="font-semibold text-gray-900 text-sm animate-in slide-in-from-left-2 duration-300 delay-500">
+            <h3 className="font-medium text-gray-900 text-sm">
               {action_name}
             </h3>
-            {required && <span className="text-red-500 text-xs animate-in zoom-in duration-200 delay-600">*</span>}
+            {required && <span className="text-red-500 text-xs">*</span>}
           </div>
           {description && (
-            <p className="text-gray-600 text-xs leading-relaxed animate-in slide-in-from-left-2 duration-300 delay-700">
+            <p className="text-gray-600 text-xs">
               {description}
             </p>
           )}

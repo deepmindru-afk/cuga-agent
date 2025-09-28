@@ -1,17 +1,8 @@
 import { ChatInstance, CustomSendMessageOptions, GenericItem, MessageRequest, StreamChunk } from "@carbon/ai-chat";
-import { fetchStreamingData, streamViaBackground } from "./StreamingWorkFlow";
+import { fetchStreamingData, streamViaBackground } from "./StreamingWorkflow";
+import { setCardManagerState, resetCardManagerState } from "./renderUserDefinedResponse";
 
-const WELCOME_TEXT = `
-### 👋 I'm CUGA, Your Personal Digital Agent
-
-🌐 **Connect to APIs** seamlessly  
-🤖 **Automate repetitive website tasks** with ease  
-📱 **Simplify your digital workflow** instantly
-
----
-
-✨ **Just ask, and I'll help you get it done!**
-`;
+const WELCOME_TEXT = `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; padding: 8px 12px; color: white; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); margin: 8px 0; position: relative; overflow: hidden; width: 100%; min-width: 0;"><div style="position: absolute; top: -10px; right: -10px; width: 20px; height: 20px; background: rgba(255, 255, 255, 0.1); border-radius: 50%; animation: float 3s ease-in-out infinite;"></div><div style="position: relative; z-index: 2; display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; flex-wrap: wrap;"><div style="flex: 1; min-width: 0;"><h1 style="font-size: clamp(0.9rem, 2.5vw, 1.2rem); font-weight: 700; margin: 0 0 2px 0; background: linear-gradient(45deg, #fff, #e0e7ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">👋 I'm CUGA</h1><p style="font-size: clamp(0.6rem, 2vw, 0.8rem); margin: 0; opacity: 0.9; font-weight: 300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Your Digital Agent</p></div><div style="text-align: right; min-width: 0; flex-shrink: 0;"><p style="margin: 0; font-size: clamp(0.5rem, 1.5vw, 0.7rem); font-weight: 500; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">✨ Just ask!</p></div></div></div><style>@keyframes float { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-5px) rotate(180deg); } } @media (max-width: 200px) { .welcome-container { flex-direction: column !important; align-items: flex-start !important; gap: 4px !important; } .welcome-container .features { justify-content: flex-start !important; } }</style>`;
 
 const TEXT =
   `Lorem ipsum odor amet, consectetuer adipiscing elit. \`Inline Code Venenatis\` aliquet non platea elementum morbi porta accumsan. Tortor libero consectetur dapibus volutpat porta vestibulum.
@@ -66,6 +57,7 @@ print(generate_lorem_ipsum(2))  # Generates 2 paragraphs of Lorem Ipsum text
 
 const WORD_DELAY = 40;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function doFakeTextStreaming(instance: ChatInstance) {
   const responseID = crypto.randomUUID();
   const words = TEXT.split(" ");
@@ -123,7 +115,7 @@ async function sleep(milliseconds: number) {
 
 async function customStreamMessage(
   request: MessageRequest,
-  requestOptions: CustomSendMessageOptions,
+  _requestOptions: CustomSendMessageOptions,
   instance: ChatInstance
 ) {
   if (request.input.text === "") {
@@ -148,7 +140,7 @@ async function customStreamMessage(
 
 async function customSendMessage(
   request: MessageRequest,
-  requestOptions: CustomSendMessageOptions,
+  _requestOptions: CustomSendMessageOptions,
   instance: ChatInstance
 ) {
   if (request.input.text === "") {
@@ -163,38 +155,39 @@ async function customSendMessage(
       },
     });
   } else {
+    console.log("Setting up card manager for new request");
+    // Reset any previous card manager state
+    resetCardManagerState();
+    
+    // No cross-card loader toggles needed anymore; loader is within each card while processing
+    
+    // Enable card manager for this request
+    setCardManagerState(true, instance);
+    console.log("Card manager state set:", { shouldShowCardManager: true, instance: !!instance });
+
+    // Create the host user_defined message for CardManager without placeholder text
+    console.log("Creating CardManager host message");
+    const testWorkflowId = "test_workflow_" + Date.now();
+    await instance.messaging.addMessage({
+      output: {
+        generic: [
+          {
+            id: testWorkflowId,
+            response_type: "user_defined",
+            user_defined: {
+              user_defined_type: "my_unique_identifier",
+              isCardManager: true,
+            },
+          } as GenericItem,
+        ],
+      },
+    });
+    console.log("CardManager host message created");
+
     switch (request.input.text) {
       default:
-        await fetchStreamingData(instance, request.input.text);
-
-        // instance.messaging.addMessage({
-        //   output: {
-        //     generic: [
-        //       {
-        //         response_type: "user_defined",
-        //         user_defined: {
-        //           user_defined_type: "my_unique_identifier",
-        //           text: "Some text from your back-end.",
-        //         },
-        //       } as GenericItem,
-        //     ],
-        //   },
-        // });
+        await fetchStreamingData(instance, request.input.text || "");
         break;
-      // case "stream text":
-      //   doFakeTextStreaming(instance as ChatInstance);
-      //   break;
-      // default:
-      //   instance.messaging.addMessage({
-      //     output: {
-      //       generic: [
-      //         {
-      //           response_type: "text",
-      //           text: WELCOME_TEXT,
-      //         } as GenericItem,
-      //       ],
-      //     },
-      //   });
     }
   }
 }

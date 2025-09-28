@@ -40,66 +40,36 @@ export default function QaAgentComponent({ qaData }) {
   const isAnswerTruncated = answer.length > 500;
 
   return (
-    <div className="p-4">
+    <div className="p-3">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md border p-4">
-          {/* Thoughts Section */}
-          <div className="mb-4 pb-3 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs text-gray-400">💭</span>
-                  <span className="text-xs text-gray-500 font-medium">QA Analysis ({thoughts.length})</span>
-                  <button
-                    onClick={() => setShowFullThoughts(!showFullThoughts)}
-                    className="text-xs text-gray-400 hover:text-gray-600"
-                  >
-                    {showFullThoughts ? "▲" : "▼"}
-                  </button>
-                </div>
-                {!showFullThoughts && <p className="text-xs text-gray-400 italic">{truncateThoughts(thoughts)}</p>}
-              </div>
-            </div>
-
-            {showFullThoughts && (
-              <div className="mt-2 space-y-1">
-                {thoughts.map((thought, index) => (
-                  <div key={index} className="flex items-start gap-2">
-                    <span className="text-xs text-gray-300 mt-0.5 font-mono">{index + 1}.</span>
-                    <p className="text-xs text-gray-500 leading-relaxed">{thought}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-              <span className="text-xl">🔍</span>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <span className="text-sm">🔍</span>
               QA Agent Response
-            </h2>
-            <span className="px-3 py-1 rounded-full text-sm bg-emerald-100 text-emerald-800">Analysis Complete</span>
+            </h3>
+            <span className="px-2 py-1 rounded text-xs bg-emerald-100 text-emerald-700">Analysis Complete</span>
           </div>
 
           {/* Question Name */}
-          <div className="mb-4">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm text-gray-500">Question:</span>
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs text-gray-500">Question:</span>
             </div>
-            <h3 className="font-medium text-gray-800 text-base bg-gray-50 rounded-lg p-3 border">{name}</h3>
+            <h4 className="font-medium text-gray-800 text-xs bg-gray-50 rounded p-2 border">{name}</h4>
           </div>
 
           {/* Answer Section */}
-          <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="text-lg">{getAnswerIcon(answer)}</div>
+          <div className="mb-3 border rounded p-2 hover:shadow-sm transition-shadow">
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">{getAnswerIcon(answer)}</span>
                 <div>
-                  <h3 className="font-medium text-gray-800 text-sm">Answer</h3>
+                  <span className="text-xs font-medium text-gray-700">Answer</span>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`px-2 py-1 rounded text-xs font-medium border ${getAnswerColor(answer)}`}>
-                      {answer.length} characters
+                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getAnswerColor(answer)}`}>
+                      {answer.length} chars
                     </span>
                     <span className="text-xs text-gray-500">{answer.split(" ").length} words</span>
                   </div>
@@ -107,17 +77,17 @@ export default function QaAgentComponent({ qaData }) {
               </div>
             </div>
 
-            <div className="pl-8">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-gray-700 leading-relaxed font-mono whitespace-pre-wrap">
+            <div className="pl-5">
+              <div className="bg-blue-50 border border-blue-200 rounded p-2">
+                <p className="text-xs text-gray-700 leading-relaxed font-mono whitespace-pre-wrap">
                   {showFullAnswer ? answer : getAnswerPreview(answer)}
                 </p>
 
                 {isAnswerTruncated && (
-                  <div className="mt-3 text-center">
+                  <div className="mt-2 text-center">
                     <button
                       onClick={() => setShowFullAnswer(!showFullAnswer)}
-                      className="px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-xs font-medium transition-colors flex items-center gap-1 mx-auto"
+                      className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-medium transition-colors flex items-center gap-1 mx-auto"
                     >
                       {showFullAnswer ? (
                         <>
@@ -138,19 +108,50 @@ export default function QaAgentComponent({ qaData }) {
           </div>
 
           {/* Quick Stats */}
-          <div className="mt-4 grid grid-cols-3 gap-3">
-            <div className="text-center p-3 bg-blue-50 rounded">
-              <div className="text-base font-bold text-blue-800">{thoughts.length}</div>
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="text-center p-2 bg-blue-50 rounded">
+              <div className="text-sm font-bold text-blue-700">{thoughts.length}</div>
               <div className="text-xs text-blue-600">Analysis Steps</div>
             </div>
-            <div className="text-center p-3 bg-green-50 rounded">
-              <div className="text-base font-bold text-green-800">{answer.length}</div>
+            <div className="text-center p-2 bg-green-50 rounded">
+              <div className="text-sm font-bold text-green-700">{answer.length}</div>
               <div className="text-xs text-green-600">Answer Length</div>
             </div>
-            <div className="text-center p-3 bg-purple-50 rounded">
-              <div className="text-base font-bold text-purple-800">{answer.split(" ").length}</div>
+            <div className="text-center p-2 bg-purple-50 rounded">
+              <div className="text-sm font-bold text-purple-700">{answer.split(" ").length}</div>
               <div className="text-xs text-purple-600">Words</div>
             </div>
+          </div>
+
+          {/* Thoughts Section - Collapsible */}
+          <div className="border-t border-gray-100 pt-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400">💭</span>
+                <span className="text-xs text-gray-500">QA Analysis ({thoughts.length})</span>
+                <button
+                  onClick={() => setShowFullThoughts(!showFullThoughts)}
+                  className="text-xs text-gray-400 hover:text-gray-600"
+                >
+                  {showFullThoughts ? "▲" : "▼"}
+                </button>
+              </div>
+            </div>
+            
+            {!showFullThoughts && (
+              <p className="text-xs text-gray-400 italic mt-1">{truncateThoughts(thoughts, 80)}</p>
+            )}
+
+            {showFullThoughts && (
+              <div className="mt-2 space-y-1">
+                {thoughts.map((thought, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <span className="text-xs text-gray-300 mt-0.5 font-mono">{index + 1}.</span>
+                    <p className="text-xs text-gray-500 leading-relaxed">{thought}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

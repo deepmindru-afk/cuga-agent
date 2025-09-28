@@ -1,23 +1,45 @@
-import { ChatInstance, RenderUserDefinedState } from "@carbon/ai-chat";
 import React from "react";
+import { ChatInstance, RenderUserDefinedState } from "@carbon/ai-chat";
 
-import { CustomResponseExample } from "./CustomResponseExample";
+import CardManager from "./CardManager";
 
-function renderUserDefinedResponse(state: RenderUserDefinedState, instance: ChatInstance) {
+// Global state to track if we should show the card manager
+let shouldShowCardManager = false;
+let cardManagerInstance: ChatInstance | null = null;
+
+// Function to set the card manager state
+export const setCardManagerState = (show: boolean, instance?: ChatInstance) => {
+  shouldShowCardManager = show;
+  if (instance) {
+    cardManagerInstance = instance;
+  }
+};
+
+// Function to reset the card manager state
+export const resetCardManagerState = () => {
+  shouldShowCardManager = false;
+  cardManagerInstance = null;
+};
+
+function renderUserDefinedResponse(state: RenderUserDefinedState, _instance: ChatInstance) {
   const { messageItem } = state;
-  // The event here will contain details for each user defined response that needs to be rendered.
-  // If you need to access data from the parent component, you could define this function there instead.
-  console.log("user defined!!", messageItem);
+  console.log("renderUserDefinedResponse called:", {
+    messageItem,
+    shouldShowCardManager,
+    cardManagerInstance: !!cardManagerInstance,
+    isCardManager: messageItem?.user_defined?.isCardManager
+  });
 
   if (messageItem) {
     switch (messageItem.user_defined?.user_defined_type) {
       case "my_unique_identifier":
-        return (
-          <CustomResponseExample
-            data={messageItem.user_defined as { step_title: string; data: string }}
-            chatInstance={instance}
-          />
-        );
+        // Render the CardManager when card manager is enabled and properly configured
+        if (shouldShowCardManager && cardManagerInstance && messageItem.user_defined.isCardManager) {
+          console.log("Rendering CardManager");
+          return <CardManager chatInstance={cardManagerInstance} />;
+        }
+        console.log("Card manager not properly configured, returning null");
+        return null;
       default:
         return undefined;
     }

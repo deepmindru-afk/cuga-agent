@@ -53,74 +53,71 @@ export default function TaskDecompositionComponent({ decompositionData }) {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-3">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md border p-4">
-          {/* Thoughts Section - Subtle */}
-          <div className="mb-4 pb-3 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs text-gray-400">💭</span>
-                  <span className="text-xs text-gray-500 font-medium">Analysis</span>
-                  <button
-                    onClick={() => setShowFullThoughts(!showFullThoughts)}
-                    className="text-xs text-gray-400 hover:text-gray-600"
-                  >
-                    {showFullThoughts ? "▲" : "▼"}
-                  </button>
-                </div>
-                <p className="text-xs text-gray-400 italic">
-                  {showFullThoughts ? thoughts : truncateThoughts(thoughts)}
-                </p>
-              </div>
-            </div>
-          </div>
-
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-              <span className="text-xl">📋</span>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <span className="text-sm">📋</span>
               Task Breakdown
-            </h2>
-            <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800 border border-blue-200">
+            </h3>
+            <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700">
               {task_decomposition.length} steps planned
             </span>
           </div>
 
           {/* Task Steps */}
-          <div className="space-y-4">
+          <div className="space-y-2 mb-3">
             {task_decomposition.map((task, index) => (
               <div key={index} className="relative">
-                {/* Connector Line (except for last item) */}
-                {index < task_decomposition.length - 1 && (
-                  <div className="absolute left-6 top-12 w-0.5 h-8 bg-gray-300"></div>
-                )}
-
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3">
                   {/* Step Number Circle */}
-                  <div className="flex-shrink-0 w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-xs">
                     {getStepNumber(index)}
                   </div>
 
                   {/* Task Content */}
-                  <div className="flex-1 bg-gray-50 rounded-lg p-4 border">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium border-2 ${getAppColor(task.app)}`}
-                        >
-                          {getAppIcon(task.app)} {task.app}
-                        </span>
-                        <span className="px-2 py-1 bg-white rounded text-xs text-gray-600 border">{task.type}</span>
-                      </div>
+                  <div className="flex-1 bg-gray-50 rounded p-2 border">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-medium ${getAppColor(task.app)}`}
+                      >
+                        {getAppIcon(task.app)} {task.app}
+                      </span>
+                      <span className="px-1.5 py-0.5 bg-white rounded text-xs text-gray-600 border">{task.type}</span>
                     </div>
-
-                    <p className="text-sm text-gray-700 leading-relaxed">{task.task}</p>
+                    <p className="text-xs text-gray-700 leading-relaxed">{task.task}</p>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Thoughts Section - Collapsible */}
+          <div className="border-t border-gray-100 pt-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400">💭</span>
+                <span className="text-xs text-gray-500">Analysis</span>
+                <button
+                  onClick={() => setShowFullThoughts(!showFullThoughts)}
+                  className="text-xs text-gray-400 hover:text-gray-600"
+                >
+                  {showFullThoughts ? "▲" : "▼"}
+                </button>
+              </div>
+            </div>
+            
+            {!showFullThoughts && (
+              <p className="text-xs text-gray-400 italic mt-1">{truncateThoughts(thoughts, 80)}</p>
+            )}
+
+            {showFullThoughts && (
+              <div className="mt-2 space-y-1">
+                <p className="text-xs text-gray-500 leading-relaxed">{thoughts}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

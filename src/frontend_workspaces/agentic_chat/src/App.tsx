@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 // These functions hook up to your back-end.
 import { customSendMessage } from "./customSendMessage";
 // This function returns a React component for user defined responses.
-import { renderUserDefinedResponse } from "./renderUserDefinedResponse";
+import { renderUserDefinedResponse, resetCardManagerState } from "./renderUserDefinedResponse";
 import { StopButton } from "./floating/stop_button";
 
 export function App() {
@@ -24,6 +24,7 @@ export function App() {
   function onBeforeRender(instance: ChatInstance) {
     // Handle feedback event.
     instance.on({ type: "FEEDBACK" as any, handler: feedbackHandler });
+    instance.on({ type: "pre:restartConversation" as any, handler: restartConversationHandler });
   }
 
   /**
@@ -38,22 +39,40 @@ export function App() {
       });
     }
   }
+  async function restartConversationHandler(_event: any) {
+    console.log("Restarting conversation");
+    
+    try {
+      // Call the backend reset endpoint
+      const response = await fetch('/reset', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Backend reset successful:", result.message);
+      } else {
+        console.error("Backend reset failed:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error calling reset endpoint:", error);
+    }
+    
+    // Reset the CardManager state
+    resetCardManagerState();
+    
+    // Reset the CardManager through the global interface if available
+    if (typeof window !== "undefined" && window.aiSystemInterface) {
+      console.log("Resetting CardManager through global interface");
+      window.aiSystemInterface.forceReset();
+    }
+  }
   const renderWriteableElements = useMemo(
     () => ({
       beforeInputElement: <StopButton location="sidebar" />,
-      // <FloatingChatControls
-      //   location="sidebar"
-      //   parentStateText="Some state text"
-      //   flags={exampleFlags}
-      //   onFlagChange={(flagKey, value, allFlags) => {
-      //     console.log(`Flag ${flagKey} changed to ${value}`);
-      //     console.log("All flags:", allFlags);
-      //   }}
-      //   onAllFlagsChange={(allFlags) => {
-      //     console.log("All flags updated:", allFlags);
-      //   }}
-      // />
-      // ),
     }),
     []
   );

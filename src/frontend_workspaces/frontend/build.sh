@@ -1,3 +1,2 @@
-rm -rf ./build
-npm run build
-cp -r ./dist ./build
+rm -rf ./dist
+pnpm run build

@@ -1,5 +1,4 @@
-import { useState } from "react";
-import React from "react";
+import React, { useState } from "react";
 import Markdown from "react-markdown";
 
 export default function CoderAgentOutput({ coderData }) {
@@ -25,22 +24,22 @@ export default function CoderAgentOutput({ coderData }) {
   const outputLength = summary.length;
 
   return (
-    <div className="p-4">
+    <div className="p-3">
       <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md border p-4">
+        <div className="bg-white rounded-lg border border-gray-200 p-3">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">Coder Agent</h2>
-            <span className="px-2 py-1 rounded text-xs bg-purple-100 text-purple-800">✅ Complete</span>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <span className="text-sm">💻</span>
+              Coder Agent
+            </h3>
+            <span className="px-2 py-1 rounded text-xs bg-purple-100 text-purple-700">Complete</span>
           </div>
 
           {/* Code Section */}
-          <div className="mb-4">
+          <div className="mb-3">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-medium text-gray-700 flex items-center gap-2">
-                <span className="text-sm">💻</span>
-                Code ({codeLines} lines)
-              </h3>
+              <span className="text-xs text-gray-600">Code ({codeLines} lines)</span>
               <button
                 onClick={() => setShowFullCode(!showFullCode)}
                 className="text-xs text-purple-600 hover:text-purple-800"
@@ -49,18 +48,15 @@ export default function CoderAgentOutput({ coderData }) {
               </button>
             </div>
 
-            <div className="bg-gray-900 rounded p-3" style={{ overflowX: "scroll" }}>
+            <div className="bg-gray-900 rounded p-2" style={{ overflowX: "scroll" }}>
               <pre className="text-green-400 text-xs font-mono">{showFullCode ? code : getCodeSnippet(code)}</pre>
             </div>
           </div>
 
           {/* Output Section */}
-          <div>
+          <div className="mb-3">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-medium text-gray-700 flex items-center gap-2">
-                <span className="text-sm">📄</span>
-                Output ({outputLength} chars)
-              </h3>
+              <span className="text-xs text-gray-600">Output ({outputLength} chars)</span>
               <button
                 onClick={() => setShowFullOutput(!showFullOutput)}
                 className="text-xs text-green-600 hover:text-green-800"
@@ -69,18 +65,18 @@ export default function CoderAgentOutput({ coderData }) {
               </button>
             </div>
 
-            <div className="bg-green-50 rounded p-3 border border-green-200" style={{ overflowY: "scroll" }}>
-              <p className="text-sm text-green-800 leading-relaxed">
+            <div className="bg-green-50 rounded p-2 border border-green-200" style={{ overflowY: "scroll" }}>
+              <p className="text-xs text-green-700 leading-relaxed">
                 <Markdown>{showFullOutput ? summary : truncateOutput(summary)}</Markdown>
               </p>
             </div>
           </div>
 
           {/* Quick Stats */}
-          <div className="mt-4 flex gap-4 text-xs text-gray-500">
-            <span>📊 {codeLines} lines of code</span>
-            <span>📝 {outputLength} characters output</span>
-            <span>🎯 Task completed</span>
+          <div className="flex gap-3 text-xs text-gray-500">
+            <span>📊 {codeLines} lines</span>
+            <span>📝 {outputLength} chars</span>
+            <span>🎯 Complete</span>
           </div>
         </div>
       </div>

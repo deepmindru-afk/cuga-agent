@@ -42,23 +42,6 @@ export default function SingleExpandableContent({ title, content, maxLength = 60
             </div>
           )}
 
-          {/* Content Stats */}
-          {/* <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">📊</span>
-              <h3 className="font-semibold text-gray-800">Content Stats</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">Total characters:</span>
-                <span className="font-medium text-gray-800 ml-2">{sampleContent.length}</span>
-              </div>
-              <div>
-                <span className="text-gray-600">Word count:</span>
-                <span className="font-medium text-gray-800 ml-2">{sampleContent.split(" ").length}</span>
-              </div>
-            </div>
-          </div> */}
         </div>
       </div>
     </div>

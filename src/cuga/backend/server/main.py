@@ -585,6 +585,32 @@ async def stop():
     return {"status": "success", "message": "Stop request received"}
 
 
+@app.post("/reset")
+async def reset_agent_state():
+    """Endpoint to reset the agent state to default values."""
+    logger.info("Received reset request")
+    try:
+        # Reset agent state to default
+        app_state.state = default_state(page=None, observation=None, goal="")
+        app_state.stop_agent = False
+        app_state.thread_id = str(uuid.uuid4())
+
+        # Reset the agent graph
+        if app_state.agent:
+            app_state.agent = DynamicAgentGraph(None)
+            await app_state.agent.build_graph()
+
+        # Reset environment if available
+        if app_state.env:
+            app_state.obs, app_state.info = await app_state.env.reset()
+
+        logger.info("Agent state reset successfully")
+        return {"status": "success", "message": "Agent state reset successfully"}
+    except Exception as e:
+        logger.error(f"Failed to reset agent state: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to reset agent state: {str(e)}")
+
+
 async def get_query(request: Request) -> Union[str, ActionResponse]:
     """Parses the incoming request to extract the user query or action."""
     try:

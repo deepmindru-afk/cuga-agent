@@ -48,14 +48,29 @@ export default {
   entry: "./src/App.tsx",
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "bundle.js",
+    filename: "[name].[contenthash].js",
+    chunkFilename: "[name].[contenthash].bundle.js",
     clean: true,
+    publicPath: "/",
   },
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".jsx", ".css"],
     alias: {
       react: reactPath,
       "react-dom": reactDomPath,
+    },
+  },
+  optimization: {
+    splitChunks: {
+      chunks: "all",
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: "vendors",
+          chunks: "all",
+          enforce: true,
+        },
+      },
     },
   },
   module: {
