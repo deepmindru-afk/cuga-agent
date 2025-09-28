@@ -37,13 +37,14 @@ elif [ "$1" = "unit_tests" ]; then
     echo "Running unit tests (registry + variables manager + local sandbox tests)..."
     uv run pytest ./src/cuga/backend/tools_env/registry/tests/ -v
     uv run pytest ./src/cuga/backend/cuga_graph/nodes/api/variables_manager/tests/ -v
+    uv run pytest ./src/system_tests/e2e/test_runtime_tools.py -v
     uv run pytest ./src/cuga/backend/tools_env/code_sandbox/tests/ -v
 else
     echo "Running default tests (registry + variables manager + local sandbox + e2e without save_reuse and without sandbox docker)..."
     uv run pytest ./src/cuga/backend/tools_env/registry/tests/ -v
     uv run pytest ./src/cuga/backend/cuga_graph/nodes/api/variables_manager/tests/ -v
     uv run pytest ./src/cuga/backend/tools_env/code_sandbox/tests/ -v
-    uv run pytest ./src/system_tests/e2e/balanced_test.py ./src/system_tests/e2e/fast_test.py -v
+    uv run pytest ./src/system_tests/e2e/balanced_test.py ./src/system_tests/e2e/fast_test.py ./src/system_tests/e2e/test_runtime_tools.py -v
 fi
 
 TEST_EXIT_CODE=$?
