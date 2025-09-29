@@ -1,0 +1,32 @@
+{
+  "summary": {
+    "total_tests": 1,
+    "successful_tests": 1,
+    "failed_tests": 0,
+    "success_rate": 100.0,
+    "timestamp": "2025-09-29T00:19:48.206052"
+  },
+  "config_stats": {
+    "settings.openai.toml_fast": {
+      "total": 1,
+      "successful": 1,
+      "failed": 0,
+      "avg_time": 39.8363151550293,
+      "total_time": 39.8363151550293,
+      "success_rate": 100.0
+    }
+  },
+  "langfuse_metrics": [],
+  "detailed_results": [
+    {
+      "config": "settings.openai.toml",
+      "mode": "fast",
+      "task_name": "test_get_top_account_by_revenue_stream",
+      "success": true,
+      "execution_time": 39.8363151550293,
+      "trace_id": null,
+      "error_message": null,
+      "langfuse_data": null
+    }
+  ]
+}

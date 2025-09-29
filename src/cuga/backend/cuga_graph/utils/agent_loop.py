@@ -313,12 +313,24 @@ class AgentLoop:
             stream_mode="updates",
         )
 
+    def get_langfuse_trace_id(self) -> Optional[str]:
+        """Get the current Langfuse trace ID if available."""
+        if self.langfuse_handler and hasattr(self.langfuse_handler, 'last_trace_id'):
+            return self.langfuse_handler.last_trace_id
+        return None
+
     def get_output(self, event):
         state: AgentState = AgentState(
             **self.graph.get_state({"configurable": {"thread_id": self.thread_id}}).values
         )
         msg: AIMessage = state.messages[-1] if len(state.messages) > 0 else None
         logger.info("Calling get output {}".format(",".join(list(event.keys()))))
+        
+        # Print Langfuse trace ID if available
+        trace_id = self.get_langfuse_trace_id()
+        if trace_id:
+            print(f"Langfuse Trace ID: {trace_id}")
+            logger.info(f"Langfuse Trace ID: {trace_id}")
         if "__interrupt__" in list(event.keys()):
             answer = ""
             if msg.tool_calls and len(msg.tool_calls) > 0:
