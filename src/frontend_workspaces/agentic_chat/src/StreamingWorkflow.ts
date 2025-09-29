@@ -1,6 +1,7 @@
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { ChatInstance, CustomSendMessageOptions, GenericItem, MessageRequest, StreamChunk } from "@carbon/ai-chat";
 import { streamStateManager } from "./StreamManager";
+import { RESPONSE_USER_PROFILE } from "./constants";
 
 // When built without webpack DefinePlugin, `FAKE_STREAM` may not exist at runtime.
 // Declare it for TypeScript and compute a safe value that won't throw if undefined.
@@ -118,6 +119,9 @@ const simulateFakeStream = async (instance: ChatInstance, query: string) => {
         window.aiSystemInterface.addStep(stepTitle, currentStep);
       } else {
         await instance.messaging.addMessage({
+          message_options: {
+            response_user_profile: RESPONSE_USER_PROFILE
+          },
           output: {
             generic: [
               {
@@ -153,6 +157,9 @@ const simulateFakeStream = async (instance: ChatInstance, query: string) => {
 
       // Add a message indicating the stream was stopped
       await instance.messaging.addMessage({
+        message_options: {
+          response_user_profile: RESPONSE_USER_PROFILE
+        },
         output: {
           generic: [
             {
@@ -170,6 +177,9 @@ const simulateFakeStream = async (instance: ChatInstance, query: string) => {
 
       // Add error message
       await instance.messaging.addMessage({
+        message_options: {
+          response_user_profile: RESPONSE_USER_PROFILE
+        },
         output: {
           generic: [
             {
@@ -250,6 +260,9 @@ const addStreamMessage = async (
     };
 
     await instance.messaging.addMessage({
+      message_options: {
+        response_user_profile: RESPONSE_USER_PROFILE
+      },
       output: {
         generic: [messageConfig],
       },
