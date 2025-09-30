@@ -187,6 +187,7 @@ class AgentRunner:
                     state.messages[-1].tool_calls,
                     state.elements,
                     self.env.page,
+                    self.env.tool_implementation_provider,
                     session_id=langfuse_handler.session_id if langfuse_handler else None,
                     tool_provider=self.env.tool_implementation_provider,
                 )
@@ -287,6 +288,7 @@ class AgentRunner:
                             state.messages[-1].tool_calls,
                             state.elements,
                             self.env.page,
+                            self.env.tool_implementation_provider,
                             session_id=langfuse_handler.session_id if langfuse_handler else None,
                         )
                         state.feedback = state.feedback + feedback

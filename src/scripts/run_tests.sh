@@ -39,6 +39,7 @@ elif [ "$1" = "unit_tests" ]; then
     uv run pytest ./src/cuga/backend/cuga_graph/nodes/api/variables_manager/tests/ -v
     uv run pytest ./src/system_tests/e2e/test_runtime_tools.py -v
     uv run pytest ./src/cuga/backend/tools_env/code_sandbox/tests/ -v
+    uv run pytest ./src/system_tests/unit/test_sandbox_async.py -v
 else
     echo "Running default tests (registry + variables manager + local sandbox + e2e without save_reuse and without sandbox docker)..."
     uv run pytest ./src/cuga/backend/tools_env/registry/tests/ -v

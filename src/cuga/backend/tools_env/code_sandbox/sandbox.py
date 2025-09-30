@@ -52,7 +52,29 @@ structured_tools_init = "# Initialize tracker\ntracker = ActivityTracker()"
 structured_tools_invocation = """
     # Try to invoke tool first using ActivityTracker
     try:
-        result = asyncio.run(tracker.invoke_tool(app_name, api_name, args))
+        # Check if we're already in an async context
+        try:
+            import asyncio
+            asyncio.get_running_loop()
+            # We're in an async context, create a new thread to run the async function
+            import concurrent.futures
+            import threading
+            
+            def run_in_new_loop():
+                new_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(new_loop)
+                try:
+                    return new_loop.run_until_complete(tracker.invoke_tool(app_name, api_name, args))
+                finally:
+                    new_loop.close()
+            
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(run_in_new_loop)
+                result = future.result()
+        except RuntimeError:
+            # No running loop, safe to use asyncio.run()
+            result = asyncio.run(tracker.invoke_tool(app_name, api_name, args))
+        
         if not isinstance(result, dict):
             if hasattr(result, 'model_dump'):
                 return result.model_dump()
