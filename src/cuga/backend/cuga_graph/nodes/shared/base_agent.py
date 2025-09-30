@@ -78,7 +78,8 @@ JSON schema:
         #     return prompt_template | llm.bind(extra_body={"guided_json": schema.model_json_schema()}) | parser
         if isinstance(llm, ChatWatsonx):
             logger.debug("Loading LLM for watsonx")
-            if schema == APIPlannerOutput or schema == APIPlannerOutputLite:
+            model_id = llm.model_id
+            if "gpt" not in model_id and (schema == APIPlannerOutput or schema == APIPlannerOutputLite):
                 logger.debug("Switched to watsonx schema... for APIPlannerOutput")
                 schema = APIPlannerOutputWX
             parser = PydanticOutputParser(pydantic_object=schema)
