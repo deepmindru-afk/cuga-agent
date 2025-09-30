@@ -71,10 +71,28 @@ task = "Get top account by revenue from my accounts in digital sales, then send 
 ## 🛠️ **Setup Instructions**
 
 ### 1. **Install Dependencies**
+
+
+
+Navigate to this example
 ```bash
 cd docs/examples/cuga_with_runtime_tools
+```
+
+Create and activate a new virtual environment
+```bash
+uv venv --python=3.12 && source .venv/bin/activate
+```
+
+Install dependencies
+```bash
 uv sync
 ```
+
+Create a local .env or copy the main .env file
+```bash
+cp ../../../.env .env
+``` 
 
 ### 2. **Start MCP Registry** (for OpenAPI and MCP tools)
 ```bash
@@ -83,6 +101,13 @@ uv run registry
 ```
 
 ### 3. **Run the Complete Example**
+In a second terminal, activate the same virtual environment
+```bash
+source .venv/bin/activate
+```
+
+Run the example
+
 ```bash
 uv run main.py
 ```
@@ -130,5 +155,3 @@ docs/examples/cuga_with_runtime_tools/
 - **Integration**: Seamless communication between tool types
 
 This example showcases CUGA's powerful ability to create unified AI workflows that span multiple systems and protocols.
-
-
