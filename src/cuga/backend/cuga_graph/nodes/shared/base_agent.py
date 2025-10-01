@@ -7,6 +7,7 @@ from typing import Literal
 from abc import ABC
 
 # from langchain_openai.chat_models import AzureChatOpenAI
+from langchain_groq import ChatGroq
 from langchain_ibm.chat_models import ChatWatsonx
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
@@ -96,18 +97,11 @@ JSON schema:
             logger.debug("Getting model for Claude")
             # parser = PydanticOutputParser(pydantic_object=schema)
             return prompt_template | llm
-        elif isinstance(llm, ChatOpenAI) and "qwq" in llm.model_name:
-            logger.debug("Getting model for groq")
-            chain = prompt_template | llm.with_structured_output(schema, method="json_mode")
-            chain = chain.with_retry(stop_after_attempt=3)
-            return chain
-
-        elif isinstance(llm, ChatOpenAI):
+        elif isinstance(llm, ChatOpenAI) or isinstance(llm, ChatGroq):
             logger.debug("Getting model for openai interface")
             chain = prompt_template | llm.with_structured_output(schema, method="json_schema")
             chain = chain.with_retry(stop_after_attempt=3)
             return chain
         else:
             logger.debug("Getting model for azure")
-            # assert method in ["json_mode", "function_calling", "json_schema"]
             return prompt_template | llm.with_structured_output(schema, method="json_schema")

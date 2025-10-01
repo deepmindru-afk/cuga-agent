@@ -10,6 +10,10 @@ from langchain_core.runnables import ConfigurableField
 from langchain_core.language_models.chat_models import BaseChatModel
 from loguru import logger
 
+try:
+    from langchain_groq import ChatGroq
+except ImportError:
+    logger.warning("Langchain Groq not installed, using OpenAI instead")
 
 class LLMManager:
     """Singleton class to manage LLM instances based on agent name and settings"""
@@ -71,6 +75,9 @@ class LLMManager:
 
         # Update temperature
         if hasattr(model, 'temperature'):
+            logger.debug(f"Updating model temperature: {temperature}")
+            logger.debug(f"Model keys: {model.model_kwargs.keys()}")
+            logger.debug(f"Model instance: {type(model)}")
             model.temperature = temperature
         elif 'temperature' in model_kwargs:
             model_kwargs['temperature'] = temperature
@@ -133,6 +140,20 @@ class LLMManager:
                 default_model = "gpt-4o"
                 logger.info(f"No model_name specified, using default: {default_model}")
                 return default_model
+        elif platform == "groq":
+            # For Groq, check environment variables
+            env_model_name = os.environ.get('MODEL_NAME')
+            if env_model_name:
+                logger.info(f"Using MODEL_NAME from environment for Groq: {env_model_name}")
+                return env_model_name
+            elif toml_model_name:
+                logger.debug(f"Using model_name from TOML: {toml_model_name}")
+                return toml_model_name
+            else:
+                # Default fallback
+                default_model = "openai/gpt-oss-20b"
+                logger.info(f"No model_name specified, using default: {default_model}")
+                return default_model    
         elif platform == "watsonx":
             # For WatsonX, check environment variables
             env_model_name = os.environ.get('MODEL_NAME')
@@ -146,6 +167,20 @@ class LLMManager:
                 # Default fallback for WatsonX
                 default_model = "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
                 logger.info(f"No model_name specified for WatsonX, using default: {default_model}")
+                return default_model
+        elif platform == "azure":
+            # For Azure, check environment variables
+            env_model_name = os.environ.get('MODEL_NAME')
+            if env_model_name:
+                logger.info(f"Using MODEL_NAME from environment for Azure: {env_model_name}")
+                return env_model_name
+            elif toml_model_name:
+                logger.debug(f"Using model_name from TOML: {toml_model_name}")
+                return toml_model_name
+            else:
+                # Default fallback for Azure
+                default_model = "gpt-4o"
+                logger.info(f"No model_name specified for Azure, using default: {default_model}")
                 return default_model
         else:
             # For other platforms, use TOML or default
@@ -226,23 +261,15 @@ class LLMManager:
                     timeout=61,
                     api_version="2025-04-01-preview",
                     azure_deployment=model_name + "-" + api_version,
-                    model_name=model_name,
                     max_completion_tokens=max_tokens,
                 )
             else:
+                logger.debug(f"Creating AzureChatOpenAI model: {model_name} - {api_version}")
                 llm = AzureChatOpenAI(
-                    model_version=api_version,
                     timeout=61,
                     azure_deployment=model_name + "-" + api_version,
-                    model_name=model_name,
                     temperature=temperature,
                     max_tokens=max_tokens,
-                ).configurable_fields(
-                    temperature=ConfigurableField(
-                        id="llm_temperature",
-                        name="LLM Temperature",
-                        description="The temperature of the LLM",
-                    )
                 )
         elif platform == "openai":
             # Build ChatOpenAI parameters
@@ -264,14 +291,11 @@ class LLMManager:
 
             llm = ChatOpenAI(**openai_params)
         elif platform == "groq":
-            llm = ChatOpenAI(
-                api_key=os.environ["GROQ_API_KEY"],
-                base_url="https://api.groq.com/openai/v1",
+            logger.debug(f"Creating Groq model: {model_name}")
+            llm = ChatGroq(
                 max_tokens=max_tokens,
-                top_p=0.95,
                 model=model_name,
                 temperature=temperature,
-                seed=42,
             )
         elif platform == "watsonx":
             llm = ChatWatsonx(

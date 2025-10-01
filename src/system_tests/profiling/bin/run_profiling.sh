@@ -5,9 +5,13 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROFILING_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "$PROFILING_ROOT/../../.." && pwd)"
+
 # Load environment variables from .env file if it exists
-if [ -f .env ]; then
-    export $(cat .env | grep -v '^#' | xargs)
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    export $(cat "$PROJECT_ROOT/.env" | grep -v '^#' | xargs)
 fi
 
 # Default values
@@ -15,11 +19,16 @@ CONFIGS="settings.openai.toml,settings.azure.toml,settings.watsonx.toml"
 MODES="fast,balanced,accurate"
 TASKS="test_get_top_account_by_revenue_stream,test_list_my_accounts,test_find_vp_sales_active_high_value_accounts"
 RUNS=1
-OUTPUT="profiling_report_$(date +%Y%m%d_%H%M%S).json"
+OUTPUT="$PROFILING_ROOT/reports/profiling_report_$(date +%Y%m%d_%H%M%S).json"
+CONFIG_FILE=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --config-file)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
         --configs)
             CONFIGS="$2"
             shift 2
@@ -52,6 +61,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [OPTIONS]"
             echo ""
             echo "Options:"
+            echo "  --config-file FILE   YAML configuration file to use"
             echo "  --configs CONFIGS    Comma-separated list of configs (default: $CONFIGS)"
             echo "  --modes MODES        Comma-separated list of modes (default: $MODES)"
             echo "  --tasks TASKS        Comma-separated list of tasks (default: $TASKS)"
@@ -67,6 +77,7 @@ while [[ $# -gt 0 ]]; do
             echo "  LANGFUSE_HOST        Langfuse host URL (optional, default: https://cloud.langfuse.com)"
             echo ""
             echo "Examples:"
+            echo "  $0 --config-file default_experiment.yaml"
             echo "  $0 --configs settings.openai.toml,settings.azure.toml --modes fast,balanced --runs 3"
             echo "  $0 --test-id settings.openai.toml:fast:test_get_top_account_by_revenue_stream --runs 5"
             exit 0
@@ -91,37 +102,49 @@ echo "Cleaning up existing processes..."
 lsof -ti:8000,8001,8005 | xargs kill -9 2>/dev/null || true
 
 echo "Starting Digital Sales Task Profiler..."
-echo "Configurations: $CONFIGS"
-echo "Modes: $MODES"
-echo "Tasks: $TASKS"
-echo "Runs per config: $RUNS"
-echo "Output file: $OUTPUT"
-echo ""
+echo "Profiling Root: $PROFILING_ROOT"
 
 # Handle list-tests option
 if [ "$LIST_TESTS" = true ]; then
     echo "Listing available test IDs..."
-    uv run python profile_digital_sales_tasks.py --list-tests
+    cd "$PROJECT_ROOT"
+    uv run python "$SCRIPT_DIR/profile_digital_sales_tasks.py" --list-tests
     exit 0
 fi
 
-# Run the profiler
-if [ -n "$TEST_ID" ]; then
-    # Run single test by ID
-    echo "Running single test: $TEST_ID"
-    uv run python profile_digital_sales_tasks.py \
-        --test-id "$TEST_ID" \
-        --runs "$RUNS" \
-        --output "$OUTPUT"
+# Build command based on whether config file is provided
+cd "$PROJECT_ROOT"
+
+if [ -n "$CONFIG_FILE" ]; then
+    echo "Using configuration file: $CONFIG_FILE"
+    CMD_ARGS="--config-file $CONFIG_FILE"
+    
+    # Allow CLI overrides
+    [ -n "$TEST_ID" ] && CMD_ARGS="$CMD_ARGS --test-id $TEST_ID"
+    [ "$RUNS" != "1" ] && CMD_ARGS="$CMD_ARGS --runs $RUNS"
+    [ -n "$OUTPUT" ] && [ "$OUTPUT" != "$PROFILING_ROOT/reports/profiling_report_$(date +%Y%m%d_%H%M%S).json" ] && CMD_ARGS="$CMD_ARGS --output $OUTPUT"
 else
-    # Run multiple tests
-    uv run python profile_digital_sales_tasks.py \
-        --configs "$CONFIGS" \
-        --modes "$MODES" \
-        --tasks "$TASKS" \
-        --runs "$RUNS" \
-        --output "$OUTPUT"
+    echo "Configurations: $CONFIGS"
+    echo "Modes: $MODES"
+    echo "Tasks: $TASKS"
+    echo "Runs per config: $RUNS"
+    echo "Output file: $OUTPUT"
+    echo ""
+    
+    CMD_ARGS=""
+    [ -n "$TEST_ID" ] && CMD_ARGS="--test-id $TEST_ID" || CMD_ARGS="--configs $CONFIGS --modes $MODES --tasks $TASKS"
+    CMD_ARGS="$CMD_ARGS --runs $RUNS --output $OUTPUT"
 fi
 
+# Display environment variables if MODEL_NAME is set
+echo "[DEBUG run_profiling.sh] MODEL_NAME in environment: ${MODEL_NAME:-NOT SET}"
+if [ -n "$MODEL_NAME" ]; then
+    echo "Environment: MODEL_NAME=$MODEL_NAME"
+fi
+
+# Run the profiler
+echo "Running: uv run python $SCRIPT_DIR/profile_digital_sales_tasks.py $CMD_ARGS"
+uv run python "$SCRIPT_DIR/profile_digital_sales_tasks.py" $CMD_ARGS
+
 echo ""
-echo "Profiling completed! Report saved to: $OUTPUT"
+echo "Profiling completed!"

@@ -13,7 +13,7 @@ class DigitalSalesTestHelpers:
         Test getting the top account by revenue from my accounts.
         Ground Truth: The top account by revenue should be Andromeda Inc.
         """
-        query = "get top account by revenue from my accounts"
+        query = "get top account by revenue from my accounts only"
         all_events = await test_instance.run_task(query)
         test_instance._assert_answer_event(all_events, expected_keywords=["Andromeda Inc"])
 
