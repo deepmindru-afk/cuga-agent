@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ChatInstance } from "@carbon/ai-chat";
+import { marked } from "marked";
 import "./CardManager.css";
 import "./CustomResponseStyles.css";
 // Import components from CustomResponseExample
 import TaskStatusDashboard from "./task_status_component";
 import ActionStatusDashboard from "./action_status_component";
 import CoderAgentOutput from "./coder_agent_output";
-import FinalAnswerComponent from "./final_answer_component";
 import AppAnalyzerComponent from "./app_analyzer_component";
 import TaskDecompositionComponent from "./task_decomposition";
 import ShortlisterComponent from "./shortlister";
@@ -118,12 +118,14 @@ const CardManager: React.FC<CardManagerProps> = ({ chatInstance }) => {
             }
           }
 
-          // Auto-expand "Waiting for your input" components
+          // Auto-expand "Waiting for your input" components and collapse reasoning
           if (title === "SuggestHumanActions") {
             setShowDetails(prev => ({
               ...prev,
               [newStep.id]: true
             }));
+            // Collapse reasoning process when user action is needed
+            setIsReasoningCollapsed(true);
           }
 
           // Check if this is a final answer step
@@ -132,6 +134,11 @@ const CardManager: React.FC<CardManagerProps> = ({ chatInstance }) => {
             setHasFinalAnswer(true);
             // Collapse reasoning immediately when final answer arrives
             setIsReasoningCollapsed(true);
+            // Show details by default for final answer
+            setShowDetails(prev => ({
+              ...prev,
+              [newStep.id]: true
+            }));
           }
         },
         // No external loader toggle needed for within-card loading
@@ -278,7 +285,7 @@ const CardManager: React.FC<CardManagerProps> = ({ chatInstance }) => {
       
       case "FinalAnswerAgent":
         if (parsedContent.final_answer) {
-          return `I've completed your request and prepared the final answer. <div style="color:${HIGHLIGHT_COLOR}; margin-top: 10px; font-weight: 600;">${parsedContent.final_answer}</div>`;
+          return `I've completed your request and prepared the final answer.`;
         }
         return "I'm preparing the final answer to your request.";
       
@@ -378,7 +385,16 @@ const CardManager: React.FC<CardManagerProps> = ({ chatInstance }) => {
           break;
         case "FinalAnswerAgent":
           if (parsedContent && parsedContent.final_answer) {
-            mainElement = <FinalAnswerComponent answerData={parsedContent} />;
+            mainElement = (
+              <div
+                style={{
+                  fontSize: "14px",
+                  lineHeight: "1.6",
+                  color: "#1e293b"
+                }}
+                dangerouslySetInnerHTML={{ __html: marked(parsedContent.final_answer) }}
+              />
+            );
           }
           break;
         case "SuggestHumanActions":
@@ -734,7 +750,7 @@ const CardManager: React.FC<CardManagerProps> = ({ chatInstance }) => {
 
                 <div
                   style={{
-                    maxHeight: isReasoningCollapsed ? "0" : "2000px",
+                    maxHeight: isReasoningCollapsed ? "0" : "10000px",
                     overflow: "hidden",
                     transition: "max-height 0.5s ease-in-out, opacity 0.3s ease-in-out",
                     opacity: isReasoningCollapsed ? 0 : 1,
@@ -827,7 +843,7 @@ const CardManager: React.FC<CardManagerProps> = ({ chatInstance }) => {
 
           <div
             style={{
-              maxHeight: isReasoningCollapsed ? "0" : "2000px",
+              maxHeight: isReasoningCollapsed ? "0" : "10000px",
               overflow: "hidden",
               transition: "max-height 0.5s ease-in-out, opacity 0.3s ease-in-out",
               opacity: isReasoningCollapsed ? 0 : 1,
@@ -960,7 +976,7 @@ const CardManager: React.FC<CardManagerProps> = ({ chatInstance }) => {
           
           <div
             style={{
-              maxHeight: isReasoningCollapsed ? "0" : "2000px",
+              maxHeight: isReasoningCollapsed ? "0" : "10000px",
               overflow: "hidden",
               transition: "max-height 0.5s ease-in-out, opacity 0.3s ease-in-out",
               opacity: isReasoningCollapsed ? 0 : 1,
