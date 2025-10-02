@@ -81,3 +81,6 @@ dev = [
 groq = [
     "langchain-groq>=0.3.8",
 ]
+google-genai = [
+    "langchain-google-genai>=2.0.11",
+]

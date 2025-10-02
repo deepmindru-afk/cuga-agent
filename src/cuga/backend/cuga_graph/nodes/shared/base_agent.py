@@ -3,11 +3,22 @@ import functools
 import json
 from typing import Literal
 
-
+from loguru import logger
 from abc import ABC
 
 # from langchain_openai.chat_models import AzureChatOpenAI
-from langchain_groq import ChatGroq
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI
+except ImportError:
+    logger.warning("Langchain Google GenAI not installed, using OpenAI instead")
+    ChatGoogleGenerativeAI = None
+
+try:
+    from langchain_groq import ChatGroq
+except ImportError:
+    ChatGroq = None
+    logger.warning("Langchain Groq not installed, using OpenAI instead")
+
 from langchain_ibm.chat_models import ChatWatsonx
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
@@ -97,7 +108,7 @@ JSON schema:
             logger.debug("Getting model for Claude")
             # parser = PydanticOutputParser(pydantic_object=schema)
             return prompt_template | llm
-        elif isinstance(llm, ChatOpenAI) or isinstance(llm, ChatGroq):
+        elif isinstance(llm, ChatOpenAI) or (ChatGroq is not None and isinstance(llm, ChatGroq)):
             logger.debug("Getting model for openai interface")
             chain = prompt_template | llm.with_structured_output(schema, method="json_schema")
             chain = chain.with_retry(stop_after_attempt=3)

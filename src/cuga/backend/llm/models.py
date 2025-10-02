@@ -14,6 +14,13 @@ try:
     from langchain_groq import ChatGroq
 except ImportError:
     logger.warning("Langchain Groq not installed, using OpenAI instead")
+    ChatGroq = None
+
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI
+except ImportError:
+    logger.warning("Langchain Google GenAI not installed, using OpenAI instead")
+    ChatGoogleGenerativeAI = None
 
 class LLMManager:
     """Singleton class to manage LLM instances based on agent name and settings"""
@@ -182,6 +189,20 @@ class LLMManager:
                 default_model = "gpt-4o"
                 logger.info(f"No model_name specified for Azure, using default: {default_model}")
                 return default_model
+        elif platform == "google-genai":
+            # For Google GenAI, check environment variables
+            env_model_name = os.environ.get('MODEL_NAME')
+            if env_model_name:
+                logger.info(f"Using MODEL_NAME from environment for Google GenAI: {env_model_name}")
+                return env_model_name
+            elif toml_model_name:
+                logger.debug(f"Using model_name from TOML: {toml_model_name}")
+                return toml_model_name
+            else:
+                # Default fallback for Google GenAI
+                default_model = "gemini-1.5-pro"
+                logger.info(f"No model_name specified for Google GenAI, using default: {default_model}")
+                return default_model
         else:
             # For other platforms, use TOML or default
             if toml_model_name:
@@ -323,6 +344,21 @@ class LLMManager:
                 temperature=temperature,
                 seed=42,
             )
+        elif platform == "google-genai":
+            logger.debug(f"Creating Google GenAI model: {model_name}")
+            # Build ChatGoogleGenerativeAI parameters
+            google_params = {
+                "model": model_name,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+            }
+
+            # Add API key if specified
+            # apikey_name = model_settings.get("apikey_name")
+            # if apikey_name:
+            #     google_params["api_key"] = os.environ.get(apikey_name)
+
+            llm = ChatGoogleGenerativeAI(api_key=os.environ.get("GOOGLE_API_kEY"), model=model_name, temperature=temperature, max_tokens=max_tokens)
         else:
             raise ValueError(f"Unsupported platform: {platform}")
 
