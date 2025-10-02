@@ -86,7 +86,7 @@ class HistoricalAction(BaseModel):
     Represents a single action entry in the history of actions.
     """
 
-    action_taken: Literal['CoderAgent', 'ConcludeTask', 'ApiShortlistingAgent'] = Field(
+    action_taken: Literal['CoderAgent', 'ConcludeTask', 'ApiShortlistingAgent', 'ConsultWithHuman'] = Field(
         ..., description="The type of action that was performed."
     )
     input_to_agent: Optional[Any] = None

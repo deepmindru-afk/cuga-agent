@@ -337,19 +337,19 @@ async def event_stream(query: str, api_mode=False, resume=None):
     app_state.tracker.task_id = 'demo'
 
     langfuse_handler = CallbackHandler() if settings.advanced_features.langfuse_tracing else None
-    
+
     # Print Langfuse trace ID if tracing is enabled
     if langfuse_handler and settings.advanced_features.langfuse_tracing:
         print(f"Langfuse tracing enabled. Handler created: {langfuse_handler}")
         # The trace ID will be available after the first LLM call
         print("Note: Trace ID will be available after the first LLM operation")
-    
+
     agent_loop_obj = AgentLoop(
         graph=app_state.agent.graph, langfuse_handler=langfuse_handler, thread_id=app_state.thread_id
     )
     logger.debug(f"Resume: {resume.model_dump_json() if resume else ''}")
     agent_stream_gen = agent_loop_obj.run_stream(state=app_state.state if not resume else None, resume=resume)
-    
+
     # Print initial trace ID status
     if langfuse_handler and settings.advanced_features.langfuse_tracing:
         initial_trace_id = agent_loop_obj.get_langfuse_trace_id()

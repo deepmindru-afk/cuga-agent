@@ -10,6 +10,8 @@ from cuga.backend.cuga_graph.state.agent_state import AgentState
 from cuga.backend.cuga_graph.nodes.api.api_planner_agent.prompts.load_prompt import (
     APIPlannerOutput,
     APIPlannerOutputLite,
+    APIPlannerOutputNoHITL,
+    APIPlannerOutputLiteNoHITL,
 )
 from cuga.backend.llm.models import LLMManager
 from cuga.backend.llm.utils.helpers import load_prompt_simple
@@ -26,7 +28,12 @@ class APIPlannerAgent(BaseAgent):
     def __init__(self, prompt_template: ChatPromptTemplate, llm: BaseChatModel, tools: Any = None):
         super().__init__()
         self.name = "APIPlannerAgent"
-        schema = APIPlannerOutputLite if not settings.features.thoughts else APIPlannerOutput
+
+        if settings.advanced_features.api_planner_hitl:
+            schema = APIPlannerOutputLite if not settings.features.thoughts else APIPlannerOutput
+        else:
+            schema = APIPlannerOutputLiteNoHITL if not settings.features.thoughts else APIPlannerOutputNoHITL
+
         self.chain = BaseAgent.get_chain(prompt_template=prompt_template, llm=llm, schema=schema)
 
     def output_parser(result: AIMessage, name) -> Any:
@@ -40,26 +47,50 @@ class APIPlannerAgent(BaseAgent):
         res = await self.chain.ainvoke(data)
 
         if not settings.features.thoughts:
-            # Convert lite output to full output format for consistency
             lite_res = res
-            full_res = APIPlannerOutput(
-                thoughts=[],
-                action=lite_res.action,
-                action_input_shortlisting_agent=lite_res.action_input_shortlisting_agent,
-                action_input_coder_agent=lite_res.action_input_coder_agent,
-                action_input_conclude_task=lite_res.action_input_conclude_task,
-            )
+            if settings.advanced_features.api_planner_hitl:
+                full_res = APIPlannerOutput(
+                    thoughts=[],
+                    action=lite_res.action,
+                    action_input_shortlisting_agent=lite_res.action_input_shortlisting_agent,
+                    action_input_coder_agent=lite_res.action_input_coder_agent,
+                    action_input_conclude_task=lite_res.action_input_conclude_task,
+                    action_input_consult_with_human=lite_res.action_input_consult_with_human,
+                )
+            else:
+                full_res = APIPlannerOutput(
+                    thoughts=[],
+                    action=lite_res.action,
+                    action_input_shortlisting_agent=lite_res.action_input_shortlisting_agent,
+                    action_input_coder_agent=lite_res.action_input_coder_agent,
+                    action_input_conclude_task=lite_res.action_input_conclude_task,
+                    action_input_consult_with_human=None,
+                )
             return AIMessage(content=full_res.model_dump_json())
         else:
+            if not settings.advanced_features.api_planner_hitl:
+                if hasattr(res, 'action_input_consult_with_human'):
+                    res_dict = res.model_dump()
+                    res_dict['action_input_consult_with_human'] = None
+                    full_res = APIPlannerOutput(**res_dict)
+                    return AIMessage(content=full_res.model_dump_json())
             return AIMessage(content=res.model_dump_json())
 
     @staticmethod
     def create():
         dyna_model = settings.agent.planner.model
+
+        if settings.advanced_features.api_planner_hitl:
+            system_prompt = "./prompts/system_hitl.jinja2"
+            user_prompt = "./prompts/user_hitl.jinja2"
+        else:
+            system_prompt = "./prompts/system.jinja2"
+            user_prompt = "./prompts/user.jinja2"
+
         return APIPlannerAgent(
             prompt_template=load_prompt_simple(
-                "./prompts/system.jinja2",
-                "./prompts/user.jinja2",
+                system_prompt,
+                user_prompt,
                 model_config=dyna_model,
             ),
             llm=llm_manager.get_model(dyna_model),

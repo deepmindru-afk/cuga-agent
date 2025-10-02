@@ -40,7 +40,7 @@ class TestLegacyOpenAPI:
     async def test_list_apis(self, manager):
         """Test listing APIs for digital_sales"""
         apis = manager.get_apis_for_application('digital_sales')
-        assert len(apis) == 5
+        assert len(apis) == 4
 
         # Verify API structure
         api_list = list(apis.values()) if isinstance(apis, dict) else apis
@@ -55,7 +55,7 @@ class TestLegacyOpenAPI:
     @pytest.mark.asyncio
     async def test_call_function_no_params(self, manager):
         """Test calling a function with no parameters"""
-        result = await manager.call_tool('digital_sales_get_my_accounts', {})
+        result = await manager.call_tool('digital_sales_get_my_accounts_my_accounts_get', {})
 
         assert result is not None
         assert len(result) > 0
@@ -160,7 +160,7 @@ async def run_legacy_tests():
         print("\n📞 Test 3: Call Function - get_my_accounts")
         try:
             # Call the simplest function (no parameters required)
-            result = await manager.call_tool('digital_sales_get_my_accounts', {})
+            result = await manager.call_tool('digital_sales_get_my_accounts_my_accounts_get', {})
             print("✅ Function call successful!")
 
             # Parse and show result

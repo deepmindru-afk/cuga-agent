@@ -30,6 +30,7 @@ class ActionIds:
     SAVE_REUSE_INTENT = "save_reuse_intent"
     FLOW_APPROVE = "flow_approve"
     NEW_FLOW_APPROVE = "new_flow_approve"
+    CONSULT_WITH_HUMAN = "consult_with_human"
 
 
 # Message Prefixes

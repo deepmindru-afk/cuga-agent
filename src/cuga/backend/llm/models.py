@@ -6,7 +6,6 @@ import json
 import os
 from langchain_openai import ChatOpenAI, AzureChatOpenAI
 from langchain_ibm import ChatWatsonx
-from langchain_core.runnables import ConfigurableField
 from langchain_core.language_models.chat_models import BaseChatModel
 from loguru import logger
 
@@ -21,6 +20,7 @@ try:
 except ImportError:
     logger.warning("Langchain Google GenAI not installed, using OpenAI instead")
     ChatGoogleGenerativeAI = None
+
 
 class LLMManager:
     """Singleton class to manage LLM instances based on agent name and settings"""
@@ -160,7 +160,7 @@ class LLMManager:
                 # Default fallback
                 default_model = "openai/gpt-oss-20b"
                 logger.info(f"No model_name specified, using default: {default_model}")
-                return default_model    
+                return default_model
         elif platform == "watsonx":
             # For WatsonX, check environment variables
             env_model_name = os.environ.get('MODEL_NAME')
@@ -347,18 +347,18 @@ class LLMManager:
         elif platform == "google-genai":
             logger.debug(f"Creating Google GenAI model: {model_name}")
             # Build ChatGoogleGenerativeAI parameters
-            google_params = {
-                "model": model_name,
-                "temperature": temperature,
-                "max_tokens": max_tokens,
-            }
 
             # Add API key if specified
             # apikey_name = model_settings.get("apikey_name")
             # if apikey_name:
             #     google_params["api_key"] = os.environ.get(apikey_name)
 
-            llm = ChatGoogleGenerativeAI(api_key=os.environ.get("GOOGLE_API_kEY"), model=model_name, temperature=temperature, max_tokens=max_tokens)
+            llm = ChatGoogleGenerativeAI(
+                api_key=os.environ.get("GOOGLE_API_kEY"),
+                model=model_name,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
         else:
             raise ValueError(f"Unsupported platform: {platform}")
 

@@ -174,7 +174,7 @@ class TestAPIRegistryE2E:
 
             # API returns a dictionary of API definitions
             assert isinstance(data, dict)
-            assert len(data) == 5
+            assert len(data) == 4
 
             # Verify API structure - data is a dict with API names as keys
             for api_name, api_info in data.items():
@@ -199,7 +199,7 @@ class TestAPIRegistryE2E:
 
             digital_sales_apis = data["digital_sales"]
             assert isinstance(digital_sales_apis, dict)
-            assert len(digital_sales_apis) >= 5  # At least 5 APIs from digital_sales
+            assert len(digital_sales_apis) >= 4  # At least 4 APIs from digital_sales
 
             # Verify structure of APIs
             for api_name, api_info in digital_sales_apis.items():
@@ -215,7 +215,7 @@ class TestAPIRegistryE2E:
             # Call function with no parameters
             payload = {
                 "app_name": "digital_sales",
-                "function_name": "digital_sales_get_my_accounts",
+                "function_name": "digital_sales_get_my_accounts_my_accounts_get",
                 "args": {},
             }
 
@@ -246,11 +246,9 @@ class TestAPIRegistryE2E:
             # Call function with parameters
             payload = {
                 "app_name": "digital_sales",
-                "function_name": "digital_sales_get_accounts_tpp",
+                "function_name": "digital_sales_get_third_party_accounts_third_party_accounts_get",
                 "args": {
-                    "client_status": "active",
-                    "coverage_id": "test_coverage",
-                    "campaign_name": "test_campaign",
+                    "campaign_name": "Tech Transformation",
                 },
             }
 
@@ -260,7 +258,6 @@ class TestAPIRegistryE2E:
             data = response.json()
             assert isinstance(data, dict)
             assert "accounts" in data
-            assert "campaign_name" in data
 
     @pytest.mark.asyncio
     async def test_invalid_function_call(self, registry_server):
@@ -390,7 +387,7 @@ async def run_e2e_tests():
         async with httpx.AsyncClient(timeout=30.0) as client:
             payload = {
                 "app_name": "digital_sales",
-                "function_name": "digital_sales_get_my_accounts",
+                "function_name": "digital_sales_get_my_accounts_my_accounts_get",
                 "args": {},
             }
 

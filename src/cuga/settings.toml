@@ -16,12 +16,13 @@ web_arena_eval = false
 use_vision = true
 use_paraphrase = false
 use_location_resolver = false
-langfuse_tracing = true
+langfuse_tracing = false
 wxo_integration = false
 benchmark = "default"
 mode = 'api'
 use_extension = false
 code_planner_enabled = true
+api_planner_hitl = false
 
 [server_ports]
 registry = 8001

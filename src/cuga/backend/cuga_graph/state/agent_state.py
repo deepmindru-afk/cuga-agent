@@ -66,6 +66,7 @@ class AgentState(BaseModel):
     api_shortlister_all_filtered_apis: Optional[dict] = None
     sub_task: Optional[str] = None
     api_planner_history: Optional[List[HistoricalAction]] = Field(default_factory=list)
+    api_planner_human_consultations: Optional[List[Dict]] = Field(default_factory=list)
     sub_task_app: Optional[str] = None
     sub_task_type: Optional[Literal['web', 'api']] = None
     input: str  # User request

@@ -14,6 +14,7 @@ class ActionType(str, Enum):
     BUTTON = "button"
     MULTI_SELECT = "multi_select"
     SINGLE_SELECT = "single_select"
+    SELECT = "select"
     TEXT_INPUT = "text_input"
     CONFIRMATION = "confirmation"
 

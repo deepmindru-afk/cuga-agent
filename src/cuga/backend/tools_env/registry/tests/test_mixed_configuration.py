@@ -68,8 +68,8 @@ class TestMixedConfiguration:
         """Test legacy service APIs"""
         apis = manager.get_apis_for_application('digital_sales_legacy')
 
-        # Should have 5 APIs in legacy format
-        assert len(apis) == 5
+        # Should have 4 APIs in legacy format
+        assert len(apis) == 4
 
         # Verify legacy format (dict of API objects)
         api_list = list(apis.values()) if isinstance(apis, dict) else apis
@@ -103,7 +103,7 @@ class TestMixedConfiguration:
     @pytest.mark.asyncio
     async def test_call_legacy_function(self, manager):
         """Test calling legacy service function"""
-        result = await manager.call_tool('digital_sales_legacy_get_my_accounts', {})
+        result = await manager.call_tool('digital_sales_legacy_get_my_accounts_my_accounts_get', {})
 
         assert result is not None
         assert len(result) > 0
@@ -230,7 +230,7 @@ async def run_mixed_tests():
 
         # Call legacy function
         try:
-            result = await manager.call_tool('digital_sales_legacy_get_my_accounts', {})
+            result = await manager.call_tool('digital_sales_legacy_get_my_accounts_my_accounts_get', {})
             print("✅ Legacy function call successful!")
             if result and len(result) > 0 and hasattr(result[0], 'text'):
                 response_data = json.loads(result[0].text)

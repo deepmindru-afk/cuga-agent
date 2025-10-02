@@ -25,6 +25,11 @@ from cuga.backend.llm.models import LLMManager
 from cuga.config import settings
 from cuga.configurations.instructions_manager import InstructionsManager
 from cuga.backend.cuga_graph.nodes.api.tasks.reflection import reflection_task
+from cuga.backend.cuga_graph.nodes.human_in_the_loop.followup_model import (
+    FollowUpAction,
+    ActionType,
+)
+from cuga.backend.cuga_graph.utils.nodes_names import NodeNames, ActionIds
 
 instructions_manager = InstructionsManager()
 var_manager = VariablesManager()
@@ -102,7 +107,34 @@ class ApiPlanner(BaseNode):
     @staticmethod
     async def node_handler(
         state: AgentState, agent: APIPlannerAgent, strategic_agent, name: str
-    ) -> Command[Literal['APICodePlannerAgent', 'ShortlisterAgent', 'PlanControllerAgent']]:
+    ) -> Command[
+        Literal[
+            'APICodePlannerAgent',
+            'ShortlisterAgent',
+            'PlanControllerAgent',
+            'SuggestHumanActions',
+        ]
+    ]:
+        # Handle human consultation response (only if HITL is enabled)
+        if settings.advanced_features.api_planner_hitl:
+            if state.sender == NodeNames.WAIT_FOR_RESPONSE and state.hitl_response:
+                if state.hitl_response.action_id == ActionIds.CONSULT_WITH_HUMAN:
+                    human_response = (
+                        state.hitl_response.text_response
+                        or state.hitl_response.selected_values
+                        or "No response provided"
+                    )
+                    consultation_record = {
+                        "question": state.api_planner_human_consultations[-1].get("question", "")
+                        if state.api_planner_human_consultations
+                        else "",
+                        "response": human_response,
+                        "timestamp": state.hitl_response.timestamp,
+                    }
+                    state.api_planner_human_consultations.append(consultation_record)
+                    logger.debug(f"Human consultation response received: {human_response}")
+                    state.sender = name
+
         # First time visit
         if (
             state.api_last_step
@@ -184,6 +216,45 @@ class ApiPlanner(BaseNode):
             state.last_planner_answer = res.action_input_conclude_task.final_response
             state.sender = "APIPlannerAgent"
             return Command(update=state.model_dump(), goto="PlanControllerAgent")
+
+        if settings.advanced_features.api_planner_hitl and res.action == ActionName.CONSULT_WITH_HUMAN:
+            state.api_last_step = ActionName.CONSULT_WITH_HUMAN
+            logger.debug("Current task is: consult with human")
+            ApiPlanner.collect_history(
+                state=state, action=res.action.value, step=res.action_input_consult_with_human
+            )
+
+            consultation_input = {
+                "question": res.action_input_consult_with_human.question,
+                "context": res.action_input_consult_with_human.context,
+                "suggested_options": res.action_input_consult_with_human.suggested_options,
+            }
+            state.api_planner_human_consultations.append(consultation_input)
+
+            options = None
+            action_type = ActionType.NATURAL_LANGUAGE
+            if res.action_input_consult_with_human.suggested_options:
+                from cuga.backend.cuga_graph.nodes.human_in_the_loop.followup_model import (
+                    SelectOption,
+                )
+
+                action_type = ActionType.SELECT
+                options = [
+                    SelectOption(value=opt, label=opt)
+                    for opt in res.action_input_consult_with_human.suggested_options
+                ]
+
+            state.hitl_action = FollowUpAction(
+                action_id=ActionIds.CONSULT_WITH_HUMAN,
+                action_name="Human Consultation",
+                description=res.action_input_consult_with_human.question,
+                type=action_type,
+                callback_url="/consult",
+                placeholder="Please provide your response...",
+                options=options,
+            )
+            state.sender = name
+            return Command(update=state.model_dump(), goto="SuggestHumanActions")
 
         return Command(update=state.model_dump(), goto="APICodePlannerAgent")
 

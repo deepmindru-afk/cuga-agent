@@ -325,7 +325,7 @@ class AgentLoop:
         )
         msg: AIMessage = state.messages[-1] if len(state.messages) > 0 else None
         logger.info("Calling get output {}".format(",".join(list(event.keys()))))
-        
+
         # Print Langfuse trace ID if available
         trace_id = self.get_langfuse_trace_id()
         if trace_id:
