@@ -6,7 +6,7 @@
 
 <div align="center">
   
-# An Enterprise Agent You Can Trust
+# Enterprise-Ready Configurable Generalist Agent
 </div> 
 
 <div align="center">
@@ -17,37 +17,122 @@
 
 </div>
 
+**CUGA (ConfigUrable Generalist Agent)** is an open-source generalist agent framework from IBM Research, purpose-built for enterprise automation. Designed for developers, CUGA combines and improves the best of foundational agentic patterns such as ReAct, CodeAct, and Planner-Executor — into a modular architecture enabling trustworthy, policy-aware, and composable automation across web interfaces, APIs, and custom enterprise systems. 
 
-## Mission
+CUGA achieves state-of-the-art performance on leading benchmarks:
+* 🥇 #1 on [AppWorld](https://appworld.dev/leaderboard) — a benchmark with 750 real-world tasks across 457 APIs, and
+* 🥈 #2 on [WebArena](https://docs.google.com/spreadsheets/d/1M801lEpBbKSNwP-vDBkC_pF7LdyGU1f_ufZb_NWNBZQ/edit?gid=0#gid=0) — a complex benchmark for autonomous web agents across application domains.
 
-Building reliable agents for real-world use is harder than it looks. Quick demos are easy; sustained, trustworthy performance in enterprise settings is not.  
+####  Key features  
 
-**CUGA** (Computer Use Generalist Agent) is an open-source effort to make **generalist agents** that enterprises can **adapt quickly to their own context**—turning a flexible foundation into a **reliable and trustworthy** agent.  
+- **Complex task execution**: State of the art results across Web and APIs.
+- **Flexible tool integrations**: CUGA works across REST APIs via OpenAPI specs, MCP servers, and custom connectors. 
+- **Composable agent architecture**: CUGA itself can be exposed as a tool to other agents, enabling nested reasoning and multi-agent collaboration.
+- **Configurable reasoning modes**: Choose between fast heuristics or deep planning depending on your task’s complexity and latency needs.
+- **Policy-aware instructions** *(Experimental)*: CUGA components can be configured with policy-aware instructions to improve alignment of the agent behavior.
+- **Save & Reuse** *(Experimental)*: CUGA captures and reuses successful execution paths, enabling consistent and faster behavior across repeated tasks.
 
-For us reliability and trust mean:    
-1. Handling the **complexity of enterprise workflows**  
-2. Respecting **policies and user instructions**  
-3. Delivering **consistent execution** by learning from success  
-4. Balancing **cost, speed, and accuracy**  
-5. Keeping a **human in the loop** when oversight matters  
+Explore the [Roadmap](#roadmap) to see what’s ahead, or join the [🤝 Call for the Community](#call-for-the-community) to get involved.
 
-## Features  
+## 🎬 CUGA in Action
 
-CUGA is still early, but already provides useful building blocks:
-- **Complex task execution** across Web and APIs (ranked #1 on WebArena and AppWorld)  
-- **Flexible integrations** via OpenAPI specs, MCP servers, and custom connectors  
-- **Smart orchestration** with code-generated API glue logic  
-- **Composable architecture**: expose CUGA itself as a tool for other agents  
-- **Configurable reasoning modes** to trade off speed vs. depth  
-- **(Experimental) Policy-aware instructions** to align agent behavior with enterprise needs  
-- **(Experimental) Save & Reuse**: Capture successful trajectories and reapply them consistently in future tasks 
+### Hybrid Task Execution
 
-See the [Roadmap](#roadmap) for where we’re headed, or the [Call for the Community](#call-for-the-community) to get involved.  
+Watch CUGA seamlessly combine web and API operations in a single workflow:
 
----
+**Example Task:** `get top account by revenue from digital sales, then add it to current page`
 
+https://github.com/user-attachments/assets/0cef8264-8d50-46d9-871a-ab3cefe1dde5
+
+<details>
+<summary><b>Would you like to test this? (Advanced Demo)</b></summary>
+
+Experience CUGA's hybrid capabilities by combining API calls with web interactions:
+
+### Setup Steps:
+
+1. **Switch to hybrid mode:**
+   ```bash
+   # Edit ./src/cuga/settings.toml and change:
+   mode = 'hybrid'  # under [advanced_features] section
+   ```
+
+2. **Install browser API support:**
+   - Installs playwright browser API and Chromium browser
+   - The `playwright` installer should already be included after installing with [Quick Start](#-quick-start)
+
+   ```bash
+   playwright install chromium
+   ```
+
+3. **Start the demo:**
+   ```bash
+   cuga start demo
+   ```
+
+4. **Enable the browser extension:**
+   - Click the extension puzzle icon in your browser
+   - Toggle the CUGA extension to activate it
+   - This will open the CUGA side panel
+
+5. **Open the test application:**
+   - Navigate to: [Sales app](https://samimarreed.github.io/sales/)
+
+6. **Try the hybrid task:**
+   ```
+   get top account by revenue from digital sales then add it to current page
+   ```
+
+🎯 **What you'll see:** CUGA will fetch data from the Digital Sales API and then interact with the web page to add the account information directly to the current page - demonstrating seamless API-to-web workflow integration!
+
+</details>
+
+### Human in the Loop Task Execution
+
+Watch CUGA pause for human approval during critical decision points:
+
+**Example Task:** `get best accounts`
+
+https://github.com/user-attachments/assets/d103c299-3280-495a-ba66-373e72554e78
+
+<details>
+<summary><b>Would you like to try this? (HITL Demo)</b></summary>
+
+Experience CUGA's Human-in-the-Loop capabilities where the agent pauses for human approval at key decision points:
+
+### Setup Steps:
+
+1. **Enable HITL mode:**
+   ```bash
+   # Edit ./src/cuga/settings.toml and ensure:
+   api_planner_hitl = true  # under [advanced_features] section
+   ```
+
+2. **Start the demo:**
+   ```bash
+   cuga start demo
+   ```
+
+3. **Try the HITL task:**
+   ```
+   get best accounts
+   ```
+
+🎯 **What you'll see:** CUGA will pause at critical decision points, showing you the planned actions and waiting for your approval before proceeding.
+
+</details>
 
 ## 🚀 Quick Start
+
+
+<details>
+<summary><em style="color: #666;">📋 Prerequisites (click to expand)</em></summary>
+
+- **Python 3.12+** - [Download here](https://www.python.org/downloads/)
+- **uv package manager** - [Installation guide](https://docs.astral.sh/uv/getting-started/installation/)
+
+</details>
+
 
 <details>
 <summary><em style="color: #666;">🔧 Optional: Local Digital Sales API Setup (only if remote endpoint fails)</em></summary>
@@ -67,14 +152,6 @@ uv run digital_sales_openapi
 
 </details>
 
-
-<details>
-<summary><em style="color: #666;">📋 Prerequisites (click to expand)</em></summary>
-
-- **Python 3.12+** - [Download here](https://www.python.org/downloads/)
-- **uv package manager** - [Installation guide](https://docs.astral.sh/uv/getting-started/installation/)
-
-</details>
 
 ```bash
 # In terminal, clone the repository and navigate into it
@@ -103,7 +180,8 @@ cuga start demo
 <summary>🤖 LLM Configuration - Advanced Options</summary>
 ---
 
-Refer to: `.env.example` for detailed examples.
+Refer to: [`.env.example`](.env.example) for detailed examples.
+```
 
 CUGA supports multiple LLM providers with flexible configuration options. You can configure models through TOML files or override specific settings using environment variables.
 
@@ -207,58 +285,6 @@ Each file contains agent-specific model settings that can be overridden by envir
 
 </details>
 
-## Demos
-
-### Hybrid Task Execution
-
-Watch CUGA seamlessly combine web and API operations in a single workflow:
-
-**Example Task:** `get top account by revenue from digital sales, then add it to current page`
-
-https://github.com/user-attachments/assets/05bf2453-fb2e-4419-b7a6-53c79fa1e3eb
-
-<details>
-<summary><b>Would you like to test this? (Advanced Demo)</b></summary>
-
-Experience CUGA's hybrid capabilities by combining API calls with web interactions:
-
-### Setup Steps:
-
-1. **Switch to hybrid mode:**
-   ```bash
-   # Edit ./src/cuga/settings.toml and change:
-   mode = 'hybrid'  # under [advanced_features] section
-   ```
-
-2. **Install browser API support:**
-   - Installs playwright browser API and Chromium browser
-   - The `playwright` installer should already be included after installing with [Quick Start](#-quick-start)
-
-   ```bash
-   playwright install chromium
-   ```
-
-3. **Start the demo:**
-   ```bash
-   cuga start demo
-   ```
-
-4. **Enable the browser extension:**
-   - Click the extension puzzle icon in your browser
-   - Toggle the CUGA extension to activate it
-   - This will open the CUGA side panel
-
-5. **Open the test application:**
-   - Navigate to: [Sales app](https://samimarreed.github.io/sales/)
-
-6. **Try the hybrid task:**
-   ```
-   get top account by revenue from digital sales then add it to current page
-   ```
-
-🎯 **What you'll see:** CUGA will fetch data from the Digital Sales API and then interact with the web page to add the account information directly to the current page - demonstrating seamless API-to-web workflow integration!
-
-</details>
 
 ## Configurations
 
@@ -520,4 +546,4 @@ CUGA is still early. Amongst other, we’re exploring the following directions:
 
 ### Before Submitting a PR
 
-Please follow the contribution guide in `CONTRIBUTING.md`.
+Please follow the contribution guide in [CONTRIBUTING.md](CONTRIBUTING.md).
