@@ -108,10 +108,10 @@ def run_digital_sales_openapi():
     )
 
 
-def test_sandbox():
+async def test_sandbox():
     tracker.current_date = "2023-05-18T12:00:00"
 
-    res = run_code("print('test succeeded')")
+    res = await run_code("print('test succeeded')")
     print(res)
 
 

@@ -311,7 +311,7 @@ async def select_option_impl(
 async def open_app_impl(*, app_name: str, config: RunnableConfig | None = None):
     page: Page = config.get("configurable", {}).get("page")  # type: ignore[arg-type]
     # Environment variables contain app URLs keyed by uppercase name
-    await page.goto(getattr(__import__("os"), "environ")[app_name.upper()])
+    await page.goto(getattr(__import__("os"), "environ")[app_name.upper()], timeout=30000)
     return None
 
 

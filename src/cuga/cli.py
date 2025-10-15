@@ -151,9 +151,9 @@ def start_extension_browser_if_configured():
                     start_url = None
                 page = ctx.pages[0] if ctx.pages else ctx.new_page()
                 if start_url:
-                    page.goto(start_url)
+                    page.goto(start_url, timeout=20000)
                 else:
-                    page.goto("about:blank")
+                    page.goto("about:blank", timeout=20000)
 
                 # Keep context alive until shutdown
                 while not shutdown_event.is_set():

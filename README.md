@@ -540,7 +540,7 @@ All contributions are welcome through [GitHub Issues](../../issues/new/choose) -
 
 ## Roadmap
 
-CUGA is still early. Amongst other, we’re exploring the following directions:  
+Amongst other, we’re exploring the following directions:  
 
 - **Policy support**: procedural SOPs, domain knowledge, input/output guards, context- and tool-based constraints  
 - **Performance improvements**: dynamic reasoning strategies that adapt to task complexity  

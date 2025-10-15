@@ -50,54 +50,26 @@ structured_tools_import = "from cuga.backend.activity_tracker.tracker import Act
 structured_tools_init = "# Initialize tracker\ntracker = ActivityTracker()"
 
 structured_tools_invocation = """
-    # Try to invoke tool first using ActivityTracker
     try:
-        # Check if we're already in an async context
-        try:
-            import asyncio
-            asyncio.get_running_loop()
-            # We're in an async context, create a new thread to run the async function
-            import concurrent.futures
-            import threading
-            
-            def run_in_new_loop():
-                new_loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(new_loop)
-                try:
-                    return new_loop.run_until_complete(tracker.invoke_tool(app_name, api_name, args))
-                finally:
-                    new_loop.close()
-            
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(run_in_new_loop)
-                result = future.result()
-        except RuntimeError:
-            # No running loop, safe to use asyncio.run()
-            result = asyncio.run(tracker.invoke_tool(app_name, api_name, args))
+        result = await tracker.invoke_tool(app_name, api_name, args)
         
         if not isinstance(result, dict):
             if hasattr(result, 'model_dump'):
                 return result.model_dump()
-            # Handle other objects with dict() conversion
             elif hasattr(result, '__dict__'):
                 return result.__dict__
-            # Handle dataclasses
             elif hasattr(result, '__dataclass_fields__'):
                 from dataclasses import asdict
                 return asdict(result)
-            # For other types, try to convert to string or return as-is
             else:
                 return str(result)
         return result
     except ValueError as e:
-        # Only ignore ValueError with "not found" text, fall back to API call
         if "not found" in str(e):
-            pass  # Silently fall back to API call
+            pass
         else:
-            # Re-raise other ValueErrors as they might be important
             raise e
     except Exception as e:
-        # Re-raise any other exceptions as they indicate real errors
         raise e
 """
 
@@ -128,6 +100,7 @@ import urllib.request
 import urllib.error
 import datetime
 import asyncio
+import concurrent.futures
 """
         + tool_import_code
         + """
@@ -151,7 +124,7 @@ datetime.datetime = MyDateTime
             else ""
         )
         + """
-def call_api(app_name, api_name, args=None):
+async def call_api(app_name, api_name, args=None):
     if args is None:
         args = {}
 """
@@ -171,32 +144,28 @@ def call_api(app_name, api_name, args=None):
         "args": args
     }
 
-    # Convert payload to JSON bytes
     data = json.dumps(payload).encode('utf-8')
-
-    # Create request object with URL, data and headers
     req = urllib.request.Request(url, data=data, headers=headers, method='POST')
 
-    try:
-        # Send request and get response
-        with urllib.request.urlopen(req, timeout=30) as response:
-            # Read and decode the response
-            response_data = response.read().decode('utf-8')
-            # Parse JSON response
-            try:
-                response_data = json.loads(response_data)
-            except Exception as e:
-                pass
-
-            return response_data
-    except urllib.error.HTTPError as e:
-        # Handle HTTP errors (4XX/5XX responses)
-        print(e)
-        raise Exception(f"HTTP Error: {e.code} - {e.reason}")
-    except urllib.error.URLError as e:
-        # Handle URL errors (network issues)
-        print(e)
-        raise Exception(f"URL Error: {e.reason}")
+    loop = asyncio.get_event_loop()
+    
+    def _sync_call():
+        try:
+            with urllib.request.urlopen(req, timeout=30) as response:
+                response_data = response.read().decode('utf-8')
+                try:
+                    response_data = json.loads(response_data)
+                except Exception as e:
+                    pass
+                return response_data
+        except urllib.error.HTTPError as e:
+            print(e)
+            raise Exception(f"HTTP Error: {e.code} - {e.reason}")
+        except urllib.error.URLError as e:
+            print(e)
+            raise Exception(f"URL Error: {e.reason}")
+    
+    return await loop.run_in_executor(None, _sync_call)
         """
     )
 
@@ -210,10 +179,13 @@ class ExecutionResult:
         self.stderr = stderr
 
 
-def run_local(code_content: str) -> ExecutionResult:
+async def run_local(code_content: str) -> ExecutionResult:
     stdout_buffer = StringIO()
     stderr_buffer = StringIO()
     exit_code = 0
+
+    import asyncio
+    import concurrent.futures
 
     # Create a namespace that allows dynamic imports
     namespace = {
@@ -224,6 +196,8 @@ def run_local(code_content: str) -> ExecutionResult:
         '__package__': None,
         '__import__': __import__,
         'importlib': importlib,
+        'asyncio': asyncio,
+        'concurrent': concurrent,
     }
 
     # Add all currently loaded modules to the namespace
@@ -235,6 +209,12 @@ def run_local(code_content: str) -> ExecutionResult:
             # Use compile to get better error reporting
             compiled_code = compile(code_content, '<string>', 'exec')
             exec(compiled_code, namespace, namespace)
+
+            # Now get the wrapper function from namespace and await it
+            if '__cuga_async_wrapper__' in namespace and asyncio.iscoroutinefunction(
+                namespace['__cuga_async_wrapper__']
+            ):
+                await namespace['__cuga_async_wrapper__']()
     except SystemExit as e:
         # Handle exit() and quit() calls gracefully
         exit_code = e.code if e.code is not None else 0
@@ -249,7 +229,7 @@ def run_local(code_content: str) -> ExecutionResult:
     )
 
 
-def run_code(code: str, _locals: dict[str, Any] = None) -> tuple[str, dict[str, Any]]:
+async def run_code(code: str, _locals: dict[str, Any] = None) -> tuple[str, dict[str, Any]]:
     """
     Run code in a sandboxed environment.
     :param lang: The language of the code.
@@ -262,12 +242,17 @@ def run_code(code: str, _locals: dict[str, Any] = None) -> tuple[str, dict[str, 
     os.makedirs(python_file_dir, exist_ok=True)
     python_file_dir = os.path.join(LOGGING_DIR, python_file_dir)
     file_path = python_file_dir + "/" + f"{mask_with_timestamp(tracker.task_id)}.py"
+
+    wrapped_code = f"""async def __cuga_async_wrapper__():
+{chr(10).join('    ' + line for line in code.split(chr(10)))}
+"""
+
     code_content = (
         get_premable(is_local=settings.features.local_sandbox, current_date=tracker.current_date)
         + "\n"
         + variables
         + "\n"
-        + code
+        + wrapped_code
     )
     if settings.advanced_features.tracker_enabled:
         os.makedirs(python_file_dir, exist_ok=True)
@@ -278,7 +263,7 @@ def run_code(code: str, _locals: dict[str, Any] = None) -> tuple[str, dict[str, 
     if settings.features.local_sandbox:
         from cuga.backend.utils.code_generator import process_python_file
 
-        result = run_local(code_content)
+        result = await run_local(code_content)
         if settings.advanced_features.benchmark == "appworld":
             process_python_file(file_path, tracker.task_id)
         return result.stdout if result.exit_code == 0 else result.stderr, {}

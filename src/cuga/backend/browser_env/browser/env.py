@@ -71,7 +71,7 @@ class BrowserEnvSimple:
     def navigate_to_page(self, url):
         # Navigate to the specified URL
         if self.page:
-            self.page.goto(url)
+            self.page.goto(url, timeout=30000)
             print(f"Page title: {self.page.title()}")
         else:
             print("Browser not started. Call start_browser() first.")

@@ -5,6 +5,8 @@ from typing import Literal
 
 from loguru import logger
 from abc import ABC
+from pydantic import ValidationError
+from langchain_core.runnables import RunnableLambda
 
 # from langchain_openai.chat_models import AzureChatOpenAI
 try:
@@ -30,6 +32,7 @@ from loguru import logger
 from cuga.backend.cuga_graph.nodes.api.api_planner_agent.prompts.load_prompt import (
     APIPlannerOutput,
     APIPlannerOutputLite,
+    APIPlannerOutputLiteNoHITL,
     APIPlannerOutputWX,
 )
 
@@ -47,6 +50,51 @@ def create_partial(func, **kwargs):
 class BaseAgent(ABC):
     def __init__(self):
         pass
+
+    @staticmethod
+    def validate_and_retry_output(output, schema):
+        """Validate output and provide helpful error messages"""
+        try:
+            if isinstance(output, dict):
+                # Validate the dict against the schema
+                return schema(**output)
+            return output
+        except ValidationError as e:
+            logger.error(f"Validation error: {e}")
+            # Log missing fields for debugging
+            missing_fields = [err['loc'][0] for err in e.errors() if err['type'] == 'missing']
+            logger.error(f"Missing required fields: {missing_fields}")
+            raise
+
+    @staticmethod
+    def create_validated_structured_output_chain(
+        llm: BaseChatModel, schema, prompt_template: ChatPromptTemplate = None
+    ):
+        """
+        Create a chain with structured output, validation, and retry logic for OpenAI/Groq LLMs.
+
+        Args:
+            llm: The language model (ChatOpenAI or ChatGroq)
+            schema: Pydantic schema for structured output
+            prompt_template: Optional prompt template. If None, returns just the LLM chain.
+
+        Returns:
+            A runnable chain with structured output, validation, and retry
+        """
+        logger.debug("Creating validated structured output chain for OpenAI/Groq interface")
+
+        # Create the base chain with structured output
+        base_chain = prompt_template | llm.with_structured_output(schema, method="json_schema")
+
+        # Add validation and retry
+        validated_chain = base_chain | RunnableLambda(
+            lambda output: BaseAgent.validate_and_retry_output(output, schema)
+        )
+
+        # Add retry logic
+        validated_chain = validated_chain.with_retry(stop_after_attempt=3)
+
+        return validated_chain
 
     @staticmethod
     def get_format_instructions(parser: PydanticOutputParser) -> str:
@@ -91,12 +139,18 @@ JSON schema:
         if isinstance(llm, ChatWatsonx):
             logger.debug("Loading LLM for watsonx")
             model_id = llm.model_id
-            if "gpt" not in model_id and (schema == APIPlannerOutput or schema == APIPlannerOutputLite):
+            logger.debug(f"Model ID: {model_id}")
+            logger.debug(f"Schema: {schema}")
+            if "gpt" not in model_id and (
+                schema == APIPlannerOutputLiteNoHITL
+                or schema == APIPlannerOutput
+                or schema == APIPlannerOutputLite
+            ):
                 logger.debug("Switched to watsonx schema... for APIPlannerOutput")
                 schema = APIPlannerOutputWX
             parser = PydanticOutputParser(pydantic_object=schema)
             if wx_json_mode == "response_format":
-                chain = prompt_template | llm.with_structured_output(schema, method='json_schema')
+                return BaseAgent.create_validated_structured_output_chain(llm, schema, prompt_template)
             elif wx_json_mode == "function_calling" or wx_json_mode == "json_mode":
                 chain = prompt_template | llm.with_structured_output(schema, method=wx_json_mode)
             else:
@@ -109,10 +163,7 @@ JSON schema:
             # parser = PydanticOutputParser(pydantic_object=schema)
             return prompt_template | llm
         elif isinstance(llm, ChatOpenAI) or (ChatGroq is not None and isinstance(llm, ChatGroq)):
-            logger.debug("Getting model for openai interface")
-            chain = prompt_template | llm.with_structured_output(schema, method="json_schema")
-            chain = chain.with_retry(stop_after_attempt=3)
-            return chain
+            return BaseAgent.create_validated_structured_output_chain(llm, schema, prompt_template)
         else:
             logger.debug("Getting model for azure")
             return prompt_template | llm.with_structured_output(schema, method="json_schema")

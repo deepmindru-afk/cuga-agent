@@ -77,13 +77,15 @@ class LLMManager:
         Returns:
             Updated model with new parameters
         """
-        # Create a copy of the model with updated parameters
-        model_kwargs = model.model_kwargs.copy() if hasattr(model, 'model_kwargs') else {}
+        model_kwargs = {}
+        if hasattr(model, 'model_kwargs') and model.model_kwargs is not None:
+            model_kwargs = model.model_kwargs.copy()
 
         # Update temperature
         if hasattr(model, 'temperature'):
             logger.debug(f"Updating model temperature: {temperature}")
-            logger.debug(f"Model keys: {model.model_kwargs.keys()}")
+            if hasattr(model, 'model_kwargs') and model.model_kwargs is not None:
+                logger.debug(f"Model keys: {model.model_kwargs.keys()}")
             logger.debug(f"Model instance: {type(model)}")
             model.temperature = temperature
         elif 'temperature' in model_kwargs:
@@ -98,7 +100,7 @@ class LLMManager:
             model_kwargs['max_tokens'] = max_tokens
 
         # Update model_kwargs if it exists
-        if hasattr(model, 'model_kwargs'):
+        if hasattr(model, 'model_kwargs') and model.model_kwargs is not None:
             model.model_kwargs = model_kwargs
 
         logger.debug(f"Updated model parameters: temperature={temperature}, max_tokens={max_tokens}")

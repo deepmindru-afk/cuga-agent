@@ -123,6 +123,80 @@ class ActivityTracker(object):
             f"Tool '{tool_name}' not found in server '{server_name}'. Available tools: {available_tools}"
         )
 
+    def invoke_tool_sync(self, server_name: str, tool_name: str, args: dict):
+        """Synchronous version of invoke_tool to avoid async/sync context issues"""
+        import asyncio
+        import concurrent.futures
+
+        if server_name not in self.tools:
+            raise ValueError(f"Server '{server_name}' not found")
+
+        # Find the tool by name
+        for tool in self.tools[server_name]:
+            if tool.name == tool_name:
+                # Try synchronous invoke first
+                try:
+                    result = tool.invoke(args)  # Use synchronous invoke
+                except RuntimeError as e:
+                    if "event loop is already running" in str(e):
+                        # We're in an async context, need to handle this differently
+                        try:
+                            # Check if we have a running loop
+                            asyncio.get_running_loop()
+
+                            # We're in an async context, create a new thread to run the async function
+                            def run_in_new_loop():
+                                new_loop = asyncio.new_event_loop()
+                                asyncio.set_event_loop(new_loop)
+                                try:
+                                    # Use async invoke in the new loop
+                                    async def async_invoke():
+                                        return await tool.ainvoke(args)
+
+                                    return new_loop.run_until_complete(async_invoke())
+                                finally:
+                                    new_loop.close()
+
+                            with concurrent.futures.ThreadPoolExecutor() as executor:
+                                future = executor.submit(run_in_new_loop)
+                                result = future.result()
+                        except RuntimeError:
+                            # No running loop, use asyncio.run
+                            import asyncio
+
+                            async def async_invoke():
+                                return await tool.ainvoke(args)
+
+                            result = asyncio.run(async_invoke())
+                    else:
+                        raise
+                logger.debug(f"type of {type(result)}")
+                logger.debug(f"Tool output call {result}")
+                # Check if result is JSON parseable
+                if isinstance(result, CallToolResult):
+                    result = result.content[0]
+                    if isinstance(result, TextContent):
+                        result = result.text
+                if isinstance(result, str):
+                    try:
+                        res = json.loads(result)
+                        logger.debug("json res worked!")
+                        return res
+                    except (json.JSONDecodeError, TypeError):
+                        logger.debug("no json tool output !!")
+                        # Not valid JSON, return original result
+                        return result
+                else:
+                    logger.debug(f"answer is not str answer is of type {type(result)}")
+                    # Result is not a string, return as-is
+                    return result
+
+        # Tool not found
+        available_tools = [tool.name for tool in self.tools[server_name]]
+        raise ValueError(
+            f"Tool '{tool_name}' not found in server '{server_name}'. Available tools: {available_tools}"
+        )
+
     def get_tools_by_server(self, server_name: str) -> Dict[str, Dict]:
         tools = self.tools
         if server_name not in tools:

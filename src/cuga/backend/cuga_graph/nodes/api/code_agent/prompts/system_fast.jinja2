@@ -27,13 +27,14 @@ Generate Python code that precisely implements the provided **plan** by making c
 
 **Mandatory Requirements & Constraints:**
 
-1. **Use `call_api` Helper Function:** ALL API interactions *must* be performed using the provided helper function:
+1. **Use `call_api` Helper Function:** ALL API interactions *must* be performed using the provided async helper function:
    ```python
-   call_api(app_name: str, api_name: str, args: dict)
+   await call_api(app_name: str, api_name: str, args: dict)
    ```
-   * Assume this function is pre-defined and available in the execution environment.
-   * `api_name` must match one of the names provided in the API Definitions.
-   * `args` must be a Python dictionary containing the arguments required by that specific API, matching the structure specified in its definition.
+   * This is an async function and must always be called with `await`
+   * Assume this function is pre-defined and available in the execution environment
+   * `api_name` must match one of the names provided in the API Definitions
+   * `args` must be a Python dictionary containing the arguments required by that specific API, matching the structure specified in its definition
    * **Return Behavior:** The `call_api` function returns either:
      - **Success:** The response data as specified in the API's example response structure
      - **Error/Exception:** A dictionary with error details in the following format:
@@ -52,7 +53,7 @@ Generate Python code that precisely implements the provided **plan** by making c
    * **No Re-creation Required:** Do NOT attempt to recreate, redefine, or regenerate variables that are already present in the variable history. Simply use them as they are.
    * **Example Usage:** If the variable history shows `user_id = 12345`, and the plan says "use the user_id to fetch user details", your code should directly use `user_id` in the API call:
      ```python
-     response = call_api("user_service", "get_user", {"user_id": user_id})
+     response = await call_api("user_service", "get_user", {"user_id": user_id})
      ```
 
 3. **Error Handling:** Always check for and handle API errors properly:
@@ -60,7 +61,7 @@ Generate Python code that precisely implements the provided **plan** by making c
    * Implement appropriate error handling logic (retry, skip, or terminate based on the plan requirements)
    * Example error handling pattern:
      ```python
-     response = call_api("app_name", "api_name", args)
+     response = await call_api("app_name", "api_name", args)
      if isinstance(response, dict) and response.get("status") == "exception":
          # Handle error based on plan requirements
      else:
@@ -80,7 +81,7 @@ Generate Python code that precisely implements the provided **plan** by making c
      all_data = []
      page_index = 0
      while True:
-         response = call_api("app_name", "api_name", {"page_index": page_index, **other_args})
+         response = await call_api("app_name", "api_name", {"page_index": page_index, **other_args})
          if isinstance(response, dict) and response.get("status") == "exception":
              break
          page_data = response.get("data", [])
@@ -134,7 +135,7 @@ Generate Python code that precisely implements the provided **plan** by making c
 **Minimal Code Example:**
 ```python
 import json
-user_authentication_response = call_api("user_service", "get_user", {"user_id": user_id})
+user_authentication_response = await call_api("user_service", "get_user", {"user_id": user_id})
 if isinstance(user_authentication_response, dict) and user_authentication_response.get("status") == "exception":
     user_profile_data = None
 else:
@@ -142,7 +143,7 @@ else:
 product_catalog_items = []
 page_index = 0
 while True:
-    catalog_page_response = call_api("service", "get_items", {"page_index": page_index})
+    catalog_page_response = await call_api("service", "get_items", {"page_index": page_index})
     if isinstance(catalog_page_response, dict) and catalog_page_response.get("status") == "exception":
         break
     current_page_items = catalog_page_response.get("items", [])
@@ -183,4 +184,4 @@ converted_job_titles_array = [{"title": job_title} for job_title in ["Software E
 ...
 ```
 
-**Focus:** Your output is Python code. Generate *only* the minimal code required to execute the plan using `call_api` and conclude with the mandatory JSON output line. Adhere strictly to the constraints regarding code minimality, focus on orchestration without comments or intermediate printing, while still including appropriate error handling and complete data retrieval through proper page index handling. **Ensure complete data retrieval through proper page index handling when APIs return multi-page responses, always handle API errors gracefully, directly access variables from history without regenerating them, and always end with the required JSON output format.**
+**Focus:** Your output is Python code. Generate *only* the minimal code required to execute the plan using `await call_api(...)` and conclude with the mandatory JSON output line. Your code will be automatically wrapped in an async main function and executed with asyncio, so you don't need to define the async main wrapper yourself. Adhere strictly to the constraints regarding code minimality, focus on orchestration without comments or intermediate printing, while still including appropriate error handling and complete data retrieval through proper page index handling. **Always use `await` when calling `call_api`, ensure complete data retrieval through proper page index handling when APIs return multi-page responses, always handle API errors gracefully, directly access variables from history without regenerating them, and always end with the required JSON output format.**

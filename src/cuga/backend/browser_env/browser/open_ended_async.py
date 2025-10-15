@@ -99,7 +99,7 @@ class OpenEndedTaskAsync(AbstractBrowserTask):
 
     async def setup(self, page: playwright.async_api.Page | None) -> tuple[str, dict]:
         if page:
-            await page.goto(self.start_url, timeout=10000)
+            await page.goto(self.start_url, timeout=30000)
         return self.goal, {}
 
     async def teardown(self) -> None:

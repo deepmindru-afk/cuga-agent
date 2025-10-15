@@ -8,6 +8,7 @@ Tests that the sandbox code can handle async calls both:
 """
 
 import asyncio
+import concurrent.futures
 import pytest
 
 
@@ -32,7 +33,6 @@ def simulate_sandbox_tool_call():
         try:
             asyncio.get_running_loop()
             # We're in an async context, create a new thread to run the async function
-            import concurrent.futures
 
             def run_in_new_loop():
                 new_loop = asyncio.new_event_loop()

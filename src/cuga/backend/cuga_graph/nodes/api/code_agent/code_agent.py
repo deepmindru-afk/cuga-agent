@@ -177,7 +177,7 @@ class CodeAgent(BaseAgent):
 
         # Run code in sandbox
         try:
-            execution_output, _ = run_code(code)
+            execution_output, _ = await run_code(code)
         except Exception as e:
             logger.error(f"Error running code: {e}")
             execution_output = str(e)

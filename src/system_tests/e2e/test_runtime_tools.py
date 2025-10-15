@@ -134,7 +134,7 @@ class TestRuntimeTools(unittest.IsolatedAsyncioTestCase):
             # Should include apps from tools
             self.assertIn("calculator", app_names)
 
-    def test_run_code_with_api_calls(self):
+    async def test_run_code_with_api_calls(self):
         """Test run_code functionality with code that makes API calls"""
         for tool in calculator_tools:
             tool.metadata = {'server_name': "calculator"}
@@ -143,27 +143,27 @@ class TestRuntimeTools(unittest.IsolatedAsyncioTestCase):
         # Create code that uses call_api to invoke calculator functions
         code = '''
 # Test evaluate expression via API
-result1 = call_api("calculator", "evaluate_expression", {"expression": "10 + 5"})
+result1 = await call_api("calculator", "evaluate_expression", {"expression": "10 + 5"})
 print(f"10 + 5 = {result1['result']}")
 
 # Test get pi via API
-pi_result = call_api("calculator", "get_pi", {})
+pi_result = await call_api("calculator", "get_pi", {})
 print(f"Pi = {pi_result}")
 
 # Test factorial via API
-fact_result = call_api("calculator", "calculate_factorial", {"n": 4})
+fact_result = await call_api("calculator", "calculate_factorial", {"n": 4})
 print(f"4! = {fact_result['result']}")
 
 # Test API-style calls with different expressions
-api_result1 = call_api("calculator", "evaluate_expression", {"expression": "2 * 3 + 4"})
+api_result1 = await call_api("calculator", "evaluate_expression", {"expression": "2 * 3 + 4"})
 print(f"API call result: {api_result1['result']}")
 
-api_result2 = call_api("calculator", "calculate_factorial", {"n": 3})
+api_result2 = await call_api("calculator", "calculate_factorial", {"n": 3})
 print(f"API factorial result: {api_result2['result']}")
 '''
 
         # Run the code in sandbox
-        output, locals_dict = run_code(code)
+        output, locals_dict = await run_code(code)
         print(output)
         # Verify output contains expected results
         self.assertIn("10 + 5 = 15.0", output)
@@ -215,6 +215,45 @@ print(f"API factorial result: {api_result2['result']}")
             # Verify metadata can be set (as done in main.py)
             tool.metadata = {'server_name': "calculator"}
             self.assertEqual(tool.metadata['server_name'], "calculator")
+
+    async def test_asyncio_run_from_running_loop_fixed(self):
+        """Test that run_code works correctly even when called from an async context
+
+        This test runs in an async context (note the 'async def' above).
+        The fix detects the running event loop and creates a new loop in a separate thread,
+        avoiding the 'asyncio.run() cannot be called from a running event loop' error.
+        Tests multiple consecutive calls to ensure the fix is robust.
+        """
+        for tool in calculator_tools:
+            tool.metadata = {'server_name': "calculator"}
+
+        tracker.set_tools(calculator_tools)
+
+        # First code execution
+        code1 = '''
+result = await call_api("calculator", "evaluate_expression", {"expression": "5 + 3"})
+print(f"Result 1: {result['result']}")
+'''
+
+        output1, locals_dict1 = await run_code(code1)
+        print(f"First Output: {output1}")
+
+        # Verify first execution worked correctly
+        self.assertNotIn("asyncio.run() cannot be called from a running event loop", output1)
+        self.assertIn("Result 1: 8.0", output1)
+
+        # Second consecutive code execution
+        code2 = '''
+factorial_result = await call_api("calculator", "calculate_factorial", {"n": 5})
+print(f"Result 2: {factorial_result['result']}")
+'''
+
+        output2, locals_dict2 = await run_code(code2)
+        print(f"Second Output: {output2}")
+
+        # Verify second execution also worked correctly
+        self.assertNotIn("asyncio.run() cannot be called from a running event loop", output2)
+        self.assertIn("Result 2: 120", output2)
 
 
 if __name__ == "__main__":
