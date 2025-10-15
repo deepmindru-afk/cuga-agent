@@ -16,6 +16,16 @@ from loguru import logger
 # Package root & path helper (must be defined BEFORE first use)
 # ---------------------------------------------------------------------------
 
+
+def get_project_root() -> Path:
+    root = Path(__file__).resolve()
+    while not (root / "pyproject.toml").exists():
+        if root.parent == root:
+            raise RuntimeError("Project root not found")
+        root = root.parent
+    return root
+
+
 # Get the package root from path_store
 PACKAGE_ROOT = Path(__file__).parent.resolve()
 LOGGING_DIR = os.environ.get("CUGA_LOGGING_DIR", os.path.join(PACKAGE_ROOT, "./logging"))
@@ -23,6 +33,7 @@ TRAJECTORY_DATA_DIR = os.path.join(LOGGING_DIR, "trajectory_data")
 TRACES_DIR = os.path.join(LOGGING_DIR, "traces")
 # Define all path variables at the top (with environment variable overrides)
 ENV_FILE_PATH = os.getenv("ENV_FILE_PATH") or os.path.join(PACKAGE_ROOT, "..", "..", ".env")
+PROJECT_ROOT = get_project_root()
 
 
 # Helper function to find config files with existence check

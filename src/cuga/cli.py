@@ -638,5 +638,65 @@ def status(
     validate_service(service)
 
 
+@app.command(help="Evaluate Cuga on your test cases", short_help="Run Cuga Evaluation")
+def evaluate(
+    test_cases_file_path: str = typer.Argument(
+        "",
+        help="Path to your test cases file",
+    ),
+    output_file_path: str = typer.Argument(
+        default="results.json",
+        help="Path to your output file, it defaults to 'results.json'",
+    ),
+):
+    """
+    Run Cuga on your test cases.
+    """
+    # start the registry
+    try:
+        run_direct_service(
+            "registry",
+            [
+                "uvicorn",
+                "cuga.backend.tools_env.registry.registry.api_registry_server:app",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                str(settings.server_ports.registry),
+            ],
+        )
+
+        if direct_processes:
+            logger.info(
+                f"\n\033[1;36m┌────────────────────────────────────────┐\n\033[1;36m│\033[0m \033[1;33mRegistry service is running. Press Ctrl+C to stop\033[0m \033[1;36m│\033[0m\n\033[1;36m│\033[0m \033[1;37mRegistry: http://localhost:{settings.server_ports.registry}\033[0m         \033[1;36m│\033[0m\n\033[1;36m└────────────────────────────────────────┘\033[0m"
+            )
+            # Wait for registry to start
+            logger.info("Waiting for registry to start...")
+            time.sleep(7)
+
+            # Then start demo - using explicit fastapi command
+            run_direct_service(
+                "evaluation",
+                [
+                    "uv",
+                    "run",
+                    "--group",
+                    "eval",
+                    os.path.join(PACKAGE_ROOT, "evaluation/evaluate_cuga.py"),
+                    "-t",
+                    test_cases_file_path,
+                    "-r",
+                    output_file_path,
+                ],
+            )
+        wait_for_direct_processes()
+
+    except Exception as e:
+        logger.error(f"Error starting registry service: {e}")
+        stop_direct_processes()
+        raise typer.Exit(1)
+    return
+
+
 if __name__ == "__main__":
     app()

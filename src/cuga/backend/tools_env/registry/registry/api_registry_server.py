@@ -14,6 +14,7 @@ from cuga.backend.tools_env.registry.config.config_loader import load_service_co
 from cuga.backend.tools_env.registry.mcp_manager.mcp_manager import MCPManager
 from cuga.backend.tools_env.registry.registry.api_registry import ApiRegistry
 from loguru import logger
+from cuga.config import settings
 
 tracker = ActivityTracker()
 
@@ -145,6 +146,7 @@ async def call_mcp_function(request: FunctionCallRequest, trajectory_path: Optio
         is_secure = apis[request.function_name].get("secure")
         logger.debug("is_secure:", is_secure)
         if trajectory_path:
+            settings.update({"ADVANCED_FEATURES": {"TRACKER_ENABLED": True}}, merge=True)
             tracker.collect_step_external(
                 Step(name="api_call", data=request.model_dump_json()), full_path=trajectory_path
             )
@@ -233,6 +235,5 @@ if __name__ == "__main__":
     # os.environ["MCP_SERVERS_FILE"] = args.config
 
     # print(f"Starting API Registry server with config: {args.config}...")
-    from cuga.config import settings
 
     uvicorn.run(app, host="127.0.0.1", port=settings.server_ports.registry)

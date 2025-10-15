@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import re
 
-from cuga.backend.activity_tracker.tracker import ActivityTracker
+from cuga.backend.activity_tracker.tracker import ActivityTracker, Step
 
 import os
 from typing import Any, List, Optional, Literal, AsyncGenerator, Union
@@ -32,6 +32,7 @@ class ExperimentResult(BaseModel):
     messages: List[AIMessage]
     answer: Optional[str] = ""
     number_of_actions: int = 0
+    steps: Optional[List[Step]] = []
 
 
 class AgentRunner:
@@ -155,7 +156,6 @@ class AgentRunner:
         eval_mode=False,
         goal: str = None,
         sites: List[str] = None,
-        session_id: str = None,
         current_datetime: Optional[str] = None,
     ) -> Optional[ExperimentResult]:
         agent = DynamicAgentGraph(None)
@@ -232,6 +232,7 @@ class AgentRunner:
                 messages=state.messages,
                 answer=tracker.final_answer,
                 number_of_actions=tracker.actions_count,
+                steps=tracker.steps,
             )
         else:
             return ExperimentResult(
@@ -239,6 +240,7 @@ class AgentRunner:
                 messages=state.messages,
                 answer=tracker.final_answer,
                 number_of_actions=tracker.actions_count,
+                steps=tracker.steps,
             )
 
     async def run_task_generic_yield(

@@ -26,8 +26,12 @@ dependencies = [
     "psutil>=7.0.0",
     "typer>=0.15.3",
     "fastmcp",
-    "langchain-mcp-adapters>=0.1.9"
+    "langchain-mcp-adapters>=0.1.9",
 ]
+
+[project.optional-dependencies]
+evaluation = ["rapidfuzz"]
+
 
 [project.urls]
 Homepage = "https://cuga.dev"
@@ -84,3 +88,7 @@ groq = [
 google-genai = [
     "langchain-google-genai>=2.0.11",
 ]
+eval = [
+    "rapidfuzz"
+]
+

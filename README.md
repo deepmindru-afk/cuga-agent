@@ -506,6 +506,8 @@ Focused suites:
 ./src/scripts/run_tests.sh 
 ```
 
+## 📊 Evaluation
+For information on how to evaluate, see the [CUGA Evaluation Documentation](src/cuga/evaluation/README.md)
 
 ## 📚 Resources
 
