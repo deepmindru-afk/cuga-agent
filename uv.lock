@@ -442,7 +442,7 @@ wheels = [
 
 [[package]]
 name = "cuga"
-version = "0.1.2.dev3"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
