@@ -320,6 +320,11 @@ def start(
         "--host",
         help="Host to bind to (default: 127.0.0.1). Use 0.0.0.0 to allow external connections.",
     ),
+    sandbox: bool = typer.Option(
+        False,
+        "--sandbox",
+        help="Enable remote sandbox mode with llm-sandbox (requires --group sandbox to be installed)",
+    ),
 ):
     """
     Start the specified service.
@@ -330,9 +335,10 @@ def start(
       - appworld: Starts AppWorld environment and API servers (environment on port 8000, api on port 9000)
 
     Examples:
-      cuga start demo      # Start both registry and demo agent directly
-      cuga start registry  # Start registry only
-      cuga start appworld  # Start AppWorld servers
+      cuga start demo                # Start with local sandbox (default)
+      cuga start demo --sandbox      # Start with remote sandbox (Docker/Podman)
+      cuga start registry            # Start registry only
+      cuga start appworld            # Start AppWorld servers
     """
     validate_service(service)
 
@@ -341,6 +347,14 @@ def start(
         try:
             # Set environment variable for host
             os.environ["CUGA_HOST"] = host
+
+            # If sandbox mode is enabled, update settings dynamically
+            if sandbox:
+                logger.info("Starting demo with remote sandbox mode enabled (features.local_sandbox=false)")
+                os.environ["DYNACONF_FEATURES__LOCAL_SANDBOX"] = "false"
+            else:
+                # No override - let default configuration be used
+                pass
 
             # Start registry first - using explicit uvicorn command
             run_direct_service(
@@ -359,10 +373,14 @@ def start(
             logger.info("Waiting for registry to start...")
             time.sleep(7)
 
-            # Then start demo - using explicit fastapi command
-            run_direct_service(
-                "demo",
-                [
+            # Then start demo - using explicit command with optional sandbox group
+            demo_command = []
+            if sandbox:
+                demo_command = [
+                    "uv",
+                    "run",
+                    "--group",
+                    "sandbox",
                     "fastapi",
                     "dev",
                     os.path.join(PACKAGE_ROOT, "backend", "server", "main.py"),
@@ -371,8 +389,20 @@ def start(
                     "--no-reload",
                     "--port",
                     str(settings.server_ports.demo),
-                ],
-            )
+                ]
+            else:
+                demo_command = [
+                    "fastapi",
+                    "dev",
+                    os.path.join(PACKAGE_ROOT, "backend", "server", "main.py"),
+                    "--host",
+                    host,
+                    "--no-reload",
+                    "--port",
+                    str(settings.server_ports.demo),
+                ]
+
+            run_direct_service("demo", demo_command)
 
             # Optionally start Chromium with MV3 extension if configured
 
@@ -636,6 +666,38 @@ def status(
 
     # Validate service for any other service
     validate_service(service)
+
+
+@app.command(help="Test sandbox execution", short_help="Test sandbox")
+def test_sandbox(
+    remote: bool = typer.Option(
+        False,
+        "--remote",
+        help="Test with remote sandbox (Docker/Podman) instead of local execution",
+    ),
+):
+    """
+    Test sandbox execution to verify code execution works correctly.
+
+    Examples:
+      cuga test-sandbox           # Test local sandbox (default)
+      cuga test-sandbox --remote  # Test remote sandbox with Docker/Podman
+    """
+    try:
+        from scripts.commands import test_sandbox as run_test
+
+        if remote:
+            # Ensure sandbox dependencies are available
+            logger.info("Testing remote sandbox mode (requires --group sandbox)")
+            run_test(remote=True)
+        else:
+            logger.info("Testing local sandbox mode")
+            run_test(remote=False)
+
+        logger.info("✅ Sandbox test completed successfully")
+    except Exception as e:
+        logger.error(f"❌ Sandbox test failed: {e}")
+        raise typer.Exit(1)
 
 
 @app.command(help="Evaluate Cuga on your test cases", short_help="Run Cuga Evaluation")

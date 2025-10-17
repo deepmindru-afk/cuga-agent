@@ -1,31 +1,34 @@
+import pytest
 from cuga.backend.tools_env.code_sandbox.sandbox import run_local, ExecutionResult
 
 
 class TestRunLocal:
     """Test suite for run_local function exception handling."""
 
-    def test_run_local_syntax_error(self):
+    @pytest.mark.asyncio
+    async def test_run_local_syntax_error(self):
         """Test run_local with syntax error in code content."""
         code_content = """
 print("This is valid")
 if True
     print("Missing colon causes syntax error")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
         assert result.stdout == ""
         assert "expected ':'" in result.stderr
 
-    def test_run_local_name_error(self):
+    @pytest.mark.asyncio
+    async def test_run_local_name_error(self):
         """Test run_local with NameError (undefined variable)."""
         code_content = """
 print("Starting execution")
 print(undefined_variable)  # This will cause NameError
 print("This won't be reached")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
@@ -33,21 +36,23 @@ print("This won't be reached")
         assert "undefined_variable" in result.stderr
         assert "not defined" in result.stderr
 
-    def test_run_local_type_error(self):
+    @pytest.mark.asyncio
+    async def test_run_local_type_error(self):
         """Test run_local with TypeError."""
         code_content = """
 print("Before error")
 result = "string" + 42  # TypeError: can't concatenate str and int
 print("After error")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
         assert "Before error" in result.stdout
         assert "concatenate str" in result.stderr
 
-    def test_run_local_zero_division_error(self):
+    @pytest.mark.asyncio
+    async def test_run_local_zero_division_error(self):
         """Test run_local with ZeroDivisionError."""
         code_content = """
 print("Calculating...")
@@ -56,28 +61,30 @@ y = 0
 result = x / y  # ZeroDivisionError
 print(f"Result: {result}")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
         assert "Calculating..." in result.stdout
         assert "division by zero" in result.stderr
 
-    def test_run_local_import_error(self):
+    @pytest.mark.asyncio
+    async def test_run_local_import_error(self):
         """Test run_local with ImportError."""
         code_content = """
 print("Attempting import...")
 import nonexistent_module  # ImportError/ModuleNotFoundError
 print("Import successful")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
         assert "Attempting import..." in result.stdout
         assert "No module named" in result.stderr
 
-    def test_run_local_index_error(self):
+    @pytest.mark.asyncio
+    async def test_run_local_index_error(self):
         """Test run_local with IndexError."""
         code_content = """
 print("Working with list...")
@@ -86,7 +93,7 @@ print(f"List: {my_list}")
 value = my_list[10]  # IndexError
 print(f"Value: {value}")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
@@ -94,7 +101,8 @@ print(f"Value: {value}")
         assert "List: [1, 2, 3]" in result.stdout
         assert "list index out of range" in result.stderr
 
-    def test_run_local_key_error(self):
+    @pytest.mark.asyncio
+    async def test_run_local_key_error(self):
         """Test run_local with KeyError."""
         code_content = """
 print("Working with dictionary...")
@@ -103,7 +111,7 @@ print(f"Dict: {my_dict}")
 value = my_dict["nonexistent_key"]  # KeyError
 print(f"Value: {value}")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
@@ -111,7 +119,8 @@ print(f"Value: {value}")
         assert "Dict: {'a': 1, 'b': 2}" in result.stdout
         assert "nonexistent_key" in result.stderr
 
-    def test_run_local_attribute_error(self):
+    @pytest.mark.asyncio
+    async def test_run_local_attribute_error(self):
         """Test run_local with AttributeError."""
         code_content = """
 print("Testing attributes...")
@@ -120,7 +129,7 @@ print(f"String: {my_string}")
 result = my_string.nonexistent_method()  # AttributeError
 print(f"Result: {result}")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
@@ -128,7 +137,8 @@ print(f"Result: {result}")
         assert "String: hello" in result.stdout
         assert "no attribute" in result.stderr
 
-    def test_run_local_custom_exception(self):
+    @pytest.mark.asyncio
+    async def test_run_local_custom_exception(self):
         """Test run_local with custom exception."""
         code_content = """
 class CustomError(Exception):
@@ -140,14 +150,15 @@ print("Before custom exception")
 raise CustomError("This is a custom error message")
 print("After custom exception")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
         assert "Before custom exception" in result.stdout
         assert "This is a custom error message" in result.stderr
 
-    def test_run_local_exception_in_function(self):
+    @pytest.mark.asyncio
+    async def test_run_local_exception_in_function(self):
         """Test run_local with exception inside a function."""
         code_content = """
 def problematic_function():
@@ -159,7 +170,7 @@ print("Before function call")
 problematic_function()
 print("After function call")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
@@ -167,7 +178,8 @@ print("After function call")
         assert "Inside function" in result.stdout
         assert "Function failed" in result.stderr
 
-    def test_run_local_successful_execution(self):
+    @pytest.mark.asyncio
+    async def test_run_local_successful_execution(self):
         """Test run_local with successful code execution (no exceptions)."""
         code_content = """
 print("Starting successful execution")
@@ -177,7 +189,7 @@ result = x + y
 print(f"Result: {result}")
 print("Execution completed successfully")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 0
@@ -186,7 +198,8 @@ print("Execution completed successfully")
         assert "Execution completed successfully" in result.stdout
         assert result.stderr == ""
 
-    def test_run_local_valid_code_with_calculations(self):
+    @pytest.mark.asyncio
+    async def test_run_local_valid_code_with_calculations(self):
         """Test run_local with valid mathematical calculations."""
         code_content = """
 # Basic arithmetic
@@ -204,7 +217,7 @@ print(f"Sum: {sum(numbers)}")
 print(f"Max: {max(numbers)}")
 print(f"Length: {len(numbers)}")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 0
@@ -218,7 +231,8 @@ print(f"Length: {len(numbers)}")
         assert "Length: 5" in result.stdout
         assert result.stderr == ""
 
-    def test_run_local_valid_code_with_data_structures(self):
+    @pytest.mark.asyncio
+    async def test_run_local_valid_code_with_data_structures(self):
         """Test run_local with valid data structure operations."""
         code_content = """
 # Dictionary operations
@@ -238,7 +252,7 @@ print(f"Uppercase: {text.upper()}")
 print(f"Length: {len(text)}")
 print(f"Words: {text.split()}")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 0
@@ -251,7 +265,8 @@ print(f"Words: {text.split()}")
         assert "Words: ['Hello', 'World']" in result.stdout
         assert result.stderr == ""
 
-    def test_run_local_valid_code_with_functions(self):
+    @pytest.mark.asyncio
+    async def test_run_local_valid_code_with_functions(self):
         """Test run_local with valid function definitions and calls."""
         code_content = """
 def greet(name, age=None):
@@ -277,7 +292,7 @@ print(f"Fibonacci(6): {fibonacci(6)}")
 multiply = lambda x, y: x * y
 print(f"Lambda result: {multiply(4, 7)}")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 0
@@ -288,7 +303,8 @@ print(f"Lambda result: {multiply(4, 7)}")
         assert "Lambda result: 28" in result.stdout
         assert result.stderr == ""
 
-    def test_run_local_valid_code_with_loops_and_conditionals(self):
+    @pytest.mark.asyncio
+    async def test_run_local_valid_code_with_loops_and_conditionals(self):
         """Test run_local with valid loops and conditional statements."""
         code_content = """
 # For loop with range
@@ -330,7 +346,7 @@ else:
 
 print(f"Score {score} gets grade: {grade}")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 0
@@ -343,7 +359,8 @@ print(f"Score {score} gets grade: {grade}")
         assert "Score 85 gets grade: B" in result.stdout
         assert result.stderr == ""
 
-    def test_run_local_valid_code_with_imports(self):
+    @pytest.mark.asyncio
+    async def test_run_local_valid_code_with_imports(self):
         """Test run_local with valid standard library imports."""
         code_content = """
 import math
@@ -367,7 +384,7 @@ print(f"JSON: {json_string}")
 parsed_data = json.loads(json_string)
 print(f"Parsed name: {parsed_data['name']}")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 0
@@ -380,7 +397,8 @@ print(f"Parsed name: {parsed_data['name']}")
         assert "Parsed name: John" in result.stdout
         assert result.stderr == ""
 
-    def test_run_local_valid_code_with_classes(self):
+    @pytest.mark.asyncio
+    async def test_run_local_valid_code_with_classes(self):
         """Test run_local with valid class definitions and usage."""
         code_content = """
 class Person:
@@ -413,7 +431,7 @@ print(student.introduce())
 print(student.study("Python"))
 print(f"Student grade: {student.grade}")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 0
@@ -424,7 +442,8 @@ print(f"Student grade: {student.grade}")
         assert "Student grade: A" in result.stdout
         assert result.stderr == ""
 
-    def test_run_local_mixed_output_with_exception(self):
+    @pytest.mark.asyncio
+    async def test_run_local_mixed_output_with_exception(self):
         """Test run_local with both stdout and stderr output before exception."""
         code_content = """
 import sys
@@ -435,7 +454,7 @@ sys.stderr.write("This goes to stderr\\n")
 print("Even more stdout")
 raise RuntimeError("Final error")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
@@ -445,7 +464,8 @@ raise RuntimeError("Final error")
         assert "This goes to stderr" in result.stderr
         assert "Final error" in result.stderr
 
-    def test_run_local_exception_with_complex_traceback(self):
+    @pytest.mark.asyncio
+    async def test_run_local_exception_with_complex_traceback(self):
         """Test run_local with nested function calls creating complex traceback."""
         code_content = """
 def level_one():
@@ -464,7 +484,7 @@ print("Starting nested execution")
 level_one()
 print("This won't be reached")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1
@@ -474,42 +494,45 @@ print("This won't be reached")
         assert "Level three" in result.stdout
         assert "Deep nested error" in result.stderr
 
-    def test_run_local_system_exit_with_code(self):
+    @pytest.mark.asyncio
+    async def test_run_local_system_exit_with_code(self):
         """Test run_local with SystemExit exception (exit with code)."""
         code_content = """
 print("Before exit")
 exit(42)
 print("This won't be reached")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 42
         assert "Before exit" in result.stdout
         assert "SystemExit: 42" in result.stderr
 
-    def test_run_local_system_exit_without_code(self):
+    @pytest.mark.asyncio
+    async def test_run_local_system_exit_without_code(self):
         """Test run_local with SystemExit exception (exit without code)."""
         code_content = """
 print("Before exit")
 exit()
 print("This won't be reached")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 0
         assert "Before exit" in result.stdout
         assert result.stderr == ""
 
-    def test_run_local_quit_function(self):
+    @pytest.mark.asyncio
+    async def test_run_local_quit_function(self):
         """Test run_local with quit() function call."""
         code_content = """
 print("Before quit")
 quit(1)
 print("This won't be reached")
 """
-        result = run_local(code_content)
+        result = await run_local(code_content)
 
         assert isinstance(result, ExecutionResult)
         assert result.exit_code == 1

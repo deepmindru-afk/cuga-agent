@@ -1,9 +1,11 @@
 import os
 import subprocess
+import asyncio
 
 from cuga.backend.tools_env.code_sandbox.sandbox import run_code
 from cuga.config import settings, PACKAGE_ROOT
 from cuga.backend.activity_tracker.tracker import ActivityTracker
+from loguru import logger
 
 tracker = ActivityTracker()
 
@@ -108,11 +110,27 @@ def run_digital_sales_openapi():
     )
 
 
-async def test_sandbox():
+async def _test_sandbox_async(remote: bool = False):
     tracker.current_date = "2023-05-18T12:00:00"
 
+    if remote:
+        os.environ["DYNACONF_FEATURES__LOCAL_SANDBOX"] = "false"
+        logger.info("Testing with remote sandbox (Docker/Podman)...")
+    else:
+        os.environ["DYNACONF_FEATURES__LOCAL_SANDBOX"] = "true"
+        logger.info("Testing with local sandbox...")
+
     res = await run_code("print('test succeeded')")
-    print(res)
+    logger.info(res)
+
+
+def test_sandbox(remote: bool = False):
+    """Test sandbox execution.
+
+    Args:
+        remote: If True, test with remote Docker/Podman sandbox. If False (default), test with local sandbox.
+    """
+    asyncio.run(_test_sandbox_async(remote))
 
 
 def setup_appworld_environment():

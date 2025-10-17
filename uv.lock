@@ -493,6 +493,9 @@ google-genai = [
 groq = [
     { name = "langchain-groq" },
 ]
+sandbox = [
+    { name = "llm-sandbox" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -535,6 +538,7 @@ dev = [
 eval = [{ name = "rapidfuzz" }]
 google-genai = [{ name = "langchain-google-genai", specifier = ">=2.0.11" }]
 groq = [{ name = "langchain-groq", specifier = ">=0.3.8" }]
+sandbox = [{ name = "llm-sandbox", specifier = ">=0.1.3" }]
 
 [[package]]
 name = "cyclopts"
@@ -1629,6 +1633,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/0b/ae/29117275aac7d7d78ae4f5a4787f36ff33262499d486ac0bf3e0b97889f6/lazy_object_proxy-1.12.0-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:a6b7ea5ea1ffe15059eb44bcbcb258f97bcb40e139b88152c40d07b1a1dfc9ac", size = 79516, upload-time = "2025-08-22T13:42:55.812Z" },
     { url = "https://files.pythonhosted.org/packages/19/40/b4e48b2c38c69392ae702ae7afa7b6551e0ca5d38263198b7c79de8b3bdf/lazy_object_proxy-1.12.0-cp313-cp313t-win_amd64.whl", hash = "sha256:08c465fb5cd23527512f9bd7b4c7ba6cec33e28aad36fbbe46bf7b858f9f3f7f", size = 27656, upload-time = "2025-08-22T13:42:56.793Z" },
     { url = "https://files.pythonhosted.org/packages/41/a0/b91504515c1f9a299fc157967ffbd2f0321bce0516a3d5b89f6f4cad0355/lazy_object_proxy-1.12.0-pp39.pp310.pp311.graalpy311-none-any.whl", hash = "sha256:c3b2e0af1f7f77c4263759c4824316ce458fabe0fceadcd24ef8ca08b2d1e402", size = 15072, upload-time = "2025-08-22T13:50:05.498Z" },
+]
+
+[[package]]
+name = "llm-sandbox"
+version = "0.3.21"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/99/65/054dd24c4940b924210cf1e44c0e97802018dfa4fe427bad501f0da49ff0/llm_sandbox-0.3.21.tar.gz", hash = "sha256:93129b4bb7b52cfdf76794cfd4adc9d08c47f4bf94f17b9296005d5463c9bfbe", size = 481274, upload-time = "2025-10-07T04:27:35.327Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/05/6a57f78e237c87a3c07229ba20774892e657c4585b8661877bf100f01410/llm_sandbox-0.3.21-py3-none-any.whl", hash = "sha256:02d0c46899760b9e44e4b9c7eafd89ea70225198f8f04a1ee5c91dc17f0f5ab6", size = 67880, upload-time = "2025-10-07T04:27:33.992Z" },
 ]
 
 [[package]]

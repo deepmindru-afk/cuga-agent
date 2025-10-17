@@ -247,17 +247,28 @@ async def run_code(code: str, _locals: dict[str, Any] = None) -> tuple[str, dict
 {chr(10).join('    ' + line for line in code.split(chr(10)))}
 """
 
+    wrapped_code_with_call = wrapped_code + "\nimport asyncio\nasyncio.run(__cuga_async_wrapper__())\n"
+
     code_content = (
         get_premable(is_local=settings.features.local_sandbox, current_date=tracker.current_date)
         + "\n"
         + variables
         + "\n"
-        + wrapped_code
+        + (wrapped_code if settings.features.local_sandbox else wrapped_code_with_call)
     )
+
+    code_content_for_saving = (
+        get_premable(is_local=settings.features.local_sandbox, current_date=tracker.current_date)
+        + "\n"
+        + variables
+        + "\n"
+        + wrapped_code_with_call
+    )
+
     if settings.advanced_features.tracker_enabled:
         os.makedirs(python_file_dir, exist_ok=True)
         with open(file_path, 'w') as f:
-            f.write(code_content)
+            f.write(code_content_for_saving)
             logger.debug(f"Wrote python file at {file_path}")
 
     if settings.features.local_sandbox:

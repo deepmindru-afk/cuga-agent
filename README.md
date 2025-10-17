@@ -291,21 +291,33 @@ Each file contains agent-specific model settings that can be overridden by envir
 <details>
 <summary>🔒 Running with a secure code sandbox</summary>
 
-1. Download and install [Rancher Desktop](https://rancherdesktop.io/).
+Cuga supports isolated code execution using Docker/Podman containers for enhanced security.
 
-2. If your `./src/cuga/settings.toml` is configured for `accurate` mode (see `./src/cuga/configurations/modes/accurate.toml`), set:
-   ```toml
-   local_sandbox = false
-   ```
-   in the `accurate.toml` file.
+1. **Install container runtime**: Download and install [Rancher Desktop](https://rancherdesktop.io/) or Docker.
 
-   If your `./src/cuga/settings.toml` points to a different mode (e.g., `fast` or `custom`), make the same change in the corresponding `<name>.toml` file under `./src/cuga/configurations/modes/`.
-
-3. Test your sandbox setup:
+2. **Install sandbox dependencies**:
    ```bash
-   uv run test_sandbox
+   uv sync --group sandbox
+   ```
+
+3. **Start with remote sandbox enabled**:
+   ```bash
+   cuga start demo --sandbox
+   ```
+
+   This automatically configures Cuga to use Docker/Podman for code execution instead of local execution.
+
+4. **Test your sandbox setup** (optional):
+   ```bash
+   # Test local sandbox (default)
+   cuga test-sandbox
+   
+   # Test remote sandbox with Docker/Podman
+   cuga test-sandbox --remote
    ```
    You should see the output: `('test succeeded\n', {})`
+
+**Note**: Without the `--sandbox` flag, Cuga uses local Python execution (default), which is faster but provides less isolation.
 
 </details>
 
