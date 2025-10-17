@@ -5,11 +5,6 @@
 </picture>
 
 <div align="center">
-  
-# Enterprise-Ready Configurable Generalist Agent
-</div> 
-
-<div align="center">
 
 [![Python](https://shields.io/badge/Python-3.12-blue?logo=python&style=for-the-badge)](https://www.python.org/)
 [![Status](https://shields.io/badge/Status-Active-success?logo=checkmarx&style=for-the-badge)]()
