@@ -19,7 +19,7 @@
       }
 
       .container {
-        max-width: 1200px;
+        max-width: 1600px;
         margin: 0 auto;
         background: white;
         border-radius: 20px;
@@ -36,10 +36,11 @@
       }
 
       .flags-section {
-        flex: 1;
+        flex: 1.5;
         padding: 40px;
         background: #fff;
         border-left: 2px solid #e9ecef;
+        min-width: 500px;
       }
 
       h1 {
@@ -136,6 +137,9 @@
       .accurate .mode-icon {
         background: #2ecc71;
       }
+      .save_reuse_fast .mode-icon {
+        background: #e67e22;
+      }
       .custom .mode-icon {
         background: #9b59b6;
       }
@@ -178,13 +182,15 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 15px;
+        padding: 15px 20px;
         background: #f8f9fa;
         border-radius: 10px;
         transition: all 0.3s ease;
         border-left: 4px solid #dee2e6;
         cursor: pointer;
         position: relative;
+        min-height: 60px;
+        gap: 15px;
       }
 
       .flag-item:hover {
@@ -210,14 +216,19 @@
 
       .flag-content {
         flex: 1;
+        min-width: 0;
         margin-right: 15px;
       }
 
       .flag-name {
         font-weight: 500;
         color: #495057;
-        font-size: 0.9em;
+        font-size: 0.95em;
         margin-bottom: 4px;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
 
       .flag-description {
@@ -243,6 +254,7 @@
         position: relative;
         transition: all 0.3s ease;
         cursor: pointer;
+        flex-shrink: 0;
       }
 
       .flag-toggle.active {
@@ -274,6 +286,8 @@
         font-size: 0.85em;
         color: #495057;
         transition: all 0.2s ease;
+        min-width: 100px;
+        flex-shrink: 0;
       }
 
       .flag-select:focus {
@@ -283,6 +297,29 @@
       }
 
       .flag-select:disabled {
+        background-color: #f1f3f5;
+        cursor: not-allowed;
+      }
+
+      .flag-input {
+        padding: 5px 8px;
+        border-radius: 5px;
+        border: 1px solid #ced4da;
+        background-color: #e9ecef;
+        font-size: 0.85em;
+        color: #495057;
+        transition: all 0.2s ease;
+        min-width: 150px;
+        flex-shrink: 0;
+      }
+
+      .flag-input:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+      }
+
+      .flag-input:disabled {
         background-color: #f1f3f5;
         cursor: not-allowed;
       }
@@ -387,25 +424,33 @@
         background: #e3f2fd;
         color: #1976d2;
       }
-      .category-security {
-        background: #ffebee;
-        color: #d32f2f;
+      .category-ux {
+        background: #e8f5e8;
+        color: #2e7d32;
       }
-      .category-monitoring {
-        background: #f3e5f5;
-        color: #7b1fa2;
-      }
-      .category-debugging {
+      .category-complex_tasks {
         background: #fff3e0;
         color: #f57c00;
       }
-      .category-reliability {
-        background: #e8f5e8;
-        color: #388e3c;
+      .category-output_tokens {
+        background: #f3e5f5;
+        color: #7b1fa2;
       }
-      .category-task {
+      .category-context_summarization {
+        background: #e0f2f1;
+        color: #00695c;
+      }
+      .category-error_adaptation {
+        background: #ffebee;
+        color: #c62828;
+      }
+      .category-execution_control {
         background: #e0f7fa;
         color: #00838f;
+      }
+      .category-reliability_safety {
+        background: #fff8e1;
+        color: #f57c00;
       }
 
       /* Modal Styles */
@@ -501,15 +546,27 @@
         background: #27ae60;
       }
 
+      @media (max-width: 1200px) {
+        .container {
+          max-width: 1200px;
+        }
+        
+        .flags-section {
+          min-width: 400px;
+        }
+      }
+
       @media (max-width: 768px) {
         .container {
           flex-direction: column;
           margin: 10px;
+          max-width: 100%;
         }
 
         .modes-section,
         .flags-section {
           padding: 20px;
+          min-width: auto;
         }
 
         .modes-grid {
@@ -532,6 +589,20 @@
         .modal-content {
           width: 95%;
           padding: 20px;
+        }
+
+        .flag-item {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 10px;
+        }
+
+        .flag-content {
+          margin-right: 0;
+        }
+
+        .flag-name {
+          white-space: normal;
         }
       }
     </style>
@@ -560,6 +631,18 @@
                 <span class="stat-label">Task Complexity:</span>
                 <span class="stat-value">Simple</span>
               </div>
+              <div class="stat-item">
+                <span class="stat-label">Exec Time:</span>
+                <span class="stat-value">4-10s</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">LLM Calls:</span>
+                <span class="stat-value">6</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Tokens:</span>
+                <span class="stat-value">21k-24k</span>
+              </div>
             </div>
           </div>
 
@@ -580,6 +663,82 @@
               <div class="stat-item">
                 <span class="stat-label">Task Complexity:</span>
                 <span class="stat-value">Complex</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Exec Time:</span>
+                <span class="stat-value">35-40s</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">LLM Calls:</span>
+                <span class="stat-value">10</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Tokens:</span>
+                <span class="stat-value">35k-37k</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mode-card balanced" data-mode="balanced">
+            <div class="mode-title">
+              <div class="mode-icon"></div>
+              Balanced Mode
+            </div>
+            <div class="mode-description">
+              Balanced approach between speed and accuracy. Good performance with moderate feature set for most use cases.
+            </div>
+            <div class="mode-stats">
+              <div class="stat-item">
+                <span class="stat-label">Performance:</span>
+                <span class="stat-value">Good</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Task Complexity:</span>
+                <span class="stat-value">Moderate</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Exec Time:</span>
+                <span class="stat-value">9-15s</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">LLM Calls:</span>
+                <span class="stat-value">9</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Tokens:</span>
+                <span class="stat-value">29k-33k</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mode-card save_reuse_fast" data-mode="save_reuse_fast">
+            <div class="mode-title">
+              <div class="mode-icon"></div>
+              Save & Reuse Fast
+            </div>
+            <div class="mode-description">
+              Fast mode with save and reuse capabilities enabled. Build time same as fast mode, with additional 2s for save operation.
+            </div>
+            <div class="mode-stats">
+              <div class="stat-item">
+                <span class="stat-label">Performance:</span>
+                <span class="stat-value">Good</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Task Complexity:</span>
+                <span class="stat-value">Any</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Exec Time:</span>
+                <span class="stat-value">15s-35s -> 3s</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">LLM Calls:</span>
+                <span class="stat-value">8 -> 1</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Tokens:</span>
+                <span class="stat-value">21k-24k -> 1k</span>
               </div>
             </div>
           </div>
@@ -624,7 +783,7 @@
         <div class="config-summary">
           <div class="summary-row">
             <span class="summary-label">Active Flags:</span>
-            <span class="summary-value" id="activeFlagsCount">7</span>
+            <span class="summary-value" id="activeFlagsCount">2</span>
           </div>
           <div class="summary-row">
             <span class="summary-label">Total Flags:</span>
@@ -632,7 +791,7 @@
           </div>
           <div class="summary-row">
             <span class="summary-label">Performance Impact:</span>
-            <span class="summary-value" id="performanceImpact">Medium</span>
+            <span class="summary-value" id="performanceImpact">Low</span>
           </div>
         </div>
 
@@ -657,119 +816,127 @@
           chat: {
             name: "Enable Chat",
             description: "Enables followup questions and chat interface with task execution",
-            category: "task",
+            category: "ux",
             type: "boolean",
             impact: "high",
           },
           save_reuse: {
             name: "Enable Save & Reuse",
             description: "Enables Save and Reuse where system after final answer asks to save the flow, then will be available in chat mode.",
-            category: "task",
+            category: "ux",
             type: "boolean",
             impact: "low",
           },
           task_decomposition: {
             name: "Enable Task Decomposition",
-            description: "Decomposes the task into multiple sub tasks",
-            category: "task",
+            description: "Decomposes complex tasks into multiple sub-tasks for better handling",
+            category: "complex_tasks",
             type: "boolean",
             impact: "high",
           },
           local_sandbox: {
             name: "Local Sandbox",
             description: "Enables fast local sandbox without docker sandbox",
-            category: "performance",
+            category: "reliability_safety",
+            type: "boolean",
+            impact: "medium",
+          },
+          thoughts: {
+            name: "Enable Thoughts",
+            description: "Enables detailed thought process logging and reasoning for better transparency",
+            category: "output_tokens",
             type: "boolean",
             impact: "medium",
           },
           code_output_summary: {
             name: "Code Output Summary",
-            description: "Summarize code output using additional task",
-            category: "debugging",
+            description: "Summarizes code output using additional context summarization task",
+            category: "context_summarization",
             type: "boolean",
             impact: "low",
           },
           code_generation: {
             name: "Code Generation Style",
-            description: "Code output summary, whether to generate minimal code ( Fast ) or detailed code ( Accurate )",
-            category: "performance",
+            description: "Controls output verbosity: minimal code (fast) or detailed code (accurate)",
+            category: "output_tokens",
             type: "categorical",
-            options: ["fast", "accurate"], // Added "None" option
+            options: ["fast", "accurate"],
             impact: "low",
           },
           code_output_reflection: {
             name: "Code Output Reflection",
-            description: "Reflects on code output to adjust to changes",
-            category: "monitoring",
+            description: "Reflects on code output to adapt and improve based on errors",
+            category: "error_adaptation",
             type: "boolean",
             impact: "medium",
           },
           final_answer: {
             name: "Final Answer",
-            description: "Produces user friendly final answer to user instead of variables",
-            category: "task",
+            description: "Produces user-friendly final answer instead of raw variables",
+            category: "ux",
             type: "boolean",
             impact: "low",
           },
           forced_apps: {
             name: "Forced Applications",
-            description: "List of applications that must always be active.",
-            category: "task",
-            type: "categorical",
+            description: "List of applications that must always be active during execution",
+            category: "execution_control",
+            type: "array",
             impact: "low",
-            options: ["app_A", "app_B", "app_C", "None"], // Added "None" option
           },
         },
         modeConfigurations: {
           fast: {
-            chat: false,
-            save_reuse: false,
             task_decomposition: false,
+            final_answer: false,
+            thoughts: false,
             local_sandbox: true,
+            code_generation: "fast",
             code_output_summary: false,
             code_output_reflection: false,
-            code_generation: "fast",
-            final_answer: false,
-            caching: true,
-            compression: true,
-            validation: false,
-            logging: false,
-            analytics: false,
-            encryption: false,
-            monitoring: false,
-            backup: false,
-            optimization: true,
-            prefetch: true,
-            forced_apps: "None", // Default for categorical flag
-            data_source: "database_v1",
-            task_complexity: "Simple tasks, no decomposition, single or 2 apps.", // Added task complexity
+            save_reuse: false,
+            forced_apps: [],
+            chat: false,
           },
           accurate: {
-            chat: true,
-            save_reuse: false,
+            chat: false,
             task_decomposition: true,
             local_sandbox: false,
+            thoughts: true,
             code_output_summary: true,
-            code_output_reflection: true,
             code_generation: "accurate",
+            code_output_reflection: true,
+            save_reuse: false,
+            forced_apps: [],
             final_answer: true,
-            caching: false,
-            compression: false,
-            validation: true,
-            logging: true,
-            analytics: true,
-            encryption: true,
-            monitoring: true,
-            backup: true,
-            optimization: false,
-            prefetch: false,
-            forced_apps: "app_B", // Default for categorical flag
-            data_source: "database_v2",
-            task_complexity: "Complex tasks, multi-app orchestration, many APIs, complex shortlisters, long horizon.", // Added task complexity
+          },
+          balanced: {
+            chat: false,
+            task_decomposition: true,
+            local_sandbox: true,
+            thoughts: false,
+            code_output_summary: false,
+            code_generation: "fast",
+            code_output_reflection: true,
+            save_reuse: false,
+            forced_apps: [],
+            final_answer: true,
+          },
+          save_reuse_fast: {
+            task_decomposition: false,
+            final_answer: false,
+            thoughts: true,
+            local_sandbox: true,
+            code_generation: "fast",
+            code_output_summary: false,
+            code_output_reflection: false,
+            save_reuse: true,
+            forced_apps: [],
+            chat: true,
           },
           custom: {
-            task_complexity: "Variable based on flag configuration.", // Added task complexity for custom mode
-          }, // This will be dynamically populated
+            // This will be dynamically populated
+          },
         },
       };
 
@@ -837,6 +1004,10 @@
                 ${flag.options.map((option) => `<option value="${option}">${option}</option>`).join("")}
               </select>
             `;
+          } else if (flag.type === "array") {
+            flagControlHtml = `
+              <input type="text" class="flag-input" data-flag="${flagKey}" placeholder="Enter apps (comma-separated)" />
+            `;
           }
 
           flagElement.innerHTML = `
@@ -856,6 +1027,7 @@
         // Add event listeners after elements are created
         addToggleListeners();
         addCategoricalFlagListeners();
+        addArrayFlagListeners();
       }
 
       function addToggleListeners() {
@@ -893,6 +1065,27 @@
         const flagKey = this.dataset.flag;
         if (currentMode === "custom") {
           customFlags[flagKey] = e.target.value;
+          updateFlagsDisplay();
+        }
+      }
+
+      function addArrayFlagListeners() {
+        // Remove existing listeners to prevent duplicates
+        document.querySelectorAll(".flag-input").forEach((input) => {
+          input.removeEventListener("input", handleArrayChange);
+        });
+        // Add new listeners
+        document.querySelectorAll(".flag-input").forEach((input) => {
+          input.addEventListener("input", handleArrayChange);
+        });
+      }
+
+      function handleArrayChange(e) {
+        const flagKey = this.dataset.flag;
+        if (currentMode === "custom") {
+          const value = e.target.value;
+          // Convert comma-separated string to array
+          customFlags[flagKey] = value ? value.split(',').map(item => item.trim()).filter(item => item) : [];
           updateFlagsDisplay();
         }
       }
@@ -973,6 +1166,19 @@
                 item.classList.add("active"); // Still active as they have a pre-defined value
               }
             }
+          } else if (flagDefinition.type === "array") {
+            const inputElement = item.querySelector(".flag-input");
+
+            if (inputElement) {
+              inputElement.value = Array.isArray(flagValue) ? flagValue.join(', ') : ''; // Set the current value from the active config
+              if (currentMode === "custom") {
+                inputElement.disabled = false;
+                item.classList.add("active"); // Array flags are "active" if they have values
+              } else {
+                inputElement.disabled = true;
+                item.classList.add("active"); // Still active as they have a pre-defined value
+              }
+            }
           }
         });
 
@@ -985,24 +1191,62 @@
           if (card.dataset.mode === mode) {
             const modeConfig = config.modeConfigurations[mode];
             const statsContainer = card.querySelector(".mode-stats");
-            // Clear existing stats except for the performance one which is hardcoded in HTML
+            // Clear existing stats and add performance data
+            let performanceValue = 'Variable';
+            let execTime = 'Variable';
+            let llmCalls = 'Variable';
+            let tokens = 'Variable';
+            let taskComplexity = 'Variable';
+            
+            if (mode === 'fast') {
+              performanceValue = 'Best';
+              execTime = '4-10s';
+              llmCalls = '6';
+              tokens = '21k-24k';
+              taskComplexity = 'Simple';
+            } else if (mode === 'accurate') {
+              performanceValue = 'Ok';
+              execTime = '35-40s';
+              llmCalls = '10';
+              tokens = '35k-37k';
+              taskComplexity = 'Complex';
+            } else if (mode === 'balanced') {
+              performanceValue = 'Good';
+              execTime = '9-15s';
+              llmCalls = '9';
+              tokens = '29k-33k';
+              taskComplexity = 'Moderate';
+            } else if (mode === 'save_reuse_fast') {
+              performanceValue = 'Good';
+              execTime = '15s-35s -> 3s';
+              llmCalls = '8 -> 1';
+              tokens = '21k-24k -> 1k';
+              taskComplexity = 'Any';
+            }
+
             statsContainer.innerHTML = `
               <div class="stat-item">
                 <span class="stat-label">Performance:</span>
-                <span class="stat-value">${mode === 'fast' ? 'Best' : (mode === 'accurate' ? 'Ok' : 'Variable')}</span>
+                <span class="stat-value">${performanceValue}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Task Complexity:</span>
+                <span class="stat-value">${taskComplexity}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Exec Time:</span>
+                <span class="stat-value">${execTime}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">LLM Calls:</span>
+                <span class="stat-value">${llmCalls}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Tokens:</span>
+                <span class="stat-value">${tokens}</span>
               </div>
             `;
 
-            // Add Task Complexity stat
-            if (modeConfig.task_complexity) {
-              const taskComplexityItem = document.createElement('div');
-              taskComplexityItem.className = 'stat-item';
-              taskComplexityItem.innerHTML = `
-                <span class="stat-label">Task Complexity:</span>
-                <span class="stat-value">${modeConfig.task_complexity.split(' ')[0]}</span>
-              `;
-              statsContainer.appendChild(taskComplexityItem);
-            }
           }
         });
       }
@@ -1013,6 +1257,8 @@
         const modeNames = {
           fast: "Fast Mode",
           accurate: "Accurate Mode",
+          balanced: "Balanced Mode",
+          save_reuse_fast: "Save & Reuse Fast",
           custom: "Custom Mode",
         };
 
@@ -1042,6 +1288,15 @@
               flagValue !== "" &&
               !(Array.isArray(flagValue) && flagValue.length === 0)
             ) {
+              currentlyActiveFlags++;
+              if (flagDefinition.impact) {
+                totalImpactScore += getImpactScore(flagDefinition.impact);
+                impactFlagCount++;
+              }
+            }
+          } else if (flagDefinition.type === "array") {
+            // An array flag is considered 'active' if it has values
+            if (Array.isArray(flagValue) && flagValue.length > 0) {
               currentlyActiveFlags++;
               if (flagDefinition.impact) {
                 totalImpactScore += getImpactScore(flagDefinition.impact);
@@ -1086,6 +1341,8 @@
           let formattedValue;
           if (flagDefinition.type === "boolean") {
             formattedValue = flagValue ? "true" : "false";
+          } else if (flagDefinition.type === "array") {
+            formattedValue = Array.isArray(flagValue) ? `[${flagValue.map(item => `"${item}"`).join(', ')}]` : "[]";
           } else {
             formattedValue = flagValue;
           }
