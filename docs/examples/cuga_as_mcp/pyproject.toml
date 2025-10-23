@@ -10,6 +10,3 @@ dependencies = [
     "fastmcp",
     "httpx",
 ]
-
-[tool.uv.sources]
-cuga = { path = "../../../" }

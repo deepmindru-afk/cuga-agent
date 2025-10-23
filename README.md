@@ -475,9 +475,9 @@ CUGA supports three types of tool integrations. Each approach has its own use ca
 
 ## 📚 **Additional Resources**
 
-- **Tool Registry**: [cuga/backend/tools_env/registry/README.md](cuga/backend/tools_env/registry/README.md)
-- **Comprehensive example with different tools + MCP**: [docs/examples/cuga_with_runtime_tools/README.md](Adding Tools)
-- **CUGA as MCP**: [docs/examples/cuga_as_mcp/README.md](docs/examples/cuga_as_mcp)
+- **Tool Registry**: [./src/cuga/backend/tools_env/registry/README.md](./src/cuga/backend/tools_env/registry/README.md)
+- **Comprehensive example with different tools + MCP**: [./docs/examples/cuga_with_runtime_tools/README.md](Adding Tools)
+- **CUGA as MCP**: [./docs/examples/cuga_as_mcp/README.md](docs/examples/cuga_as_mcp)
 
 </details>
 
