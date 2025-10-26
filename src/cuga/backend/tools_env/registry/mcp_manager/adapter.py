@@ -1,14 +1,17 @@
-import re
-from pydantic import BaseModel
-import requests
-from mcp.server.fastmcp import FastMCP
-from typing import Any, Dict, List, Optional, TypeAlias, Literal
-from loguru import logger
 import json
+import re
+from typing import Any, Dict, List, Literal, Optional, TypeAlias
 from urllib.parse import urlencode
 
+import requests
+from loguru import logger
+from mcp.server.fastmcp import FastMCP
+from pydantic import BaseModel
+
 from cuga.backend.tools_env.registry.config.config_loader import ServiceConfig
-from cuga.backend.tools_env.registry.mcp_manager.openapi_parser import SimpleOpenAPIParser
+from cuga.backend.tools_env.registry.mcp_manager.openapi_parser import (
+    SimpleOpenAPIParser,
+)
 
 TYPE_MAP = {
     "string": str,
@@ -369,8 +372,8 @@ def extract_body_params(api, all_params: dict):
     # Include request body fields
     if api.request_body:
         for media in api.request_body.content.values():
-            if media.schema and media.schema.properties:
-                for prop in media.schema.properties.keys():
+            if media.schema_field and media.schema_field.properties:
+                for prop in media.schema_field.properties.keys():
                     if prop in all_params:
                         body_params[prop] = all_params[prop]
     return body_params
