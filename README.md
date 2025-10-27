@@ -12,20 +12,21 @@
 
 </div>
 
-**CUGA (ConfigUrable Generalist Agent)** is an open-source generalist agent framework from IBM Research, purpose-built for enterprise automation. Designed for developers, CUGA combines and improves the best of foundational agentic patterns such as ReAct, CodeAct, and Planner-Executor — into a modular architecture enabling trustworthy, policy-aware, and composable automation across web interfaces, APIs, and custom enterprise systems. 
+**CUGA (ConfigUrable Generalist Agent)** is an open-source generalist agent framework from IBM Research, purpose-built for enterprise automation. Designed for developers, CUGA combines and improves the best of foundational agentic patterns such as ReAct, CodeAct, and Planner-Executor — into a modular architecture enabling trustworthy, policy-aware, and composable automation across web interfaces, APIs, and custom enterprise systems.
 
 CUGA achieves state-of-the-art performance on leading benchmarks:
-* 🥇 #1 on [AppWorld](https://appworld.dev/leaderboard) — a benchmark with 750 real-world tasks across 457 APIs, and
-* 🥈 #2 on [WebArena](https://docs.google.com/spreadsheets/d/1M801lEpBbKSNwP-vDBkC_pF7LdyGU1f_ufZb_NWNBZQ/edit?gid=0#gid=0) — a complex benchmark for autonomous web agents across application domains.
 
-####  Key features  
+- 🥇 #1 on [AppWorld](https://appworld.dev/leaderboard) — a benchmark with 750 real-world tasks across 457 APIs, and
+- 🥈 #2 on [WebArena](https://docs.google.com/spreadsheets/d/1M801lEpBbKSNwP-vDBkC_pF7LdyGU1f_ufZb_NWNBZQ/edit?gid=0#gid=0) — a complex benchmark for autonomous web agents across application domains.
+
+#### Key features
 
 - **Complex task execution**: State of the art results across Web and APIs.
-- **Flexible tool integrations**: CUGA works across REST APIs via OpenAPI specs, MCP servers, and custom connectors. 
+- **Flexible tool integrations**: CUGA works across REST APIs via OpenAPI specs, MCP servers, and custom connectors.
 - **Composable agent architecture**: CUGA itself can be exposed as a tool to other agents, enabling nested reasoning and multi-agent collaboration.
 - **Configurable reasoning modes**: Choose between fast heuristics or deep planning depending on your task’s complexity and latency needs.
-- **Policy-aware instructions** *(Experimental)*: CUGA components can be configured with policy-aware instructions to improve alignment of the agent behavior.
-- **Save & Reuse** *(Experimental)*: CUGA captures and reuses successful execution paths, enabling consistent and faster behavior across repeated tasks.
+- **Policy-aware instructions** _(Experimental)_: CUGA components can be configured with policy-aware instructions to improve alignment of the agent behavior.
+- **Save & Reuse** _(Experimental)_: CUGA captures and reuses successful execution paths, enabling consistent and faster behavior across repeated tasks.
 
 Explore the [Roadmap](#roadmap) to see what’s ahead, or join the [🤝 Call for the Community](#call-for-the-community) to get involved.
 
@@ -47,12 +48,14 @@ Experience CUGA's hybrid capabilities by combining API calls with web interactio
 ### Setup Steps:
 
 1. **Switch to hybrid mode:**
+
    ```bash
    # Edit ./src/cuga/settings.toml and change:
    mode = 'hybrid'  # under [advanced_features] section
    ```
 
 2. **Install browser API support:**
+
    - Installs playwright browser API and Chromium browser
    - The `playwright` installer should already be included after installing with [Quick Start](#-quick-start)
 
@@ -61,16 +64,19 @@ Experience CUGA's hybrid capabilities by combining API calls with web interactio
    ```
 
 3. **Start the demo:**
+
    ```bash
    cuga start demo
    ```
 
 4. **Enable the browser extension:**
+
    - Click the extension puzzle icon in your browser
    - Toggle the CUGA extension to activate it
    - This will open the CUGA side panel
 
 5. **Open the test application:**
+
    - Navigate to: [Sales app](https://samimarreed.github.io/sales/)
 
 6. **Try the hybrid task:**
@@ -98,12 +104,14 @@ Experience CUGA's Human-in-the-Loop capabilities where the agent pauses for huma
 ### Setup Steps:
 
 1. **Enable HITL mode:**
+
    ```bash
    # Edit ./src/cuga/settings.toml and ensure:
    api_planner_hitl = true  # under [advanced_features] section
    ```
 
 2. **Start the demo:**
+
    ```bash
    cuga start demo
    ```
@@ -119,7 +127,6 @@ Experience CUGA's Human-in-the-Loop capabilities where the agent pauses for huma
 
 ## 🚀 Quick Start
 
-
 <details>
 <summary><em style="color: #666;">📋 Prerequisites (click to expand)</em></summary>
 
@@ -127,7 +134,6 @@ Experience CUGA's Human-in-the-Loop capabilities where the agent pauses for huma
 - **uv package manager** - [Installation guide](https://docs.astral.sh/uv/getting-started/installation/)
 
 </details>
-
 
 <details>
 <summary><em style="color: #666;">🔧 Optional: Local Digital Sales API Setup (only if remote endpoint fails)</em></summary>
@@ -146,7 +152,6 @@ uv run digital_sales_openapi
 ```
 
 </details>
-
 
 ```bash
 # In terminal, clone the repository and navigate into it
@@ -176,7 +181,8 @@ cuga start demo
 ---
 
 Refer to: [`.env.example`](.env.example) for detailed examples.
-```
+
+````
 
 CUGA supports multiple LLM providers with flexible configuration options. You can configure models through TOML files or override specific settings using environment variables.
 
@@ -204,14 +210,15 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
    # OpenAI Configuration
    OPENAI_API_KEY=sk-...your-key-here...
    AGENT_SETTING_CONFIG="settings.openai.toml"
-   
+
    # Optional overrides
    MODEL_NAME=gpt-4o                    # Override model name
    OPENAI_BASE_URL=https://api.openai.com/v1  # Override base URL
    OPENAI_API_VERSION=2024-08-06        # Override API version
-   ```
+````
 
 **Default Values:**
+
 - Model: `gpt-4o`
 - API Version: OpenAI's default API Version
 - Base URL: OpenAI's default endpoint
@@ -226,18 +233,20 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
    - API Key
    - Region/URL
 3. Add to your `.env` file:
+
    ```env
    # WatsonX Configuration
    WATSONX_API_KEY=your-watsonx-api-key
    WATSONX_PROJECT_ID=your-project-id
    WATSONX_URL=https://us-south.ml.cloud.ibm.com  # or your region
    AGENT_SETTING_CONFIG="settings.watsonx.toml"
-   
+
    # Optional override
    MODEL_NAME=meta-llama/llama-4-maverick-17b-128e-instruct-fp8  # Override model for all agents
    ```
 
 **Default Values:**
+
 - Model: `meta-llama/llama-4-maverick-17b-128e-instruct-fp8`
 
 ### Option 3: Azure OpenAI
@@ -257,11 +266,12 @@ CUGA supports multiple LLM providers with flexible configuration options. You ca
 CUGA supports LiteLLM through the OpenAI configuration by overriding the base URL:
 
 1. Add to your `.env` file:
+
    ```env
    # LiteLLM Configuration (using OpenAI settings)
    OPENAI_API_KEY=your-api-key
    AGENT_SETTING_CONFIG="settings.openai.toml"
-   
+
    # Override for LiteLLM
    MODEL_NAME=Azure/gpt-4o              # Override model name
    OPENAI_BASE_URL=https://your-litellm-endpoint.com  # Override base URL
@@ -273,13 +283,12 @@ CUGA supports LiteLLM through the OpenAI configuration by overriding the base UR
 CUGA uses TOML configuration files located in `src/cuga/configurations/models/`:
 
 - `settings.openai.toml` - OpenAI configuration (also supports LiteLLM via base URL override)
-- `settings.watsonx.toml` - WatsonX configuration  
+- `settings.watsonx.toml` - WatsonX configuration
 - `settings.azure.toml` - Azure OpenAI configuration
 
 Each file contains agent-specific model settings that can be overridden by environment variables.
 
 </details>
-
 
 ## Configurations
 
@@ -291,11 +300,13 @@ Cuga supports isolated code execution using Docker/Podman containers for enhance
 1. **Install container runtime**: Download and install [Rancher Desktop](https://rancherdesktop.io/) or Docker.
 
 2. **Install sandbox dependencies**:
+
    ```bash
    uv sync --group sandbox
    ```
 
 3. **Start with remote sandbox enabled**:
+
    ```bash
    cuga start demo --sandbox
    ```
@@ -303,13 +314,15 @@ Cuga supports isolated code execution using Docker/Podman containers for enhance
    This automatically configures Cuga to use Docker/Podman for code execution instead of local execution.
 
 4. **Test your sandbox setup** (optional):
+
    ```bash
    # Test local sandbox (default)
    cuga test-sandbox
-   
+
    # Test remote sandbox with Docker/Podman
    cuga test-sandbox --remote
    ```
+
    You should see the output: `('test succeeded\n', {})`
 
 **Note**: Without the `--sandbox` flag, Cuga uses local Python execution (default), which is faster but provides less isolation.
@@ -321,12 +334,12 @@ Cuga supports isolated code execution using Docker/Podman containers for enhance
 
 ## Available Modes under `./src/cuga`
 
-| Mode       | File                                     | Description                         |
-| ---------- | ---------------------------------------- | ----------------------------------- |
-| `fast`     | `./configurations/modes/fast.toml`      | Optimized for speed                 |
-| `balanced` | `./configurations/modes/balanced.toml`  | Balance between speed and precision _(default)_ |
-| `accurate` | `./configurations/modes/accurate.toml`  | Optimized for precision             |
-| `custom`   | `./configurations/modes/custom.toml`    | User-defined settings               |
+| Mode       | File                                   | Description                                     |
+| ---------- | -------------------------------------- | ----------------------------------------------- |
+| `fast`     | `./configurations/modes/fast.toml`     | Optimized for speed                             |
+| `balanced` | `./configurations/modes/balanced.toml` | Balance between speed and precision _(default)_ |
+| `accurate` | `./configurations/modes/accurate.toml` | Optimized for precision                         |
+| `custom`   | `./configurations/modes/custom.toml`   | User-defined settings                           |
 
 ## Configuration
 
@@ -354,25 +367,27 @@ cuga_mode = "fast"  # or "balanced" or "accurate" or "custom"
 
 ## Available Task Modes
 
-
 | Mode     | Description                                                                 |
-|----------|-----------------------------------------------------------------------------|
-| `api`    | API-only mode - executes API tasks  _(default)_                             |
+| -------- | --------------------------------------------------------------------------- |
+| `api`    | API-only mode - executes API tasks _(default)_                              |
 | `web`    | Web-only mode - executes web tasks using browser extension                  |
 | `hybrid` | Hybrid mode - executes both API tasks and web tasks using browser extension |
 
 ## How Task Modes Work
 
 ### API Mode (`mode = 'api'`)
+
 - Opens tasks in a regular web browser
 - Best for API/Tools-focused workflows and testing
 
 ### Web Mode (`mode = 'web'`)
+
 - Interface inside a browser extension (available next to browser)
 - Optimized for web-specific tasks and interactions
 - Direct access to web page content and controls
 
 ### Hybrid Mode (`mode = 'hybrid'`)
+
 - Opens inside browser extension like web mode
 - Can execute both API/Tools tasks and web page tasks simultaneously
 - Starts from configurable URL defined in `demo_mode.start_url`
@@ -428,7 +443,6 @@ instruction_set = "default"  # or any instruction set above
 
 </details>
 
-
 ## 🔧 Advanced Usage
 
 <details>
@@ -466,12 +480,11 @@ CUGA supports three types of tool integrations. Each approach has its own use ca
 
 ## 📋 **Tool Types Overview**
 
-| Tool Type | Best For | Configuration | Runtime Loading |
-|-----------|----------|---------------|-----------------|
-| **OpenAPI** | REST APIs, existing services | `mcp_servers.yaml` | ✅ Build |
-| **MCP** | Custom protocols, complex integrations | `mcp_servers.yaml` | ✅ Build |
-| **LangChain** | Python functions, rapid prototyping | Direct import | ✅ Runtime |
-
+| Tool Type     | Best For                               | Configuration      | Runtime Loading |
+| ------------- | -------------------------------------- | ------------------ | --------------- |
+| **OpenAPI**   | REST APIs, existing services           | `mcp_servers.yaml` | ✅ Build        |
+| **MCP**       | Custom protocols, complex integrations | `mcp_servers.yaml` | ✅ Build        |
+| **LangChain** | Python functions, rapid prototyping    | Direct import      | ✅ Runtime      |
 
 ## 📚 **Additional Resources**
 
@@ -480,7 +493,6 @@ CUGA supports three types of tool integrations. Each approach has its own use ca
 - **CUGA as MCP**: [./docs/examples/cuga_as_mcp/README.md](docs/examples/cuga_as_mcp)
 
 </details>
-
 
 ### Test Scenarios - E2E
 
@@ -495,25 +507,26 @@ The test suite covers various execution modes across different scenarios:
 ### Additional Test Categories
 
 **Unit Tests**
+
 - Variables Manager: Core functionality, metadata handling, singleton pattern, reset operations
 - Value Preview: Intelligent truncation, nested structure preservation, length-aware formatting
 
-**Integration Tests**  
+**Integration Tests**
+
 - API Response Handling: Error cases, validation, timeout scenarios, parameter extraction
 - Registry Services: OpenAPI integration, MCP server functionality, mixed service configurations
 - Tool Environment: Service loading, parameter handling, function calling, isolation testing
 
-
 ## 🧪 Running Tests
-
 
 Focused suites:
 
 ```bash
-./src/scripts/run_tests.sh 
+./src/scripts/run_tests.sh
 ```
 
 ## 📊 Evaluation
+
 For information on how to evaluate, see the [CUGA Evaluation Documentation](src/cuga/evaluation/README.md)
 
 ## 📚 Resources
@@ -521,7 +534,7 @@ For information on how to evaluate, see the [CUGA Evaluation Documentation](src/
 - 📖 [Example applications](./docs/examples)
 - 📧 Contact: [CUGA Team](https://forms.office.com/pages/responsepage.aspx?id=V3D2_MlQ1EqY8__KZK3Z6UtMUa14uFNMi1EyUFiZFGRUQklOQThLRjlYMFM2R1dYTk5GVTFMRzNZVi4u&route=shorturl)
 
-## Team 
+## Team
 
 - Alon Oved
 - Asaf Adi
@@ -537,22 +550,29 @@ For information on how to evaluate, see the [CUGA Evaluation Documentation](src/
 ## Call for the Community
 
 CUGA is open source because we believe **trustworthy enterprise agents must be built together**.  
-Here's how you can help:   
+Here's how you can help:
 
-- **Share use cases** → Show us how you'd use CUGA in real workflows.  
-- **Request features** → Suggest capabilities that would make it more useful.  
+- **Share use cases** → Show us how you'd use CUGA in real workflows.
+- **Request features** → Suggest capabilities that would make it more useful.
 - **Report bugs** → Help improve stability by filing clear, reproducible reports.
 
-All contributions are welcome through [GitHub Issues](../../issues/new/choose) - whether it's sharing use cases, requesting features, or reporting bugs!  
+All contributions are welcome through [GitHub Issues](../../issues/new/choose) - whether it's sharing use cases, requesting features, or reporting bugs!
 
 ## Roadmap
 
-Amongst other, we’re exploring the following directions:  
+Amongst other, we’re exploring the following directions:
 
-- **Policy support**: procedural SOPs, domain knowledge, input/output guards, context- and tool-based constraints  
-- **Performance improvements**: dynamic reasoning strategies that adapt to task complexity  
-  
+- **Policy support**: procedural SOPs, domain knowledge, input/output guards, context- and tool-based constraints
+- **Performance improvements**: dynamic reasoning strategies that adapt to task complexity
 
 ### Before Submitting a PR
 
 Please follow the contribution guide in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+[![Star History Chart](https://api.star-history.com/svg?repos=cuga-project/cuga-agent&type=Timeline)](https://star-history.com/#cuga-project/cuga-agent&Date)
+
+## Contributors
+
+[![cuga agent contributors](https://contrib.rocks/image?repo=cuga-project/cuga-agent)](https://github.com/cuga-project/cuga-agent/graphs/contributors)

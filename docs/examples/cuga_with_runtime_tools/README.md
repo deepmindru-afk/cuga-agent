@@ -26,16 +26,49 @@ services:
 - **Example**: Digital Sales API for account management
 
 ### 2. **MCP Tools** (Model Context Protocol)
+
+MCP tools support **three transport types** following [FastMCP patterns](https://gofastmcp.com/clients/transports):
+
+#### **STDIO Transport** (Default for Local Commands)
 ```yaml
 mcpServers:
-    filesystem:
-        command: "npx"
-        args: ["-y", "@modelcontextprotocol/server-filesystem", "./cuga_workspace"]
-        description: "Standard file system operations for workspace management"
+  filesystem:
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "./cuga_workspace"]
+    transport: stdio  # Optional: auto-detected
+    env:
+      LOG_LEVEL: INFO
+    description: Standard file system operations
 ```
-- **Purpose**: Complex protocols and standardized tool interfaces
-- **Use Case**: File systems, databases, specialized protocols
-- **Example**: File system operations for saving documents
+- **Best For**: Local development, file operations, subprocess tools
+- **Features**: Client manages server lifecycle, environment isolation
+
+#### **HTTP Transport** (Recommended for Production)
+```yaml
+mcpServers:
+  production_api:
+    url: https://api.example.com/mcp
+    transport: http
+    description: Production MCP server
+```
+- **Best For**: Remote services, production deployments, scalability
+- **Features**: Efficient bidirectional streaming, already-running servers
+
+#### **SSE Transport** (Legacy)
+```yaml
+mcpServers:
+  legacy_api:
+    url: https://api.example.com/sse
+    transport: sse  # Auto-detected from /sse in URL
+    description: Legacy SSE server
+```
+- **Best For**: Backward compatibility
+- **Features**: Server-Sent Events, maintained for legacy systems
+
+**Transport Auto-Detection**: When `transport` is not specified:
+- Has `command` → STDIO
+- URL contains `/sse` → SSE
+- URL without `/sse` → HTTP
 
 ### 3. **LangChain Tools** (Python Functions)
 Defined in `langchain_example_tool.py`:
@@ -155,3 +188,65 @@ docs/examples/cuga_with_runtime_tools/
 - **Integration**: Seamless communication between tool types
 
 This example showcases CUGA's powerful ability to create unified AI workflows that span multiple systems and protocols.
+
+## 🚇 **MCP Transport Types Guide**
+
+### When to Use Each Transport
+
+| Transport | Use Case | Example |
+|-----------|----------|---------|
+| **STDIO** | Local development, file operations | File system, local scripts |
+| **HTTP** | Production, remote services | Cloud APIs, microservices |
+| **SSE** | Legacy compatibility | Existing SSE infrastructure |
+
+### Transport Configuration Examples
+
+**Local Development Setup (STDIO)**
+```yaml
+mcpServers:
+  local_tools:
+    command: python
+    args: ["./my_tools.py", "--verbose"]
+    env:
+      DEBUG: "true"
+      API_KEY: ${YOUR_API_KEY}
+```
+
+**Production Setup (HTTP)**
+```yaml
+mcpServers:
+  prod_api:
+    url: https://api.example.com/mcp
+    transport: http
+```
+
+**Legacy System (SSE)**
+```yaml
+mcpServers:
+  legacy:
+    url: https://legacy.example.com/sse
+    transport: sse
+```
+
+### Environment Variables (STDIO Only)
+
+STDIO transports run in isolated environments. Pass environment variables explicitly:
+
+```yaml
+mcpServers:
+  secure_server:
+    command: python
+    args: ["server.py"]
+    env:
+      API_KEY: your_secret_key
+      DATABASE_URL: postgresql://localhost/db
+      LOG_LEVEL: INFO
+```
+
+**Note**: HTTP and SSE transports connect to already-running servers that manage their own environment.
+
+## 📚 **Additional Resources**
+
+- [FastMCP Transport Documentation](https://gofastmcp.com/clients/transports)
+- [MCP Transport Types Guide](../../../src/cuga/backend/tools_env/registry/docs/MCP_TRANSPORTS.md)
+- [Registry Configuration](../../../src/cuga/backend/tools_env/registry/README.md)

@@ -17,34 +17,36 @@ class ApiRegistry:
     """
 
     def __init__(self, client: MCPManager):
-        print("ApiRegistry: Initializing.")
+        logger.info("ApiRegistry: Initializing.")
         self.mcp_client = client
         self.auth_manager = None
 
     async def start_servers(self):
+        """Start servers and load tools"""
         await self.mcp_client.load_tools()
+        logger.info("ApiRegistry: Servers started successfully.")
 
     async def show_applications(self) -> List[AppDefinition]:
         """Lists application names and their descriptions."""
-        print("ApiRegistry: show_applications() called.")
+        logger.debug("ApiRegistry: show_applications() called.")
         apps = self.mcp_client.get_apps()
         return [AppDefinition(name=p.name, url=p.url, description=p.description) for p in apps]
 
     async def show_apis_for_app(self, app_name: str, include_response_schema: bool = False) -> List[Dict]:
         """Lists API definitions of a specific app."""
-        print(f"ApiRegistry: show_apis_for_app(app_name='{app_name}') called.")
+        logger.debug(f"ApiRegistry: show_apis_for_app(app_name='{app_name}') called.")
         # if not await self.mcp_client.get_apis_for_application(app_name):
         #      raise HTTPException(status_code=404, detail=f"Application '{app_name}' not found.")
         return self.mcp_client.get_apis_for_application(app_name, include_response_schema)
 
     async def show_all_apis(self, include_response_schema) -> List[Dict[str, str]]:
         """Gets all API definitions."""
-        print("ApiRegistry: show_all_apis() called.")
+        logger.debug("ApiRegistry: show_all_apis() called.")
         return self.mcp_client.get_all_apis(include_response_schema)
 
     async def auth_apps(self, apps: List[str]):
         """Gets all API definitions."""
-        print("auth_apps: auth_apps called.")
+        logger.debug("auth_apps: auth_apps called.")
         if not self.auth_manager:
             self.auth_manager = AppWorldAuthManager()
         for app in apps:
@@ -67,7 +69,7 @@ class ApiRegistry:
             elif auth_config.value:
                 headers = {f"{auth_config.type}": f"{auth_config.value}"}
 
-        print(
+        logger.debug(
             f"ApiRegistry: call_function(function_name='{function_name}', arguments={arguments}, headers={headers}) called."
         )
         try:
@@ -86,7 +88,7 @@ class ApiRegistry:
             # In a real scenario, you might catch specific client exceptions
             logger.error(traceback.format_exc())
 
-            print(f"Error calling MCP function '{function_name}': {e}")
+            logger.error(f"Error calling MCP function '{function_name}': {e}")
 
             # Return structured error response instead of raising HTTPException
             return {

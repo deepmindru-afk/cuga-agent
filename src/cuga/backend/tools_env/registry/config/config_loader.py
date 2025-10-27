@@ -22,7 +22,9 @@ class ServiceConfig(BaseModel):
     url: Optional[str] = None
     command: Optional[str] = None
     args: Optional[List[str]] = None
+    env: Optional[Dict[str, str]] = None  # Environment variables for STDIO transport
     type: str = ServiceType.OPENAPI  # type of the service
+    transport: Optional[str] = None  # Transport type: 'stdio', 'sse', 'http', or None (auto-detect)
     name: Optional[str] = None
     description: Optional[str] = None
     auth: Optional[Any] = None  # Auth type not defined in the snippet
@@ -71,7 +73,7 @@ def load_service_configs(yaml_path: str) -> Dict[str, ServiceConfig]:
                 # Standard MCP format
                 mcp_servers = data['mcpServers']
                 for service_name, config in mcp_servers.items():
-                    service_config = _create_service_config(service_name, config)
+                    service_config = _create_service_config(service_name, config, is_mcp_server=True)
                     services[service_name] = service_config
         elif isinstance(data, list):
             # Pure legacy format (list at root)
@@ -86,7 +88,7 @@ def load_service_configs(yaml_path: str) -> Dict[str, ServiceConfig]:
         return {}
 
 
-def _create_service_config(service_name: str, config: dict) -> ServiceConfig:
+def _create_service_config(service_name: str, config: dict, is_mcp_server: bool = False) -> ServiceConfig:
     """Helper function to create ServiceConfig from config dictionary"""
     # Create ServiceConfig with optional auth
     auth_cfg = config.get('auth')
@@ -97,7 +99,10 @@ def _create_service_config(service_name: str, config: dict) -> ServiceConfig:
     # Auto-detect service type if not explicitly specified
     service_type = config.get('type')
     if not service_type:
-        if config.get('command'):
+        if is_mcp_server:
+            # Services from mcpServers section are MCP servers
+            service_type = ServiceType.MCP_SERVER
+        elif config.get('command'):
             # If service has a command, it's an MCP server
             service_type = ServiceType.MCP_SERVER
         elif config.get('tools'):
@@ -113,6 +118,8 @@ def _create_service_config(service_name: str, config: dict) -> ServiceConfig:
         url=config.get('url'),
         command=config.get('command'),
         args=config.get('args'),
+        env=config.get('env'),
+        transport=config.get('transport'),
         auth=auth,
         include=config.get('include'),
         type=service_type,

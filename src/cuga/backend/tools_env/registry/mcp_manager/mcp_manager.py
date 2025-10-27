@@ -4,13 +4,18 @@ import json
 import aiohttp
 from cuga.config import PACKAGE_ROOT
 import os
+import asyncio
 
 from mcp.types import TextContent
 
 try:
     from fastmcp import Client as FastMCPClient
+    from fastmcp.client.transports import SSETransport, StreamableHttpTransport, StdioTransport
 except ImportError:
     FastMCPClient = None
+    SSETransport = None
+    StreamableHttpTransport = None
+    StdioTransport = None
 
 from cuga.backend.tools_env.registry.config.config_loader import Auth
 from cuga.backend.tools_env.registry.config.config_loader import ServiceConfig, Service
@@ -19,7 +24,7 @@ from cuga.backend.tools_env.registry.mcp_manager.adapter import new_mcp_from_cus
 import threading
 from collections import defaultdict
 from urllib.parse import urlparse
-
+from loguru import logger
 from cuga.backend.tools_env.registry.mcp_manager.openapi_parser_v0 import OpenAPITransformer
 from cuga.backend.tools_env.registry.mcp_manager.response_schema import extract_response_schema
 import yaml
@@ -537,83 +542,138 @@ class MCPManager:
         return res
 
     async def _initialize_fastmcp_client(self, mcp_servers: List[tuple]):
-        """Initialize FastMCP client with all MCP servers"""
+        """Initialize FastMCP client with all MCP servers using appropriate transport"""
         if not FastMCPClient or not mcp_servers:
+            logger.error("FastMCP not available, using fallback")
+            if not FastMCPClient:
+                print("FastMCP not available, using fallback")
+                await self._fallback_mcp_connection(mcp_servers)
             return
 
         try:
-            # Build FastMCP config
-            fastmcp_config = {"mcpServers": {}}
-
             for name, config in mcp_servers:
-                server_config = {"url": config.url}
-                if config.command:
-                    server_config["command"] = config.command
-                    if config.args:
-                        server_config["args"] = config.args
+                try:
+                    transport = self._create_transport(name, config)
+                    if not transport:
+                        continue
 
-                fastmcp_config["mcpServers"][name] = server_config
+                    client = FastMCPClient(transport)
 
-            print(f"Initializing FastMCP client with config: {fastmcp_config}")
+                    logger.info(f"Fetching tools from {name}...")
 
-            # Create FastMCP client
-            self.fastmcp_client = FastMCPClient(fastmcp_config)
+                    # Add timeout for tool fetching
+                    async def fetch_tools():
+                        async with client:
+                            return await client.list_tools()
 
-            # Connect to all servers and get tools
-            async with self.fastmcp_client:
-                # Get all tools from all connected servers
-                tools = await self.fastmcp_client.list_tools()
-                print(f"Retrieved {len(tools)} tools from FastMCP client: {[tool.name for tool in tools]}")
-
-                for name, config in mcp_servers:
                     try:
-                        # For single server, all tools belong to this server
-                        # We need to prefix them manually since FastMCP doesn't do it automatically
-                        server_tools = tools  # All tools from the single server
+                        tools = await asyncio.wait_for(fetch_tools(), timeout=15.0)
+                        logger.info(
+                            f"Retrieved {len(tools)} tools from {name}: {[tool.name for tool in tools]}"
+                        )
+                    except asyncio.TimeoutError:
+                        print(f"Timeout fetching tools from {name} after 15 seconds")
+                        raise
 
-                        self.schemas[name] = {
-                            "tools": [
-                                {
-                                    "name": tool.name,
-                                    "description": tool.description,
-                                    "inputSchema": tool.inputSchema if hasattr(tool, 'inputSchema') else {},
-                                    "outputSchema": tool.outputSchema
-                                    if hasattr(tool, 'outputSchema')
-                                    else {},
-                                }
-                                for tool in server_tools
-                            ]
-                        }
-
-                        # Register tools with server prefix and flatten parameters
-                        for tool in server_tools:
-                            prefixed_name = f"{name}_{tool.name}"
-
-                            # Flatten parameters by resolving $defs and simplifying structures
-                            input_schema = tool.inputSchema if hasattr(tool, 'inputSchema') else {}
-                            flattened_params = self._flatten_tool_parameters(input_schema)
-
-                            tool_dict = {
-                                "type": "function",
-                                "function": {
-                                    "name": prefixed_name,
-                                    "description": tool.description,
-                                    "parameters": flattened_params,
-                                },
+                    self.schemas[name] = {
+                        "tools": [
+                            {
+                                "name": tool.name,
+                                "description": tool.description,
+                                "inputSchema": tool.inputSchema if hasattr(tool, 'inputSchema') else {},
+                                "outputSchema": tool.outputSchema if hasattr(tool, 'outputSchema') else {},
                             }
-                            self.tools_by_server[name].append(tool_dict)
-                            self.server_by_tool[prefixed_name] = name
+                            for tool in tools
+                        ]
+                    }
 
-                        print(f"Connected to MCP server {name} with {len(server_tools)} tools")
-                        self.mcp_clients[name] = config.url
+                    for tool in tools:
+                        prefixed_name = f"{name}_{tool.name}"
 
-                    except Exception as e:
-                        print(f"Error connecting to MCP server {name}: {e}")
+                        input_schema = tool.inputSchema if hasattr(tool, 'inputSchema') else {}
+                        flattened_params = self._flatten_tool_parameters(input_schema)
+
+                        tool_dict = {
+                            "type": "function",
+                            "function": {
+                                "name": prefixed_name,
+                                "description": tool.description,
+                                "parameters": flattened_params,
+                            },
+                        }
+                        self.tools_by_server[name].append(tool_dict)
+                        self.server_by_tool[prefixed_name] = name
+
+                    print(f"✓ Connected to MCP server '{name}' with {len(tools)} tools")
+                    self.mcp_clients[name] = config.url or config.command
+
+                    if not hasattr(self, 'mcp_transports'):
+                        self.mcp_transports = {}
+                    self.mcp_transports[name] = transport
+
+                except Exception as e:
+                    print(f"Error connecting to MCP server {name}: {e}")
+                    import traceback
+
+                    print(f"Traceback: {traceback.format_exc()}")
+                    raise
 
         except Exception as e:
-            print(f"Error initializing FastMCP client: {e}")
-            # Fallback to mock implementation
+            print(f"Error initializing MCP servers: {e}")
+            print("Falling back to mock implementation")
             await self._fallback_mcp_connection(mcp_servers)
+
+    def _create_transport(self, name: str, config: ServiceConfig):
+        """Create appropriate transport based on configuration"""
+        transport_type = config.transport
+
+        if not transport_type:
+            if config.command:
+                transport_type = 'stdio'
+            elif config.url:
+                if '/sse' in config.url:
+                    transport_type = 'sse'
+                else:
+                    transport_type = 'http'
+
+        transport_type = transport_type.lower() if transport_type else 'stdio'
+
+        print(f"Creating {transport_type.upper()} transport for {name}")
+
+        if transport_type == 'stdio':
+            if not StdioTransport:
+                print(f"StdioTransport not available for {name}")
+                raise Exception("StdioTransport not available")
+
+            if not config.command:
+                raise Exception(f"STDIO transport requires 'command' for {name}")
+
+            return StdioTransport(command=config.command, args=config.args or [], env=config.env or {})
+
+        elif transport_type == 'sse':
+            if not SSETransport:
+                print(f"SSETransport not available for {name}")
+                raise Exception("SSETransport not available")
+
+            if not config.url:
+                raise Exception(f"SSE transport requires 'url' for {name}")
+
+            print(f"Connecting to MCP server '{name}' via SSE at {config.url}")
+            return SSETransport(url=config.url)
+
+        elif transport_type == 'http':
+            if not StreamableHttpTransport:
+                print(f"StreamableHttpTransport not available for {name}")
+                raise Exception("StreamableHttpTransport not available")
+
+            if not config.url:
+                raise Exception(f"HTTP transport requires 'url' for {name}")
+
+            print(f"Connecting to MCP server '{name}' via HTTP at {config.url}")
+            return StreamableHttpTransport(url=config.url)
+
+        else:
+            raise Exception(f"Unknown transport type: {transport_type}")
 
     def _flatten_tool_parameters(self, input_schema: dict) -> dict:
         """Flatten tool parameters by resolving $defs and simplifying complex structures"""
@@ -768,22 +828,21 @@ class MCPManager:
                 print(f"Error in fallback connection to MCP server {name}: {e}")
 
     async def _call_mcp_server_tool(self, server_name: str, tool_name: str, args: dict):
-        """Call a tool on an external MCP server using FastMCP client"""
+        """Call a tool on an external MCP server using FastMCP client with SSE transport"""
         try:
-            if self.fastmcp_client:
-                # Use FastMCP client for proper MCP communication
-                async with self.fastmcp_client:
-                    # Remove server prefix from tool name for FastMCP call
-                    original_tool_name = tool_name.replace(f"{server_name}_", "")
-                    result = await self.fastmcp_client.call_tool(original_tool_name, args)
-                    result = result.content[0].text
-                    return [TextContent(text=str(result), type='text')]
+            if hasattr(self, 'mcp_transports') and server_name in self.mcp_transports:
+                original_tool_name = tool_name.replace(f"{server_name}_", "")
+
+                transport = self.mcp_transports[server_name]
+                client = FastMCPClient(transport)
+
+                async with client:
+                    result = await client.call_tool(original_tool_name, args)
+                    result_text = result.content[0].text if result.content else str(result)
+                    return [TextContent(text=result_text, type='text')]
             else:
-                # Fallback to direct HTTP calls
                 url = self.mcp_clients[server_name]
                 base_url = url.replace('/sse', '')
-
-                # Remove server prefix from tool name
                 original_tool_name = tool_name.replace(f"{server_name}_", "")
 
                 async with aiohttp.ClientSession() as session:
@@ -819,9 +878,9 @@ class MCPManager:
                 }
             elif config.type == ServiceType.MCP_SERVER:
                 mcp_servers.append((name, config))
-
-        await self.initialize_servers(openapi)
-        await self.run_all_servers()
+        if openapi and len(openapi) > 0:
+            await self.initialize_servers(openapi)
+            await self.run_all_servers()
 
         # Initialize FastMCP client for all MCP servers
         if mcp_servers:
