@@ -357,7 +357,7 @@ def start(
                 pass
 
             # Start registry first - using explicit uvicorn command
-            run_direct_service(
+            registry_process = run_direct_service(
                 "registry",
                 [
                     "uvicorn",
@@ -369,9 +369,21 @@ def start(
                 ],
             )
 
+            # Check if registry failed to start
+            if registry_process is None or registry_process.poll() is not None:
+                logger.error("Registry service failed to start. Exiting.")
+                stop_direct_processes()
+                raise typer.Exit(1)
+
             # Wait for registry to start
             logger.info("Waiting for registry to start...")
             time.sleep(7)
+
+            # Double-check registry is still running after wait
+            if registry_process.poll() is not None:
+                logger.error("Registry service terminated during startup. Exiting.")
+                stop_direct_processes()
+                raise typer.Exit(1)
 
             # Then start demo - using explicit command with optional sandbox group
             demo_command = []

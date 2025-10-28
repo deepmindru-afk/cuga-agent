@@ -176,8 +176,11 @@ cuga start demo
 
 ```
 
+
+
 <details>
 <summary>🤖 LLM Configuration - Advanced Options</summary>
+
 ---
 
 Refer to: [`.env.example`](.env.example) for detailed examples.
@@ -288,7 +291,21 @@ CUGA uses TOML configuration files located in `src/cuga/configurations/models/`:
 
 Each file contains agent-specific model settings that can be overridden by environment variables.
 
+
+// Start of Selection
+
 </details>
+
+
+
+
+
+<div style="margin: 20px 0; padding: 15px; border-left: 4px solid #2196F3; border-radius: 4px;">
+
+💡 **Tip:** Want to use your own tools or add your MCP tools? Check out [`src/cuga/backend/tools_env/registry/config/mcp_servers.yaml`](src/cuga/backend/tools_env/registry/config/mcp_servers.yaml) for examples of how to configure custom tools and APIs, including those for digital sales.
+
+</div>
+
 
 ## Configurations
 

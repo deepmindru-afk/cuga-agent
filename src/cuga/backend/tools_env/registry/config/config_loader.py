@@ -1,5 +1,6 @@
 from typing import Dict, Optional, List, Any
 from pydantic import BaseModel
+from loguru import logger
 from cuga.backend.utils.consts import ServiceType
 from cuga.backend.utils.file_utils import read_yaml_file
 
@@ -84,8 +85,11 @@ def load_service_configs(yaml_path: str) -> Dict[str, ServiceConfig]:
 
         return services
     except Exception as e:
-        print(f"Error loading service configurations: {e}")
-        return {}
+        logger.error(f"Failed to load service configurations from '{yaml_path}': {e}")
+        logger.error(
+            "Please ensure your YAML file is properly formatted with valid 'services' or 'mcpServers' structure"
+        )
+        raise ValueError(f"Invalid YAML configuration in '{yaml_path}': {e}")
 
 
 def _create_service_config(service_name: str, config: dict, is_mcp_server: bool = False) -> ServiceConfig:
