@@ -78,17 +78,16 @@ dev = [
     "beartype",
     "nltk",
     "termcolor",
+    "rapidfuzz",
     "pytest>=8.3.5",
     "pytest-asyncio>=1.1.0",
+    "cugaviz"
 ]
 groq = [
     "langchain-groq>=0.3.8",
 ]
 google-genai = [
     "langchain-google-genai>=2.0.11",
-]
-eval = [
-    "rapidfuzz"
 ]
 sandbox = [
     "llm-sandbox>=0.1.3",

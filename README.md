@@ -12,7 +12,23 @@
 
 </div>
 
-**CUGA (ConfigUrable Generalist Agent)** is an open-source generalist agent framework from IBM Research, purpose-built for enterprise automation. Designed for developers, CUGA combines and improves the best of foundational agentic patterns such as ReAct, CodeAct, and Planner-Executor — into a modular architecture enabling trustworthy, policy-aware, and composable automation across web interfaces, APIs, and custom enterprise systems.
+> **📢 Recent Updates**
+> 
+> - **Oct 31, 2025** — 🎉 **Agent Trajectory Visualization**: Introducing `cuga viz` — a powerful web-based dashboard for visualizing and analyzing agent execution trajectories, decision-making processes, and tool usage patterns. Perfect for debugging, optimizing agent behavior, and understanding how CUGA reasons through complex tasks. [Learn more →](#-quick-start)
+> 
+>   ```bash
+>   cuga viz
+>   ```
+> 
+> - **Oct 27, 2025** — 🔧 **Enhanced MCP Tool Support**: Full support for all transport types of MCP tools with comprehensive examples, making it easier to integrate custom MCP servers and protocols.
+> 
+> - **Oct 22, 2025** — 📊 **Evaluation on Your Own Data**: Test CUGA against your own test cases and APIs with structured evaluation framework. Validate API responses, score keywords and tool calls, and generate detailed JSON and CSV reports. Perfect for validating CUGA's performance on your specific use cases. [Learn more →](#-evaluation)
+> 
+>   ```bash
+>   cuga evaluate <test_file_path>
+>   ```
+
+**CUGA (ConfigUrable Generalist Agent)** is an open-source generalist agent framework from IBM Research, purpose-built for enterprise automation. Designed for developers, CUGA combines and improves the best of foundational agentic patterns such as ReAct, CodeAct, and Planner-Executor — into a modular architecture enabling trustworthy, policy-aware, and composable automation across web interfaces, APIs, and custom enterprise systems.
 
 CUGA achieves state-of-the-art performance on leading benchmarks:
 
