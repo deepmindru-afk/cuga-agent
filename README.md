@@ -174,9 +174,13 @@ cuga start demo
 # Chrome will open automatically at https://localhost:8005
 # then try sending your task to CUGA: 'get top account by revenue from digital sales'
 
+# 5. View agent trajectories (optional)
+cuga viz
+
+# This launches a web-based dashboard for visualizing and analyzing
+# agent execution trajectories, decision-making, and tool usage
+
 ```
-
-
 
 <details>
 <summary>🤖 LLM Configuration - Advanced Options</summary>
@@ -295,10 +299,6 @@ Each file contains agent-specific model settings that can be overridden by envir
 // Start of Selection
 
 </details>
-
-
-
-
 
 <div style="margin: 20px 0; padding: 15px; border-left: 4px solid #2196F3; border-radius: 4px;">
 
