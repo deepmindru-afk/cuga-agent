@@ -12,6 +12,8 @@ from typing import List, Optional
 from loguru import logger
 from cuga.config import settings, PACKAGE_ROOT, get_user_data_path, TRAJECTORY_DATA_DIR
 
+os.environ["DYNACONF_ADVANCED_FEATURES__TRACKER_ENABLED"] = "true"
+
 app = typer.Typer(
     help="Cuga CLI for managing services with direct execution",
     short_help="Service management tool for Cuga components",
@@ -565,19 +567,23 @@ def stop(
     manage_service("stop", service)
 
 
-@app.command(help="Start experiment dashboard", short_help="Start dashboard")
-def exp():
+@app.command(help="Start trajectory viewer", short_help="Start trajectory viewer")
+def viz():
     """
-    Start the experiment dashboard.
+    Start the trajectory viewer.
 
-    This command starts the dashboard for viewing trajectory data.
+    This command launches a web-based dashboard for viewing and analyzing trajectory data from agent executions.
 
     Example:
-      cuga exp         # Start the experiment dashboard
+      cuga viz         # Start the trajectory viewer
     """
     try:
         trajectory_data_path = TRAJECTORY_DATA_DIR
-        subprocess.run(["dashboard", "run", trajectory_data_path], capture_output=False, text=False)
+        subprocess.run(
+            ["uv", "run", "--group", "dev", "cuga-viz", "run", trajectory_data_path],
+            capture_output=False,
+            text=False,
+        )
     except subprocess.CalledProcessError as e:
         logger.error(f"Error starting dashboard: {e}")
         raise typer.Exit(1)
@@ -755,7 +761,7 @@ def evaluate(
                     "uv",
                     "run",
                     "--group",
-                    "eval",
+                    "dev",
                     os.path.join(PACKAGE_ROOT, "evaluation/evaluate_cuga.py"),
                     "-t",
                     test_cases_file_path,
